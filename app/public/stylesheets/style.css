@@ -1,0 +1,168 @@
+body {
+  font: 16px "Source Sans Pro", Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.login-page form {
+  width: 400px;
+  margin: 0 auto;
+}
+
+.form-control {
+  box-shadow: none;
+}
+
+[role="main"] {
+  padding-top: 58px;
+}
+
+.navbar .home-logo {
+  color: #ff5722;
+  font-weight: bold;
+}
+
+.new-workspace {
+  margin: 8px;
+}
+
+#workspaceSelect {
+  min-width: 155px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 4px;
+}
+
+.workspace-tip {
+  color: #66686f;
+  width: 200px;
+}
+
+.workspaces .dropdown-item:active {
+  background-color: #f8f9fa;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100; /* Behind the navbar */
+  padding: 48px 0 0; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar a:hover {
+  text-decoration: none;
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 48px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
+.sidebar-heading {
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.9em;
+}
+
+.dataset, .script {
+  padding: 10px;
+  width: 90%;
+  margin: 0 5% 10px 5%;
+  background-color: #dadada;
+  border-radius: 6px;
+}
+
+.dataset:first-child,
+.script:first-child {
+  margin-top: 10px;
+}
+
+.script .delete {
+  line-height: 16px;
+}
+
+.dataset:hover .delete,
+.script:hover .delete {
+  display: inline !important;
+  color: #d45353;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  margin-bottom: 20px;
+}
+
+.script-panel-placeholder {
+  height: 400px;
+  width: 100%;
+}
+
+.script-panel {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 400px;
+  z-index: 10;
+}
+
+.script-panel-controls-wrapper {
+  position: absolute;
+  height: 38px;
+  width: 82.5%;
+  right: 0;
+}
+
+.script-panel-controls,
+.script-panel {
+  color: #ffffff80;
+}
+
+.script-panel-controls-wrapper i {
+  padding: 3px;
+}
+
+.script-panel-controls i:hover,
+.script-panel i:hover {
+  color: #fffc;
+  cursor: pointer;
+}
+
+.script-panel #editor {
+  width: 81.5%;
+  height: 90%;
+  margin-top: 38px;
+  margin-left: 17.5%;
+}
+
+.script-panel .run-script {
+  padding-left: 10px;
+  padding-bottom: 2px;
+}
+
+.run-script .fa {
+  padding-left: 6px;
+}
+
+.script-panel.minimized {
+  height: 38px;
+  transition: height 0.33s;
+}
+
+.script-panel.maximized {
+  height: 95%;
+  transition: height 0.33s;
+}
+
+.script-panel.maximized #editor {
+  height: 93% !important;
+}

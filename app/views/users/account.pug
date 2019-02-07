@@ -1,0 +1,11 @@
+extends ../layout
+
+block content
+  include ../includes/header
+
+  div.container-fluid.dashboard
+    div.row
+      include ../includes/sidebar
+
+      main.col-md-9.ml-sm-auto.col-lg-10.px-4(role='main')
+        p account

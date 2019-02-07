@@ -1,0 +1,18 @@
+extends ../layout
+
+block beforeBody
+  - bodyClasses.push('login-page')
+
+block content
+  main.container(role='main')
+    form.form-signin(role='form', action='/auth/login', method='post')
+      .form-group
+
+        p #[a(href='/auth/register') Register] a new account
+      .form-group
+        if errors.error
+          div.alert.alert-danger.login-error #{errors.error[0]}
+        input.form-control(type='text', name="username", placeholder='Enter Username')
+      .form-group
+        input.form-control(type='password', name='password', placeholder='Password')
+      button.btn.btn-large.btn-primary.btn-block(type='submit') Log in

@@ -1,0 +1,43 @@
+nav.navbar.navbar-dark.bg-dark.navbar-expand-md.fixed-top.flex-md-nowrap
+  a.home-logo.navbar-brand(href='/') ECL IDE
+  button.navbar-toggler(type='button', data-toggle='collapse', data-target='#main-nav'): span.navbar-toggler-icon
+  div#main-nav.collapse.navbar-collapse
+    ul.navbar-nav.mr-auto
+      li.nav-item.dropdown
+        a#workspaceSelect.nav-link.dropdown-toggle(href='#', role='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Select Workspace...
+        div.dropdown-menu.workspaces(aria-labelledby='workspaceSelect')
+          a.dropdown-item.cloner.d-none(href='#') Workspace
+          .workspace-tip.ml-3.mr-2.d-none
+            p.m-0.float-left No workspaces yet.#[br] Create one now.
+            span.float-right
+              i.mt-1.mr-2.fa.fa-2x.fa-arrow-up
+          //-
+            a.dropdown-item(href='#') Taxi Trip Analysis
+            a.dropdown-item(href='#') Cancer Research
+      li.nav-item
+        a.new-workspace.text-light.badge.badge-pill.badge-secondary.float-left(href='#', title="New Workspace...", data-toggle="modal", data-target="#newWorkspaceModal") NEW
+            i.fa.fa-lg.fa-plus.ml-1.float-right
+    ul.navbar-nav.ml-md-auto
+      li.nav-item
+        a.nav-link(href='/users/account') Account
+          i.fa.fa-lg.fa-user.float-left.mr-2
+      li.nav-item
+        a.nav-link(href='/auth/logout') Logout
+          i.fa.fa-lg.fa-sign-out.float-left.mr-2
+
+div.modal.fade(id="newWorkspaceModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title New Workspace
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="workspace-name") Name:
+            input.form-control(id="workspace-name", type="text", required="required")
+            .invalid-feedback Please provide a name for the workspace.
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary Save

@@ -1,0 +1,107 @@
+nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
+  div.sidebar-sticky
+    h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-1.mb-1.text-light
+      a.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
+        span Datasets
+          i.fa.fa-chevron-right.ml-1
+      a.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="Add Dataset...") Add
+        i.fa.fa-lg.fa-plus.ml-1.float-right
+
+    div.nav.flex-column.datasets.collapse(id="datasets")
+        a.text-muted.dataset(href='#')
+          div
+            i.float-right.fa.fa-close.delete.d-none
+            b.datasetname Taxi Trips Raw
+            br
+            span.rows Rows: 1,234
+            br
+            span.columns Columns: 16
+        a.text-muted.dataset(href='#')
+          div
+            i.float-right.fa.fa-close.delete.d-none
+            b.datasetname Weather
+            br
+            span Rows: 1,234
+            br
+            span Columns: 16
+        a.text-muted.dataset(href='#')
+          div
+            i.float-right.fa.fa-close.delete.d-none
+            b.datasetname Drivers
+            br
+            span Rows: 1,234
+            br
+            span Columns: 16
+        a.text-muted.dataset(href='#')
+          div
+            i.float-right.fa.fa-close.delete.d-none
+            b.datasetname Vehicles
+            br
+            span Rows: 1,234
+            br
+            span Columns: 16
+
+    h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-4.mb-1.text-light
+      a.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
+        span Scripts
+          i.fa.fa-chevron-right.ml-1
+      a.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal") New
+        i.fa.fa-lg.fa-plus.ml-1.float-right
+
+    div.nav.flex-column.scripts.collapse(id="scripts")
+      //-
+        a.text-muted.script(href='#')
+          span.scriptname Taxi_Trips_Clean.ECL
+          i.float-right.fa.fa-close.delete.d-none
+        a.text-muted.script(href='#')
+          span.scriptname Weather_Transform.ECL
+          i.float-right.fa.fa-close.delete.d-none
+      a.text-muted.script.cloner.d-none(href='#')
+        span.scriptname script
+        i.float-right.fa.fa-close.delete.d-none
+      // li.nav-item: a.nav-link(href='#') Rate History
+
+div.modal.fade(id="newScriptModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title New ECL Script
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="script-name") Name:
+            input.form-control(id="script-name", type="text", required="required")
+            .invalid-feedback Please provide a name for the script.
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary(type="submit") Save
+
+div.modal.fade(id="removeScriptModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Remove ECL Script
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        p Delete the script "#[span.scriptname script]" from this workspace?
+
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-danger Delete
+
+div.modal.fade(id="removeDatasetModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Remove Dataset
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        p Delete the dataset "#[span.datasetname dataset]" from this workspace?
+
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-danger Delete

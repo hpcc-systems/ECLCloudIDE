@@ -1,0 +1,18 @@
+extends ../layout
+
+block beforeBody
+  - bodyClasses.push('login-page')
+
+block content
+  main.container(role='main')
+    form.form-signin(role='form', action='/auth/register', method='post')
+      .form-group
+        p.lead Create a user account
+        p Or #[a(href='/auth/login') login] with an existing account.
+      .form-group
+          input.form-control(type='text', name="username", placeholder='Enter Username')
+      .form-group
+        input.form-control(type='password', name="password", placeholder='Password')
+      button.btn.btn-primary.mr-2(type='submit') Create Account
+      a(href='/')
+        button.btn.btn-secondary(type="button") Cancel
