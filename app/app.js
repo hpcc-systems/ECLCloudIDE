@@ -16,6 +16,8 @@ const flash = require('express-flash');
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
+const workspacesRouter = require('./routes/workspaces');
+const scriptsRouter = require('./routes/scripts');
 
 const app = express();
 
@@ -42,9 +44,22 @@ app.use(flash());
 
 app.use(passport.initialize());
 
-app.use('/', indexRouter);
 app.use('/auth', authRouter);
+
+// for all routes not /auth/*
+// test for user session object
+app.use((req, res, next) => {
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect('/auth/login');
+  }
+});
+
+app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/workspaces', workspacesRouter);
+app.use('/scripts', scriptsRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
