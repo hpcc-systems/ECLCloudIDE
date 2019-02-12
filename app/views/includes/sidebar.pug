@@ -1,13 +1,14 @@
 nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
   div.sidebar-sticky
     h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-1.mb-1.text-light
-      a.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
+      a#dataset-collapser.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
         span Datasets
           i.fa.fa-chevron-right.ml-1
       a.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="Add Dataset...") Add
-        i.fa.fa-lg.fa-plus.ml-1.float-right
+        i.fa.fa-plus.ml-1.float-right
 
     div.nav.flex-column.datasets.collapse(id="datasets")
+      //-
         a.text-muted.dataset(href='#')
           div
             i.float-right.fa.fa-close.delete.d-none
@@ -42,11 +43,11 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
             span Columns: 16
 
     h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-4.mb-1.text-light
-      a.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
+      a#script-collapser.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
         span Scripts
           i.fa.fa-chevron-right.ml-1
-      a.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal") New
-        i.fa.fa-lg.fa-plus.ml-1.float-right
+      a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal", data-placement="right") New
+        i.fa.fa-plus.ml-1.float-right
 
     div.nav.flex-column.scripts.collapse(id="scripts")
       //-
@@ -72,7 +73,7 @@ div.modal.fade(id="newScriptModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="script-name") Name:
-            input.form-control(id="script-name", type="text", required="required")
+            input.form-control(id="script-name", name="scriptName", type="text", required="required")
             .invalid-feedback Please provide a name for the script.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel

@@ -25,8 +25,8 @@ a {
   font-weight: bold;
 }
 
-.new-workspace {
-  margin: 8px;
+.workspace-btn {
+  margin: 10px 0 0 10px;
 }
 
 #workspaceSelect {
@@ -79,6 +79,13 @@ a {
   margin: 0 5% 10px 5%;
   background-color: #dadada;
   border-radius: 6px;
+}
+
+.script.active,
+.dataset.active {
+  background-color: #1f6192;
+  color: #fff !important;
+  border: 1px solid #dadada;
 }
 
 .dataset:first-child,

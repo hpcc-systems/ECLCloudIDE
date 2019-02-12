@@ -6,6 +6,63 @@ require.config({
   }
 });
 
+let populateWorkspaces = () => {
+  fetch('/users/workspaces')
+    .then(response => response.json())
+    .then((workspaces) => {
+      if (workspaces.length == 0) {
+        $('.workspace-tip').removeClass('d-none');
+      } else {
+        let $workspaces = $('.workspaces');
+
+        workspaces.forEach((workspace) => {
+          console.log(workspace);
+          let $newWorkspace = $workspaces.find('.cloner').clone();
+          $newWorkspace.removeClass('d-none cloner');
+          $newWorkspace.data('name', workspace.name);
+          $newWorkspace.data('id', workspace.id);
+          $newWorkspace.text($newWorkspace.data('name'));
+          $workspaces.append($newWorkspace);
+        });
+      }
+    });
+};
+
+let toggleNewScriptPopover = () => {
+   let $workspaceSelect = $('#workspaceSelect'),
+       $newScript = $('#new-script');
+
+    if ($workspaceSelect.text() == NO_WORKSPACE) {
+      $newScript.attr('data-toggle', 'popover');
+      $newScript.attr('title', 'Select a Workspace');
+      $newScript.attr('data-content', 'Create a new Workspace or select one of your existing Workspaces');
+      $newScript.attr('data-placement', 'right');
+      $newScript.attr('data-boundary', 'window');
+
+      $newScript.popover({ trigger: 'focus' });
+      $newScript.popover('enable');
+    } else {
+      $newScript.attr('data-toggle', 'modal');
+      $newScript.attr('title', 'New Script...');
+      $newScript.removeAttr('data-content');
+      $newScript.removeAttr('data-placement');
+      $newScript.removeAttr('data-boundary');
+
+      $newScript.popover('disable');
+    }
+};
+
+const NO_WORKSPACE = 'Select Workspace...';
+
+let getFormData = ($form) => {
+  let arr = $form.serializeArray(),
+      result = {};
+
+  $.map(arr, (el, idx) => { result[el['name']] = el['value'] });
+
+  return result;
+};
+
 require(['vs/editor/editor.main'], function(monaco) {
   var editor;
 
@@ -23,9 +80,7 @@ require(['vs/editor/editor.main'], function(monaco) {
 
   $(function() {
 
-    if ($('.workspaces .dropdown-item').length > 0) {
-      $('.workspace-tip').removeClass('d-none');
-    }
+    populateWorkspaces();
 
     $('#newWorkspaceModal').on('click', '.btn-primary', function(evt) {
       let $modal = $('#newWorkspaceModal'),
@@ -33,6 +88,7 @@ require(['vs/editor/editor.main'], function(monaco) {
           $tip = $('.workspace-tip'),
           $newWorkspace = $workspaces.find('.cloner').clone(),
           $workspaceName = $modal.find('#workspace-name'),
+          $deleteWorkspace = $('.delete-workspace').parent(),
           $form = $modal.find('form');
 
       if ($form[0].checkValidity() === false) {
@@ -42,31 +98,79 @@ require(['vs/editor/editor.main'], function(monaco) {
         return false;
       }
 
-      $modal.modal('hide');
+      fetch('/workspaces/', {
+        method: 'POST',
+        body: JSON.stringify(getFormData($form)),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((workspace) => {
+        $modal.modal('hide');
 
-      $newWorkspace.removeClass('d-none cloner');
-      $newWorkspace.data('name', $workspaceName.val());
-      $newWorkspace.text($newWorkspace.data('name'));
-      $workspaces.append($newWorkspace);
+        $newWorkspace.removeClass('d-none cloner');
+        $newWorkspace.data('name', workspace.name);
+        $newWorkspace.data('id', workspace.id);
+        $newWorkspace.text($newWorkspace.data('name'));
+        $workspaces.append($newWorkspace);
 
-      $workspaceName.val('');
+        $workspaceName.val('');
 
-      $form.removeClass('was-validated');
-      $tip.addClass('d-none');
+        $form.removeClass('was-validated');
+        $tip.addClass('d-none');
+        $deleteWorkspace.removeClass('d-none');
 
-      $workspaces.find('.dropdown-item').filter((idx, el) => {
-        return $(el).text() === $newWorkspace.data('name')
-      }).trigger('click');
+        $workspaces.find('.dropdown-item').filter((idx, el) => {
+          return $(el).text() === $newWorkspace.data('name')
+        }).trigger('click');
+
+        toggleNewScriptPopover();
+      });
     });
 
     $('.workspaces').on('click', '.dropdown-item', function(evt) {
       let $this = $(this),
           $options = $('.workspaces .dropdown-item'),
-          $selected = $('#workspaceSelect');
+          $selected = $('#workspaceSelect'),
+          $deleteWorkspace = $('.delete-workspace').parent();
+
+      evt.preventDefault();
 
       $options.removeClass('active');
       $this.addClass('active');
       $selected.text($this.text());
+      $deleteWorkspace.removeClass('d-none');
+
+      toggleNewScriptPopover();
+    });
+
+    $('#removeWorkspaceModal').on('click', '.btn-danger', function(evt) {
+      let $modal = $('#removeWorkspaceModal'),
+          $workspaces = $('.workspaces'),
+          $deleteWorkspace = $('.delete-workspace').parent(),
+          $workspaceSelect = $('#workspaceSelect');
+
+      fetch('/workspaces/', {
+        method: 'DELETE',
+        body: JSON.stringify({ workspaceName: $workspaceSelect.text() }),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        $modal.modal('hide');
+        $workspaces.find('.active').remove();
+        $deleteWorkspace.addClass('d-none');
+        $workspaceSelect.text(NO_WORKSPACE);
+
+        if ($workspaces.find('.dropdown-item:not(.cloner)').length == 0) {
+          $('.workspace-tip').removeClass('d-none');
+        }
+
+        toggleNewScriptPopover();
+      });
     });
 
     $('.js-collapser').on('click', function(evt) {
@@ -111,7 +215,8 @@ require(['vs/editor/editor.main'], function(monaco) {
 
     $('.scripts').on('click', '.script', function(evt) {
       let $this = $(this);
-      console.log($this);
+      $this.siblings().removeClass('active');
+      $this.addClass('active');
     });
 
     $('.scripts').on('click', '.script .delete', function(evt) {
@@ -129,11 +234,16 @@ require(['vs/editor/editor.main'], function(monaco) {
       console.log($modal.find('.btn-danger').data('script'));
     });
 
+    toggleNewScriptPopover();
+
     $('#newScriptModal').on('click', '.btn-primary', function(evt) {
       let $modal = $('#newScriptModal'),
           $scripts = $('.scripts'),
+          $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
           $newScript = $scripts.find('.cloner').clone(),
-          $form = $modal.find('form');
+          $scriptCollapser = $('#script-collapser'),
+          $form = $modal.find('form'),
+          data = getFormData($form);
 
       if ($form[0].checkValidity() === false) {
         evt.preventDefault();
@@ -142,18 +252,43 @@ require(['vs/editor/editor.main'], function(monaco) {
         return false;
       }
 
-      $modal.modal('hide');
-      $newScript.removeClass('d-none cloner');
-      $newScript.find('.scriptname').text($modal.find('#script-name').val());
-      $scripts.append($newScript);
-      $modal.find('#script-name').val('');
-      $form.removeClass('was-validated');
+      console.log(data);
+      data.workspaceId = $workspaceId;
+      console.log(JSON.stringify(data));
+
+      fetch('/scripts/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((script) => {
+        $modal.modal('hide');
+        $newScript.removeClass('d-none cloner');
+        $newScript.find('.scriptname').text($modal.find('#script-name').val());
+        $scripts.append($newScript);
+        $modal.find('#script-name').val('');
+        $form.removeClass('was-validated');
+
+        if (!$scripts.hasClass('show')) {
+          $scriptCollapser.trigger('click');
+        }
+
+        $newScript.trigger('click');
+      });
     });
 
     $('#removeScriptModal').on('click', '.btn-danger', function(evt) {
       let $this = $(this),
           $modal = $('#removeScriptModal'),
+          $scriptPanelClose = $('.js-close'),
           $scripts = $('.scripts');
+
+      if ($scripts.children().eq($this.data('script')).hasClass('active')) {
+        $scriptPanelClose.trigger('click');
+      }
 
       $scripts.children().eq($this.data('script')).remove();
       $modal.modal('hide');

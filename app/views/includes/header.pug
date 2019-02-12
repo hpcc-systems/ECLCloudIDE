@@ -15,8 +15,10 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-md.fixed-top.flex-md-nowrap
             a.dropdown-item(href='#') Taxi Trip Analysis
             a.dropdown-item(href='#') Cancer Research
       li.nav-item
-        a.new-workspace.text-light.badge.badge-pill.badge-secondary.float-left(href='#', title="New Workspace...", data-toggle="modal", data-target="#newWorkspaceModal") NEW
-            i.fa.fa-lg.fa-plus.ml-1.float-right
+        a.workspace-btn.new-workspace.text-light.badge.badge-pill.badge-secondary.float-left(href='#', title="New Workspace...", data-toggle="modal", data-target="#newWorkspaceModal") NEW
+            i.fa.fa-plus.ml-1.float-right
+      li.nav-item.d-none
+        a.workspace-btn.delete-workspace.text-light.badge.badge-pill.badge-danger.float-left(href='#', title="Delete Workspace...", data-toggle="modal", data-target="#removeWorkspaceModal") DELETE
     ul.navbar-nav.ml-md-auto
       li.nav-item
         a.nav-link(href='/users/account') Account
@@ -36,8 +38,22 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="workspace-name") Name:
-            input.form-control(id="workspace-name", type="text", required="required")
+            input.form-control(id="workspace-name", name="workspaceName", type="text", required="required")
             .invalid-feedback Please provide a name for the workspace.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary Save
+
+div.modal.fade(id="removeWorkspaceModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Delete Workspace
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        p Delete this workspace?
+
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-danger Delete
