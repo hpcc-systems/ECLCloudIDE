@@ -5,6 +5,7 @@ const db = require('../models/index');
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
+const Script = db.Script;
 
 /* Create workspace */
 router.post('/', (req, res, next) => {
@@ -31,8 +32,13 @@ router.delete('/', (req, res, next) => {
       where: { role: WorkspaceUser.roles.OWNER }
     }
   }).then(workspace => {
-    workspace.destroy();
+    Workspace.destroy({
+      where: { id: workspace.id }
+    });
     WorkspaceUser.destroy({
+      where: { workspaceId: workspace.id }
+    });
+    Script.destroy({
       where: { workspaceId: workspace.id }
     });
   }).then(() => {
