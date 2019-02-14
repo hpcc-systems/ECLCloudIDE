@@ -127,6 +127,8 @@ a {
   height: 38px;
   width: 82.5%;
   right: 0;
+  display: flex;
+  justify-content: space-between;
 }
 
 .script-panel-controls,
