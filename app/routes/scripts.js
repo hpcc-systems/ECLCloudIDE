@@ -7,6 +7,21 @@ const Script = db.Script;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
 
+router.get('/', (req, res, next) => {
+  console.log('request query', req.query);
+  Script.findAll({
+    where: {
+      workspaceId: req.query.workspaceId
+    }
+  }).then((workspaces) => {
+    res.json(workspaces);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
+/* Create script */
 router.post('/', (req, res, next) => {
   console.log('request body', req.body);
   Script.create({
