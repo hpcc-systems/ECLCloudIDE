@@ -35,4 +35,23 @@ router.post('/', (req, res, next) => {
   });
 });
 
+/* Create script */
+router.delete('/', (req, res, next) => {
+  console.log('request body', req.body);
+  Script.findOne({
+    where: {
+      id: req.body.scriptId,
+    }
+  }).then((script) => {
+    Script.destroy({
+      where: { id: script.id }
+    });
+  }).then(() => {
+    res.json({ message: 'Script deleted' });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ message: 'Script could not be saved' });
+  });
+});
+
 module.exports = router;
