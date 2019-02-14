@@ -21,7 +21,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true
     }
-  }, {});
+  }, {
+    paranoid: true
+  });
   WorkspaceUser.associate = function(models) {
     // associations can be defined here
   };

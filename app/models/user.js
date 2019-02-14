@@ -10,7 +10,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     username: DataTypes.STRING,
     password: DataTypes.STRING
-  }, {});
+  }, {
+    paranoid: true
+  });
   User.associate = function(models) {
     User.belongsToMany(models.Workspace, { through: models.WorkspaceUser } );
   };

@@ -14,7 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-  }, {});
+  }, {
+    paranoid: true
+  });
   Script.associate = function(models) {
     Script.belongsTo(models.Workspace);
   };

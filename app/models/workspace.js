@@ -9,9 +9,12 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: false,
     },
     name: DataTypes.STRING
-  }, {});
+  }, {
+    paranoid: true
+  });
   Workspace.associate = function(models) {
     Workspace.hasMany(models.Script);
+    Workspace.hasMany(models.Dataset);
     Workspace.belongsToMany(models.User, { through: models.WorkspaceUser } );
   };
   return Workspace;
