@@ -3,8 +3,15 @@
 require.config({
   paths: {
     'vs': '/javascripts/monaco-editor/min/vs',
+    'ln': '/javascripts/line-navigator',
   }
 });
+
+let hostname = 'http://localhost:3000';
+
+const NO_WORKSPACE = 'Select Workspace...';
+const NEW_SCRIPT = 'New Script...';
+const NEW_DATASET = 'New Dataset...';
 
 let populateWorkspaces = () => {
   fetch('/users/workspaces')
@@ -28,31 +35,78 @@ let populateWorkspaces = () => {
     });
 };
 
-let toggleNewScriptPopover = () => {
-   let $workspaceSelect = $('#workspaceSelect'),
-       $newScript = $('#new-script');
+let populateScripts = () => {
+  let url = new URL(hostname + '/scripts'),
+      $activeWorkspace = $('.workspaces .active'),
+      $scripts = $('.scripts'),
+      params = { workspaceId: $activeWorkspace.data('id') };
 
-    if ($workspaceSelect.text() == NO_WORKSPACE) {
-      $newScript.attr('data-toggle', 'popover');
-      $newScript.attr('title', 'Select a Workspace');
-      $newScript.attr('data-content', 'Create a new Workspace or select one of your existing Workspaces');
-      $newScript.attr('data-placement', 'right');
-      $newScript.attr('data-boundary', 'window');
+  url.search = new URLSearchParams(params);
 
-      $newScript.popover({ trigger: 'focus' });
-      $newScript.popover('enable');
-    } else {
-      $newScript.attr('data-toggle', 'modal');
-      $newScript.attr('title', 'New Script...');
-      $newScript.removeAttr('data-content');
-      $newScript.removeAttr('data-placement');
-      $newScript.removeAttr('data-boundary');
+  $scripts.find('.script:not(.cloner)').remove();
 
-      $newScript.popover('disable');
-    }
+  fetch(url)
+    .then(response => response.json())
+    .then((scripts) => {
+      console.log(scripts);
+      scripts.forEach((script) => {
+        let $newScript = $scripts.find('.cloner').clone();
+
+        $newScript.removeClass('d-none cloner');
+        $newScript.data('id', script.id);
+        $newScript.data('name', script.name);
+        $newScript.find('.scriptname').text(script.name);
+        $scripts.append($newScript);
+      });
+
+      if (scripts.length > 0) {
+        showScripts();
+      }
+    });
 };
 
-const NO_WORKSPACE = 'Select Workspace...';
+let showScripts = () => {
+  let $scripts = $('.scripts'),
+      $scriptCollapser = $('#script-collapser');
+
+  if (!$scripts.hasClass('show')) {
+    $scriptCollapser.trigger('click');
+  }
+};
+
+let toggleNewScriptPopover = () => {
+  let $workspaceSelect = $('#workspaceSelect'),
+      $newScript = $('#new-script'),
+      $newDataset = $('#new-dataset'),
+
+      _togglePopover = ($element, defaultTitle) => {
+        if ($workspaceSelect.text() == NO_WORKSPACE) {
+          $element.attr('data-toggle', 'popover');
+          $element.attr('title', 'Select a Workspace');
+          $element.attr('data-content', 'Create a new Workspace or select one of your existing Workspaces');
+          $element.attr('data-placement', 'right');
+          $element.attr('data-boundary', 'window');
+
+          $element.popover({ trigger: 'focus' });
+          $element.popover('enable');
+        } else {
+          $element.attr('data-toggle', 'modal');
+          $element.attr('title', defaultTitle);
+          $element.removeAttr('data-content');
+          $element.removeAttr('data-placement');
+          $element.removeAttr('data-boundary');
+
+          $element.popover('disable');
+        }
+      };
+
+    _togglePopover($newScript, NEW_SCRIPT);
+    _togglePopover($newDataset, NEW_DATASET);
+};
+
+let getDropzones = () => {
+
+};
 
 let getFormData = ($form) => {
   let arr = $form.serializeArray(),
@@ -63,7 +117,10 @@ let getFormData = ($form) => {
   return result;
 };
 
-require(['vs/editor/editor.main'], function(monaco) {
+require([
+  'vs/editor/editor.main',
+  'ln/line-navigator.min'
+], function(monaco, LineNavigator) {
   var editor;
 
   if ($('#editor').length > 0) {
@@ -79,6 +136,19 @@ require(['vs/editor/editor.main'], function(monaco) {
   }
 
   $(function() {
+
+    $('.js-collapser').on('click', function(evt) {
+      let $this = $(this),
+          $chevron = $this.find('.fa');
+
+      if ($chevron.hasClass('fa-chevron-right')) {
+        $chevron.removeClass('fa-chevron-right');
+        $chevron.addClass('fa-chevron-down');
+      } else {
+        $chevron.removeClass('fa-chevron-down');
+        $chevron.addClass('fa-chevron-right');
+      }
+    });
 
     populateWorkspaces();
 
@@ -133,6 +203,7 @@ require(['vs/editor/editor.main'], function(monaco) {
       let $this = $(this),
           $options = $('.workspaces .dropdown-item'),
           $selected = $('#workspaceSelect'),
+          $scriptPanelClose = $('.js-close'),
           $deleteWorkspace = $('.delete-workspace').parent();
 
       evt.preventDefault();
@@ -142,13 +213,18 @@ require(['vs/editor/editor.main'], function(monaco) {
       $selected.text($this.text());
       $deleteWorkspace.removeClass('d-none');
 
+      $scriptPanelClose.trigger('click');
+
+      populateScripts();
       toggleNewScriptPopover();
     });
 
     $('#removeWorkspaceModal').on('click', '.btn-danger', function(evt) {
       let $modal = $('#removeWorkspaceModal'),
           $workspaces = $('.workspaces'),
+          $scripts = $('.scripts .script:not(.cloner)'),
           $deleteWorkspace = $('.delete-workspace').parent(),
+          $scriptPanelClose = $('.js-close'),
           $workspaceSelect = $('#workspaceSelect');
 
       fetch('/workspaces/', {
@@ -162,6 +238,7 @@ require(['vs/editor/editor.main'], function(monaco) {
       .then((json) => {
         $modal.modal('hide');
         $workspaces.find('.active').remove();
+        $scripts.remove();
         $deleteWorkspace.addClass('d-none');
         $workspaceSelect.text(NO_WORKSPACE);
 
@@ -169,26 +246,41 @@ require(['vs/editor/editor.main'], function(monaco) {
           $('.workspace-tip').removeClass('d-none');
         }
 
+        $scriptPanelClose.trigger('click');
+
         toggleNewScriptPopover();
       });
-    });
-
-    $('.js-collapser').on('click', function(evt) {
-      let $this = $(this),
-          $chevron = $this.find('.fa');
-
-      if ($chevron.hasClass('fa-chevron-right')) {
-        $chevron.removeClass('fa-chevron-right');
-        $chevron.addClass('fa-chevron-down');
-      } else {
-        $chevron.removeClass('fa-chevron-down');
-        $chevron.addClass('fa-chevron-right');
-      }
     });
 
     $('.datasets').on('click', '.dataset', function(evt) {
       let $this = $(this);
       console.log($this);
+    });
+
+    $('#dataset-file').on('change', function(evt) {
+      let file = evt.target.files[0],
+          fileName = '',
+          ln = new LineNavigator(file);
+
+      if (!file) {
+        alert('Please select a file');
+        return false;
+      }
+
+      file.name.substr(0, file.name.lastIndexOf('.')).replace(/-_\s/g, '_').split('_').map((word) => {
+        fileName += word.substr(0, 1).toUpperCase() + word.substr(1).toLowerCase();
+      });
+      fileName.trim();
+
+      console.log(file, fileName);
+
+      $('#dataset-name').val(fileName);
+
+      ln.readLines(0, 2, (err, idx, lines, isEof, progress) => {
+        console.log(lines);
+        let labels = lines[0].split(','),
+            values = lines[1].split(',');
+      });
     });
 
     $('.datasets').on('click', '.dataset .delete', function(evt) {
@@ -219,21 +311,6 @@ require(['vs/editor/editor.main'], function(monaco) {
       $this.addClass('active');
     });
 
-    $('.scripts').on('click', '.script .delete', function(evt) {
-      let $this = $(this),
-          $script = $this.parents('.script'),
-          $modal = $('#removeScriptModal');
-
-      evt.stopPropagation();
-
-      //link.parentElement.removeChild(link);
-      $modal.find('.scriptname').text($script.find('.scriptname').text());
-      $modal.modal('show');
-      console.log($script.index());
-      $modal.find('.btn-danger').data('script', $script.index());
-      console.log($modal.find('.btn-danger').data('script'));
-    });
-
     toggleNewScriptPopover();
 
     $('#newScriptModal').on('click', '.btn-primary', function(evt) {
@@ -241,7 +318,6 @@ require(['vs/editor/editor.main'], function(monaco) {
           $scripts = $('.scripts'),
           $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
           $newScript = $scripts.find('.cloner').clone(),
-          $scriptCollapser = $('#script-collapser'),
           $form = $modal.find('form'),
           data = getFormData($form);
 
@@ -267,31 +343,57 @@ require(['vs/editor/editor.main'], function(monaco) {
       .then((script) => {
         $modal.modal('hide');
         $newScript.removeClass('d-none cloner');
-        $newScript.find('.scriptname').text($modal.find('#script-name').val());
+        $newScript.data('id', script.id);
+        $newScript.data('name', script.name);
+        $newScript.find('.scriptname').text($newScript.data('name'));
         $scripts.append($newScript);
         $modal.find('#script-name').val('');
         $form.removeClass('was-validated');
 
-        if (!$scripts.hasClass('show')) {
-          $scriptCollapser.trigger('click');
-        }
+        showScripts();
 
         $newScript.trigger('click');
       });
+    });
+
+    $('.scripts').on('click', '.script .delete', function(evt) {
+      let $this = $(this),
+          $script = $this.parents('.script'),
+          $modal = $('#removeScriptModal');
+
+      evt.stopPropagation();
+
+      //link.parentElement.removeChild(link);
+      $modal.find('.scriptname').text($script.find('.scriptname').text());
+      $modal.modal('show');
+      console.log($script.index());
+      $modal.find('.btn-danger').data('script', $script.index());
+      console.log($modal.find('.btn-danger').data('script'));
     });
 
     $('#removeScriptModal').on('click', '.btn-danger', function(evt) {
       let $this = $(this),
           $modal = $('#removeScriptModal'),
           $scriptPanelClose = $('.js-close'),
-          $scripts = $('.scripts');
+          $scripts = $('.scripts'),
+          $activeScript = $scripts.children().eq($this.data('script'));
 
-      if ($scripts.children().eq($this.data('script')).hasClass('active')) {
-        $scriptPanelClose.trigger('click');
-      }
+      fetch('/scripts/', {
+        method: 'DELETE',
+        body: JSON.stringify({ scriptId: $activeScript.data('id') }),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        if ($activeScript.hasClass('active')) {
+          $scriptPanelClose.trigger('click');
+        }
 
-      $scripts.children().eq($this.data('script')).remove();
-      $modal.modal('hide');
+        $activeScript.remove();
+        $modal.modal('hide');
+      });
     });
 
     if ($('.table').length > 0) {
@@ -301,6 +403,9 @@ require(['vs/editor/editor.main'], function(monaco) {
     $('.script-panel-controls').on('click', '.js-close', function() {
       $('.script-panel-placeholder').addClass('d-none');
       $('.script-panel').addClass('d-none');
+      $('.scripts .script').removeClass('active');
+      $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
+      $('.script-panel').removeClass('maximized').removeClass('minimized');
     });
 
     $('.script-panel-controls').on('click', '.js-minimize', function() {
