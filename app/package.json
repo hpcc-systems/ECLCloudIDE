@@ -4,10 +4,16 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
+
     "monaco:clean": "rm -rf ./public/javascripts/monaco-editor/",
     "monaco:mkdir": "mkdir .\\public\\javascripts\\monaco-editor\\min\\",
     "monaco:copy": "cp -r ./node_modules/monaco-editor/min/vs/ ./public/javascripts/monaco-editor/min/",
-    "monaco": "npm run monaco:clean && npm run monaco:mkdir && npm run monaco:copy"
+    "monaco": "npm run monaco:clean && npm run monaco:mkdir && npm run monaco:copy",
+
+    "linenav:clean": "rm -rf ./public/javascripts/line-navigator/",
+    "linenav:mkdir": "mkdir .\\public\\javascripts\\line-navigator\\",
+    "linenav:copy": "cp ./node_modules/line-navigator/{file-wrapper.min.js,line-navigator.min.js} ./public/javascripts/line-navigator/",
+    "linenav": "npm run linenav:clean && npm run linenav:mkdir && npm run linenav:copy"
   },
   "dependencies": {
     "bcrypt": "^3.0.3",
@@ -20,6 +26,7 @@
     "express-session": "^1.15.6",
     "express-validator": "^5.3.1",
     "http-errors": "~1.7.1",
+    "line-navigator": "^2.1.6",
     "monaco-editor": "^0.15.6",
     "morgan": "~1.9.0",
     "mysql2": "^1.6.4",
