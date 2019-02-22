@@ -1,6 +1,6 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const Script = sequelize.define('Script', {
+  const ScriptRevision = sequelize.define('ScriptRevision', {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
@@ -8,18 +8,17 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       autoIncrement: false,
     },
-    name: DataTypes.STRING,
-    workspaceId: {
+    scriptId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
+    content: DataTypes.STRING
   }, {
     paranoid: true
   });
-  Script.associate = function(models) {
-    Script.belongsTo(models.Workspace);
-    Script.hasMany(models.ScriptRevision);
+  ScriptRevision.associate = function(models) {
+    ScriptRevision.belongsTo(models.Script);
   };
-  return Script;
+  return ScriptRevision;
 };
