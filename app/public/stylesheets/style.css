@@ -175,3 +175,20 @@ a {
 .script-panel.maximized #editor {
   height: 93% !important;
 }
+
+.file-details .form-group {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.file-details .form-group span {
+  width: 50%;
+}
+
+.file-details .form-group .form-control {
+  width: 49%;
+}
+
+.file-details .form-group .form-control:first-of-type {
+  margin-right: 0.5em;
+}

@@ -103,13 +103,14 @@ div.modal.fade(id="newDatasetModal", role="dialog")
       div.modal-body
         form
           div.form-group
-            label.col-form-label(for="dataset-name") Name:
-            input.form-control(id="dataset-name", name="datasetName", type="text", required="required")
-            .invalid-feedback Please provide a name for the dataset.
-          div.form-group
             label.col-form-label(for="dataset-file") File:
             input.form-control-file(id="dataset-file", name="datasetFile", type="file", required="required", accept=".csv,.txt")
             .invalid-feedback Please select a CSV file to upload.
+          div.form-group
+            label.col-form-label(for="dataset-name") Name:
+            input.form-control(id="dataset-name", name="datasetName", type="text", required="required")
+            .invalid-feedback Please provide a name for the dataset.
+          div.file-details
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
