@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
+    workunitId: DataTypes.STRING,
   }, {
     paranoid: true
   });
