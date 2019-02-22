@@ -291,10 +291,43 @@ require([
 
       $('#dataset-name').val(fileName);
 
-      ln.readLines(0, 2, (err, idx, lines, isEof, progress) => {
+      ln.readLines(0, 2, (err, idx, lines, isEOF, progress) => {
         console.log(lines);
         let labels = lines[0].split(','),
-            values = lines[1].split(',');
+            values = lines[1].split(','),
+            $fileDetails = $('.file-details');
+
+        $fileDetails.html('');
+
+        labels.map((label, idx) => {
+          let $newFormRow = $('<div class="form-group"></div>'),
+              headingsEl = '<label data-toggle="popover" data-placement="right" ' +
+                'title="Headings" data-content="This is the first row from your file, ' +
+                'which are being shown here as column headings. If you would like to ' +
+                'override these column headings, change the values below.">Headings</label>',
+              valuesEl = '<label data-toggle="popover" data-placement="right" ' +
+                'title="Sample Row" data-content="This is the second row from your file, ' +
+                'which are being shown as an example for the fields that correspond to ' +
+                'the column headings to the left. Changing these values will have no impact ' +
+                'on the import process of your file.">Values</label>';
+
+          if (idx == 0) {
+            $newFormRow.append('<span>' + headingsEl + '</span>');
+            $newFormRow.append('<span>' + valuesEl + '</span>');
+            $fileDetails.append('<hr />');
+          }
+
+          $newFormRow.append('<input type="text" class="form-control" value="' + label + '" />');
+          $newFormRow.append('<input type="text" class="form-control" value="' + values[idx] + '" />');
+
+          $fileDetails.append($newFormRow);
+
+          console.log(label, values[idx]);
+        });
+
+        $('[data-toggle="popover"]').popover({
+          trigger: 'hover'
+        });
       });
     });
 
