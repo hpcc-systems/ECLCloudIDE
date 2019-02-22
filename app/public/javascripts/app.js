@@ -199,6 +199,11 @@ require([
       });
     });
 
+    $('#newWorkspaceModal').on('hide.bs.modal', function(evt) {
+      $('#newWorkspaceModal form').removeClass('was-validated');
+      $('#newWorkspaceModal form')[0].reset();
+    });
+
     $('.workspaces').on('click', '.dropdown-item', function(evt) {
       let $this = $(this),
           $options = $('.workspaces .dropdown-item'),
@@ -250,6 +255,16 @@ require([
 
         toggleNewScriptPopover();
       });
+    });
+
+    $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
+      console.log('save dataset');
+    });
+
+    $('#newDatasetModal').on('click', function(evt) {
+      $('#newDatasetModal form').removeClass('was-validated');
+      $('#newDatasetModal form')[0].reset();
+      $('.file-details').html('');
     });
 
     $('.datasets').on('click', '.dataset', function(evt) {
@@ -354,6 +369,11 @@ require([
 
         $newScript.trigger('click');
       });
+    });
+
+    $('#newScriptModal').on('hide.bs.modal', function(evt) {
+      $('#newScriptModal form').removeClass('was-validated');
+      $('#newScriptModal form')[0].reset();
     });
 
     $('.scripts').on('click', '.script .delete', function(evt) {
