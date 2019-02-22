@@ -4,11 +4,7 @@ module.exports = {
     return queryInterface.createTable('Datasets', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      id: {
         type: Sequelize.UUID
       },
       name: {
