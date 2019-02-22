@@ -19,6 +19,9 @@ const usersRouter = require('./routes/users');
 const workspacesRouter = require('./routes/workspaces');
 const scriptsRouter = require('./routes/scripts');
 
+const workunitsRouter = require('./routes/hpcc_proxy/workunits');
+const filesprayRouter = require('./routes/hpcc_proxy/filespray');
+
 const app = express();
 
 // view engine setup
@@ -60,6 +63,9 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/workspaces', workspacesRouter);
 app.use('/scripts', scriptsRouter);
+
+app.use('/workunits', workunitsRouter);
+app.use('/filespray', filesprayRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
