@@ -1,0 +1,13 @@
+{
+  "name": "ECL Cloud IDE",
+  "short_name": "ECLIDE",
+  "icons": [{
+    "src": "/images/icons/icon-144x144.png",
+    "sizes": "144x144",
+    "type": "image/png"
+  }],
+  "scope": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#343a40"
+}
