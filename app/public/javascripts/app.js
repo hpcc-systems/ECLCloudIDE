@@ -150,8 +150,13 @@ require([
       }
     });
 
+    /*==========================================================================*
+     *  WORKSPACES                                                              *
+     *==========================================================================*/
+
     populateWorkspaces();
 
+    /* CREATE NEW WORKSPACE */
     $('#newWorkspaceModal').on('click', '.btn-primary', function(evt) {
       let $modal = $('#newWorkspaceModal'),
           $workspaces = $('.workspaces'),
@@ -199,11 +204,13 @@ require([
       });
     });
 
+    /* RESET NEW WORKSPACE FORM ON MODAL HIDE */
     $('#newWorkspaceModal').on('hide.bs.modal', function(evt) {
       $('#newWorkspaceModal form').removeClass('was-validated');
       $('#newWorkspaceModal form')[0].reset();
     });
 
+    /* CHANGE SELECTED WORKSPACE */
     $('.workspaces').on('click', '.dropdown-item', function(evt) {
       let $this = $(this),
           $options = $('.workspaces .dropdown-item'),
@@ -224,6 +231,7 @@ require([
       toggleNewScriptPopover();
     });
 
+    /* DELETE SELECTED WORKSPACE */
     $('#removeWorkspaceModal').on('click', '.btn-danger', function(evt) {
       let $modal = $('#removeWorkspaceModal'),
           $workspaces = $('.workspaces'),
@@ -331,6 +339,20 @@ require([
       });
     });
 
+    /* RESET NEW DATASET FORM ON MODAL HIDE */
+    $('#newDatasetModal').on('hide.bs.modal', function(evt) {
+      $('#newDatasetModal form').removeClass('was-validated');
+      $('#newDatasetModal form')[0].reset();
+      $('.file-details').html('');
+    });
+
+    /* CHANGE SELECTED DATASET */
+    $('.datasets').on('click', '.dataset', function(evt) {
+      let $this = $(this);
+      console.log($this);
+    });
+
+    /* SHOW DELETE DATASET CONFIRMATION */
     $('.datasets').on('click', '.dataset .delete', function(evt) {
       let $this = $(this),
           $dataset = $this.parents('.dataset'),
@@ -344,6 +366,7 @@ require([
       console.log($modal.find('.btn-danger').data('dataset'));
     });
 
+    /* DELETE SELECTED DATASET */
     $('#removeDatasetModal').on('click', '.btn-danger', function(evt) {
       let $this = $(this),
           $modal = $('#removeDatasetModal'),
@@ -353,6 +376,10 @@ require([
       $modal.modal('hide');
     });
 
+    /*==========================================================================*
+     *  SCRIPTS                                                                 *
+     *==========================================================================*/
+
     $('.scripts').on('click', '.script', function(evt) {
       let $this = $(this);
       $this.siblings().removeClass('active');
@@ -361,6 +388,7 @@ require([
 
     toggleNewScriptPopover();
 
+    /* CREATE NEW SCRIPT */
     $('#newScriptModal').on('click', '.btn-primary', function(evt) {
       let $modal = $('#newScriptModal'),
           $scripts = $('.scripts'),
@@ -404,11 +432,13 @@ require([
       });
     });
 
+    /* RESET NEW SCRIPT FORM ON MODAL HIDE */
     $('#newScriptModal').on('hide.bs.modal', function(evt) {
       $('#newScriptModal form').removeClass('was-validated');
       $('#newScriptModal form')[0].reset();
     });
 
+    /* SHOW DELETE SCRIPT CONFIRMATION */
     $('.scripts').on('click', '.script .delete', function(evt) {
       let $this = $(this),
           $script = $this.parents('.script'),
@@ -424,6 +454,7 @@ require([
       console.log($modal.find('.btn-danger').data('script'));
     });
 
+    /* DELETE SELECTED SCRIPT */
     $('#removeScriptModal').on('click', '.btn-danger', function(evt) {
       let $this = $(this),
           $modal = $('#removeScriptModal'),
