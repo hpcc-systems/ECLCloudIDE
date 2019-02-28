@@ -117,6 +117,73 @@ let getFormData = ($form) => {
   return result;
 };
 
+let createWorkunit = () => {
+  return fetch('/workunits', {
+    method: 'POST',
+    body: JSON.stringify({
+      clusterAddr: 'http://10.173.147.1',
+      clusterPort: '8010'
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+let updateWorkunit = (wuid, query) => {
+  return fetch('/workunits', {
+    method: 'PUT',
+    body: JSON.stringify({
+      clusterAddr: 'http://10.173.147.1',
+      clusterPort: '8010',
+      wuid: wuid,
+      query: query
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+let sendFileToLandingZone = (file) => {
+  console.log(file);
+  let formData = new FormData();
+  formData.append('file', file);
+  formData.append('clusterAddr', 'http://10.173.147.1');
+  formData.append('clusterPort', '8010');
+
+  return fetch('/filespray/upload', {
+    method: 'POST',
+    body: formData
+  });
+};
+
+let sprayFile = (clusterFilename, workspaceId) => {
+  console.log(clusterFilename);
+  let formData = new FormData();
+  formData.append('filename', clusterFilename);
+  formData.append('clusterAddr', 'http://10.173.147.1');
+  formData.append('clusterPort', '8010');
+  formData.append('workspaceId', workspaceId);
+
+  return fetch('/filespray/spray', {
+    method: 'POST',
+    body: formData
+  });
+};
+
+let getDfuWorkunit = (wuid) => {
+  let formData = new FormData();
+  formData.append('wuid', wuid);
+  formData.append('clusterAddr', 'http://10.173.147.1');
+  formData.append('clusterPort', '8010');
+
+  return fetch('/filespray/getDfuWorkunit', {
+    method: 'POST',
+    body: formData
+  });
+};
+
 require([
   'vs/editor/editor.main',
   'ln/line-navigator.min'
@@ -265,21 +332,58 @@ require([
       });
     });
 
+    /*==========================================================================*
+     *  DATASETS                                                                *
+     *==========================================================================*/
+
+    /* CREATE NEW DATASET */
     $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
-      console.log('save dataset');
+      let $modal = $('#newDatasetModal'),
+          $datasets = $('.datasets'),
+          $activeWorkspace = $('.workspaces .dropdown-item.active'),
+          $workspaceId = $activeWorkspace.data('id'),
+          $workspaceName = $activeWorkspace.data('name'),
+          $newDataset = $datasets.find('.cloner').clone(),
+          $form = $modal.find('form'),
+          $file = $('#dataset-file')[0].files[0],
+          $datasetName = $('#dataset-name').val(),
+          data = getFormData($form),
+          dataset = {
+            name: $datasetName
+          };
+
+      if ($form[0].checkValidity() === false) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        $form.addClass('was-validated');
+        return false;
+      }
+
+      sendFileToLandingZone($file)
+        .then(response => response.json())
+        .then(json => {
+          console.log(json);
+          dataset.file = json.file;
+          sprayFile(json.file, $workspaceName)
+            .then(response => response.json())
+            .then((json) => {
+              dataset.wuid = json.wuid;
+
+              console.log('sprayed file', dataset.wuid);
+            })
+        }).then(() => {
+          $modal.modal('hide');
+          $newDataset.removeClass('d-none cloner');
+          $newDataset.data('wuid', dataset.wuid);
+          $newDataset.data('name', dataset.name);
+          $newDataset.find('.datasetname').text($newDataset.data('name'));
+          $datasets.append($newDataset);
+          $modal.find('#dataset-name').val('');
+          $form.removeClass('was-validated');
+        });
     });
 
-    $('#newDatasetModal').on('click', function(evt) {
-      $('#newDatasetModal form').removeClass('was-validated');
-      $('#newDatasetModal form')[0].reset();
-      $('.file-details').html('');
-    });
-
-    $('.datasets').on('click', '.dataset', function(evt) {
-      let $this = $(this);
-      console.log($this);
-    });
-
+    /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
     $('#dataset-file').on('change', function(evt) {
       let file = evt.target.files[0],
           fileName = '',
