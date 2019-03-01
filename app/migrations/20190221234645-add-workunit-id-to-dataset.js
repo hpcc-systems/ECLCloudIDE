@@ -4,7 +4,7 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.addColumn('datasets', 'workunitId', {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
       after: 'workspaceId'
     });
   },

@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: false,
     },
     name: DataTypes.STRING,
+    filename: DataTypes.STRING,
     workunitId: DataTypes.STRING,
     workspaceId: {
       type: DataTypes.UUID,
@@ -16,7 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
   }, {
-    paranoid: true
+    paranoid: true,
+    indexes: [{
+      unique: true,
+      fields: [ 'workspaceId', 'filename' ]
+    }]
   });
   Dataset.associate = function(models) {
     Dataset.belongsTo(models.Workspace);
