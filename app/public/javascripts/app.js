@@ -13,6 +13,8 @@ const NO_WORKSPACE = 'Select Workspace...';
 const NEW_SCRIPT = 'New Script...';
 const NEW_DATASET = 'New Dataset...';
 
+const FILE_FEEDBACK = 'Please select a CSV file to upload.';
+
 let populateWorkspaces = () => {
   fetch('/users/workspaces')
     .then(response => response.json())
@@ -385,12 +387,22 @@ require([
           $workspaceName = $activeWorkspace.data('name'),
           $newDataset = $datasets.find('.cloner').clone(),
           $form = $modal.find('form'),
-          $file = $('#dataset-file')[0].files[0],
+          $file = $('#dataset-file'),
+          $fileFeedback = $file.siblings('.invalid-feedback'),
+          file = $('#dataset-file')[0].files[0],
           $datasetName = $('#dataset-name').val(),
           data = getFormData($form),
           dataset = {
-            name: $datasetName
+            name: $datasetName,
+            workspaceId: $workspaceId
           };
+
+      if (file === undefined) {
+        $file.addClass('is-invalid');
+        return false;
+      } else {
+        dataset.filename = file.name
+      }
 
       if ($form[0].checkValidity() === false) {
         evt.preventDefault();
@@ -398,39 +410,70 @@ require([
         $form.addClass('was-validated');
         return false;
       }
-
-      sendFileToLandingZone($file)
-        .then(response => response.json())
-        .then(json => {
-          console.log(json);
-          dataset.file = json.file;
-          sprayFile(json.file, $workspaceName)
+      fetch('/datasets/', {
+        method: 'POST',
+        body: JSON.stringify(dataset),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        console.log('then post dataset', json);
+        if (json.success === false) {
+          $file.siblings('.invalid-feedback').text(json.message);
+          $file.addClass('is-invalid');
+        } else {
+          /*
+          sendFileToLandingZone(file)
+          .then(response => response.json())
+          .then(json => {
+            console.log(json);
+            dataset.file = json.file;
+            sprayFile(json.file, $workspaceName)
             .then(response => response.json())
             .then((json) => {
               dataset.wuid = json.wuid;
-
               console.log('sprayed file', dataset.wuid);
-            })
-        }).then(() => {
-          $modal.modal('hide');
-          $newDataset.removeClass('d-none cloner');
-          $newDataset.data('wuid', dataset.wuid);
-          $newDataset.data('name', dataset.name);
-          $newDataset.find('.datasetname').text($newDataset.data('name'));
-          $datasets.append($newDataset);
-          $modal.find('#dataset-name').val('');
-          $form.removeClass('was-validated');
-        });
+            }).then(() => {
+              fetch('/datasets/', {
+                method: 'PUT',
+                body: JSON.stringify(dataset),
+                headers:{
+                  'Content-Type': 'application/json'
+                }
+              });
+            }).then(() => {
+              $modal.modal('hide');
+              $newDataset.removeClass('d-none cloner');
+              $newDataset.data('wuid', dataset.wuid);
+              $newDataset.data('name', dataset.name);
+              $newDataset.find('.datasetname').text($newDataset.data('name'));
+              $datasets.append($newDataset);
+              $modal.find('#dataset-name').val('');
+              $form.removeClass('was-validated');
+
+              showDatasets();
+            });
+          });
+          */
+        }
+      });
     });
 
     /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
     $('#dataset-file').on('change', function(evt) {
-      let file = evt.target.files[0],
+      let $file = $(evt.target),
+          $fileFeedback = $file.siblings('.invalid-feedback'),
+          file = evt.target.files[0],
           fileName = '',
           ln = new LineNavigator(file);
 
+      $file.removeClass('is-invalid');
+      $fileFeedback.text(FILE_FEEDBACK);
+
       if (!file) {
-        alert('Please select a file');
+        $file.addClass('is-invalid');
         return false;
       }
 
