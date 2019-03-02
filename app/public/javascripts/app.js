@@ -488,6 +488,8 @@ require([
       $('#newDatasetModal form').removeClass('was-validated');
       $('#newDatasetModal form')[0].reset();
       $('.file-details').html('');
+      $('#dataset-file + .invalid-feedback').text(FILE_FEEDBACK);
+      $('#dataset-file').removeClass('is-invalid');
     });
 
     /* CHANGE SELECTED DATASET */
@@ -514,10 +516,26 @@ require([
     $('#removeDatasetModal').on('click', '.btn-danger', function(evt) {
       let $this = $(this),
           $modal = $('#removeDatasetModal'),
-          $datasets = $('.datasets');
+          $datasets = $('.datasets'),
+          $datasetCollapser = $('#dataset-collapser'),
+          $activeDataset = $datasets.children().eq($this.data('dataset'));
 
-      $datasets.children().eq($this.data('dataset')).remove();
-      $modal.modal('hide');
+      fetch('/datasets/', {
+        method: 'DELETE',
+        body: JSON.stringify({ datasetId: $activeDataset.data('id') }),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        $activeDataset.remove();
+        $modal.modal('hide');
+
+        if ($datasets.children(':not(.cloner)').length < 1) {
+          $datasetCollapser.trigger('click');
+        }
+      });
     });
 
     /*==========================================================================*
