@@ -17,6 +17,7 @@ const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const workspacesRouter = require('./routes/workspaces');
+const datasetsRouter = require('./routes/datasets');
 const scriptsRouter = require('./routes/scripts');
 
 const workunitsRouter = require('./routes/hpcc_proxy/workunits');
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/workspaces', workspacesRouter);
+app.use('/datasets', datasetsRouter);
 app.use('/scripts', scriptsRouter);
 
 app.use('/workunits', workunitsRouter);
