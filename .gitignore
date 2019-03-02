@@ -11,8 +11,8 @@ node_modules/
 # dotenv environment variables file
 .env
 
-# Sequelize config dir
-config/
+# Sequelize config file
+config.json
 
 #dist/public javascripts
 monaco-editor/
