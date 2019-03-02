@@ -16,6 +16,17 @@ a {
   box-shadow: none;
 }
 
+.form-group-file {
+  margin-bottom: 0;
+}
+
+.form-control-file.is-invalid {
+  border: 1px solid #dc3545;
+  padding: 2px;
+  border-radius: 0.25rem;
+}
+
+
 [role="main"] {
   padding-top: 58px;
 }
