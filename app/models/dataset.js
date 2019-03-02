@@ -18,10 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     paranoid: true,
-    indexes: [{
-      unique: true,
-      fields: [ 'workspaceId', 'filename' ]
-    }]
   });
   Dataset.associate = function(models) {
     Dataset.belongsTo(models.Workspace);
