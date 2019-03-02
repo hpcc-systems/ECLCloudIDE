@@ -35,6 +35,45 @@ let populateWorkspaces = () => {
     });
 };
 
+let populateDatasets = () => {
+  let url = new URL(hostname + '/datasets'),
+      $activeWorkspace = $('.workspaces .active'),
+      $datasets = $('.datasets'),
+      params = { workspaceId: $activeWorkspace.data('id') };
+
+  url.search = new URLSearchParams(params);
+
+  $datasets.find('.dataset:not(.cloner)').remove();
+
+  fetch(url)
+    .then(response => response.json())
+    .then((datasets) => {
+      console.log(datasets);
+      datasets.forEach((dataset) => {
+        let $newDataset = $datasets.find('.cloner').clone();
+
+        $newDataset.removeClass('d-none cloner');
+        $newDataset.data('id', dataset.id);
+        $newDataset.data('name', dataset.name);
+        $newDataset.find('.datasetname').text(dataset.name);
+        $datasets.append($newDataset);
+      });
+
+      if (datasets.length > 0) {
+        showDatasets();
+      }
+    });
+};
+
+let showDatasets = () => {
+  let $datasets = $('.datasets'),
+      $datasetCollapser = $('#dataset-collapser');
+
+  if (!$datasets.hasClass('show')) {
+    $datasetCollapser.trigger('click');
+  }
+};
+
 let populateScripts = () => {
   let url = new URL(hostname + '/scripts'),
       $activeWorkspace = $('.workspaces .active'),
@@ -294,6 +333,7 @@ require([
 
       $scriptPanelClose.trigger('click');
 
+      populateDatasets();
       populateScripts();
       toggleNewScriptPopover();
     });
