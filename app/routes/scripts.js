@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('../models/index');
+
 const User = db.User;
-const Script = db.Script;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
+
+const Dataset = db.Dataset;
+const Script = db.Script;
+const Workunit = db.Workunit;
 
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);

@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('../models/index');
+
 const User = db.User;
-const Dataset = db.Dataset;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
+
+const Dataset = db.Dataset;
+const Script = db.Script;
+const Workunit = db.Workunit;
 
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
@@ -40,8 +44,7 @@ router.post('/', (req, res, next) => {
       Dataset.create({
         name: req.body.name,
         filename: req.body.filename,
-        workspaceId: req.body.workspaceId,
-        workunitId: req.body.wuid
+        workspaceId: req.body.workspaceId
       }).then((dataset) => {
         return res.json({ success: true, data: dataset });
       }).catch((err) => {
@@ -74,8 +77,7 @@ router.put('/', (req, res, next) => {
   Dataset.update({
     name: req.body.name,
     filename: req.body.filename,
-    workspaceId: req.body.workspaceId,
-    workunitId: req.body.wuid
+    workspaceId: req.body.workspaceId
   }, {
     where: {
       id: req.body.id
