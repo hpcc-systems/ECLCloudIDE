@@ -14,13 +14,13 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    workunitId: DataTypes.STRING,
   }, {
     paranoid: true
   });
   Script.associate = function(models) {
     Script.belongsTo(models.Workspace);
     Script.hasMany(models.ScriptRevision);
+    Script.hasMany(models.Workunit);
   };
   return Script;
 };

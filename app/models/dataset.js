@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   Dataset.associate = function(models) {
     Dataset.belongsTo(models.Workspace);
+    Dataset.hasMany(models.Workunit);
   };
   return Dataset;
 };
