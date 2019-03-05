@@ -52,19 +52,27 @@ let populateDatasets = () => {
     .then((datasets) => {
       console.log(datasets);
       datasets.forEach((dataset) => {
-        let $newDataset = $datasets.find('.cloner').clone();
-
-        $newDataset.removeClass('d-none cloner');
-        $newDataset.data('id', dataset.id);
-        $newDataset.data('name', dataset.name);
-        $newDataset.find('.datasetname').text(dataset.name);
-        $datasets.append($newDataset);
+        addDataset(dataset);
+        if (!dataset.logicalfile) {
+          $datasets.children().last().find('.status').removeClass('d-none');
+        }
       });
 
       if (datasets.length > 0) {
         showDatasets();
       }
     });
+};
+
+let addDataset = (dataset) => {
+  let $datasets = $('.datasets'),
+      $newDataset = $datasets.find('.cloner').clone();
+
+  $newDataset.removeClass('d-none cloner');
+  $newDataset.data('id', dataset.id);
+  $newDataset.data('name', dataset.name);
+  $newDataset.find('.datasetname').contents()[0].nodeValue = dataset.name;
+  $datasets.append($newDataset);
 };
 
 let showDatasets = () => {
@@ -91,19 +99,24 @@ let populateScripts = () => {
     .then((scripts) => {
       console.log(scripts);
       scripts.forEach((script) => {
-        let $newScript = $scripts.find('.cloner').clone();
-
-        $newScript.removeClass('d-none cloner');
-        $newScript.data('id', script.id);
-        $newScript.data('name', script.name);
-        $newScript.find('.scriptname').text(script.name);
-        $scripts.append($newScript);
+        addScript(script);
       });
 
       if (scripts.length > 0) {
         showScripts();
       }
     });
+};
+
+let addScript = (script) => {
+  let $scripts = $('.scripts'),
+      $newScript = $scripts.find('.cloner').clone();
+
+  $newScript.removeClass('d-none cloner');
+  $newScript.data('id', script.id);
+  $newScript.data('name', script.name);
+  $newScript.find('.scriptname').contents()[0].nodeValue = script.name;
+  $scripts.append($newScript);
 };
 
 let showScripts = () => {
