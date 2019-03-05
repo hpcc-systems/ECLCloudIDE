@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('../models/index');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
+
+const Dataset = db.Dataset;
 const Script = db.Script;
+const Workunit = db.Workunit;
 
 /* Create workspace */
 router.post('/', (req, res, next) => {
@@ -36,6 +40,9 @@ router.delete('/', (req, res, next) => {
       where: { id: workspace.id }
     });
     WorkspaceUser.destroy({
+      where: { workspaceId: workspace.id }
+    });
+    Dataset.destroy({
       where: { workspaceId: workspace.id }
     });
     Script.destroy({
