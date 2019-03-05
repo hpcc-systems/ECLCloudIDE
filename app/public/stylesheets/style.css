@@ -92,6 +92,11 @@ a {
   border-radius: 6px;
 }
 
+.dataset .status,
+.script .status {
+  margin-left: 0.33em;
+}
+
 .script.active,
 .dataset.active {
   background-color: #1f6192;
