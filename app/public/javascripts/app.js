@@ -399,6 +399,7 @@ require([
           $workspaceId = $activeWorkspace.data('id'),
           $workspaceName = $activeWorkspace.data('name'),
           $newDataset = $datasets.find('.cloner').clone(),
+          $datasetStatus = $newDataset.find('.status'),
           $form = $modal.find('form'),
           $file = $('#dataset-file'),
           $fileFeedback = $file.siblings('.invalid-feedback'),
@@ -432,12 +433,12 @@ require([
       })
       .then(response => response.json())
       .then((json) => {
-        console.log('then post dataset', json);
+        console.log('then of POST dataset', json);
         if (json.success === false) {
           $file.siblings('.invalid-feedback').text(json.message);
           $file.addClass('is-invalid');
         } else {
-          /*
+          dataset.id = json.data.id;
           sendFileToLandingZone(file)
           .then(response => response.json())
           .then(json => {
@@ -449,27 +450,32 @@ require([
               dataset.wuid = json.wuid;
               console.log('sprayed file', dataset.wuid);
             }).then(() => {
-              fetch('/datasets/', {
-                method: 'PUT',
-                body: JSON.stringify(dataset),
+              console.log('update dataset ' + dataset.id);
+
+              addDataset(dataset);
+              let $newDataset = $datasets.children().last();
+              $newDataset.find('.status').removeClass('d-none');
+
+              showDatasets();
+
+              fetch('/workunits/', {
+                method: 'POST',
+                body: JSON.stringify({
+                  objectId: dataset.id,
+                  workunitId: dataset.wuid
+                }),
                 headers:{
                   'Content-Type': 'application/json'
                 }
               });
             }).then(() => {
               $modal.modal('hide');
-              $newDataset.removeClass('d-none cloner');
-              $newDataset.data('wuid', dataset.wuid);
-              $newDataset.data('name', dataset.name);
-              $newDataset.find('.datasetname').text($newDataset.data('name'));
-              $datasets.append($newDataset);
               $modal.find('#dataset-name').val('');
               $form.removeClass('was-validated');
 
-              showDatasets();
+
             });
           });
-          */
         }
       });
     });
