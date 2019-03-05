@@ -159,7 +159,7 @@ let getFormData = ($form) => {
 };
 
 let createWorkunit = () => {
-  return fetch('/workunits', {
+  return fetch('/hpcc/workunits', {
     method: 'POST',
     body: JSON.stringify({
       clusterAddr: 'http://10.173.147.1',
@@ -172,7 +172,7 @@ let createWorkunit = () => {
 };
 
 let updateWorkunit = (wuid, query) => {
-  return fetch('/workunits', {
+  return fetch('/hpcc/workunits', {
     method: 'PUT',
     body: JSON.stringify({
       clusterAddr: 'http://10.173.147.1',
@@ -193,7 +193,7 @@ let sendFileToLandingZone = (file) => {
   formData.append('clusterAddr', 'http://10.173.147.1');
   formData.append('clusterPort', '8010');
 
-  return fetch('/filespray/upload', {
+  return fetch('/hpcc/filespray/upload', {
     method: 'POST',
     body: formData
   });
@@ -207,7 +207,7 @@ let sprayFile = (clusterFilename, workspaceId) => {
   formData.append('clusterPort', '8010');
   formData.append('workspaceId', workspaceId);
 
-  return fetch('/filespray/spray', {
+  return fetch('/hpcc/filespray/spray', {
     method: 'POST',
     body: formData
   });
@@ -219,7 +219,7 @@ let getDfuWorkunit = (wuid) => {
   formData.append('clusterAddr', 'http://10.173.147.1');
   formData.append('clusterPort', '8010');
 
-  return fetch('/filespray/getDfuWorkunit', {
+  return fetch('/hpcc/filespray/getDfuWorkunit', {
     method: 'POST',
     body: formData
   });
