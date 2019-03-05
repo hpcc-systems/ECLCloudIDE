@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: DataTypes.STRING,
     filename: DataTypes.STRING,
-    workunitId: DataTypes.STRING,
+    logicalfile: DataTypes.STRING,
     workspaceId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
