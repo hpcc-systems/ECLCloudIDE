@@ -582,6 +582,30 @@ require([
           trigger: 'hover'
         });
       });
+
+      ln.readLines(0, 11, (err, idx, lines, isEOF, progress) => {
+        let labels = lines[0].split(','),
+            averages = {};
+
+        for (var i = 1; i < 11; i++) {
+          let values = lines[i].split(',');
+          values.forEach((val, idx) => {
+            if (!averages[labels[idx]]) averages[labels[idx]] = 0;
+            averages[labels[idx]] += val.length;
+          });
+        }
+
+        for (var i = 0; i < Object.keys(averages).length; i++) {
+          averages[labels[i]] = averages[labels[i]] / 10;
+          if (averages[labels[i]] > 10) {
+            averages[labels[i]] = Math.floor((Math.log(averages[labels[i]]) / 1.5) * averages[labels[i]]);
+          } else {
+            averages[labels[i]] = Math.round((1 + Math.log(averages[labels[i]])) * averages[labels[i]]);
+          }
+        }
+
+        currentDatasetFile = averages;
+      });
     });
 
     /* RESET NEW DATASET FORM ON MODAL HIDE */
