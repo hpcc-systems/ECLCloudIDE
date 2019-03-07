@@ -15,6 +15,8 @@ const NEW_DATASET = 'New Dataset...';
 
 const FILE_FEEDBACK = 'Please select a CSV file to upload.';
 
+let currentDatasetFile = {};
+
 let populateWorkspaces = () => {
   fetch('/users/workspaces')
     .then(response => response.json())
@@ -199,6 +201,21 @@ let updateWorkunit = (wuid, query) => {
   });
 };
 
+let submitWorkunit = (wuid) => {
+  return fetch('/hpcc/workunits/submit', {
+    method: 'POST',
+    body: JSON.stringify({
+      clusterAddr: 'http://10.173.147.1',
+      clusterPort: '8010',
+      wuid: wuid,
+      cluster: 'hthor'
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
 let sendFileToLandingZone = (file) => {
   console.log(file);
   let formData = new FormData();
@@ -236,6 +253,27 @@ let getDfuWorkunit = (wuid) => {
     method: 'POST',
     body: formData
   });
+};
+
+let saveWorkunit = (objectId, workunitId) => {
+  return fetch('/workunits/', {
+    method: 'POST',
+    body: JSON.stringify({
+      objectId: objectId,
+      workunitId: workunitId
+    }),
+    headers:{
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+let checkWorkunitStatus = async (wuid) => {
+  let response = await fetch('/hpcc/workunits?wuid=' + wuid +
+    '&clusterAddr=http%3A%2F%2F10.173.147.1%3A8010');
+
+  let json = await response.json();
+  console.log(json);
 };
 
 require([
