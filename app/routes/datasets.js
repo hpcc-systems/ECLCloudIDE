@@ -34,10 +34,10 @@ router.post('/', (req, res, next) => {
       filename: req.body.filename,
       deletedAt: null
     }
-  }).then((workspaces) => {
+  }).then((datasets) => {
     let _message = 'Dataset could not be saved';
 
-    if (workspaces.length > 0) {
+    if (datasets.length > 0) {
       _message = "A Dataset for the file \"" + req.body.filename + "\" has already been added to this workspace.\n";
       return res.json({ success: false, message: _message });
     } else {
@@ -77,7 +77,8 @@ router.put('/', (req, res, next) => {
   Dataset.update({
     name: req.body.name,
     filename: req.body.filename,
-    workspaceId: req.body.workspaceId
+    logicalfile: req.body.logicalfile,
+    workspaceId: req.body.workspaceId,
   }, {
     where: {
       id: req.body.id
