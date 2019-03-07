@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   Dataset.associate = function(models) {
     Dataset.belongsTo(models.Workspace);
-    Dataset.hasMany(models.Workunit);
+    Dataset.hasMany(models.Workunit, { foreignKey: 'id', targetKey: 'objectId' });
   };
   return Dataset;
 };

@@ -10,8 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     paranoid: true
   });
   Workunit.associate = function(models) {
-    Workunit.belongsTo(models.Dataset);
-    Workunit.belongsTo(models.Script);
+    Workunit.belongsTo(models.Dataset, { foreignKey: 'objectId', targetKey: 'id' });
+    Workunit.belongsTo(models.Script, { foreignKey: 'objectId', targetKey: 'id' });
   };
   return Workunit;
 };

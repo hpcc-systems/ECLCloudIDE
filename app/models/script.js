@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
   Script.associate = function(models) {
     Script.belongsTo(models.Workspace);
     Script.hasMany(models.ScriptRevision);
-    Script.hasMany(models.Workunit);
+    Script.hasMany(models.Workunit, { foreignKey: 'id', targetKey: 'objectId' });
   };
   return Script;
 };
