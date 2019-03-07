@@ -79,16 +79,23 @@ router.post('/', (req, res, next) => {
 
 /* Update dataset */
 router.put('/', (req, res, next) => {
-  Dataset.update({
-    name: req.body.name,
-    filename: req.body.filename,
-    logicalfile: req.body.logicalfile,
-    workspaceId: req.body.workspaceId,
-  }, {
-    where: {
-      id: req.body.id
-    }
-  });
+  let dataset = {};
+  if (req.body.name) dataset.name = req.body.name;
+  if (req.body.filename) dataset.filename = req.body.filename;
+  if (req.body.logicalfile) dataset.logicalfile = req.body.logicalfile;
+  if (req.body.workspaceId) dataset.workspaceId = req.body.workspaceId;
+  if (Object.keys(dataset).length > 0) {
+    Dataset.update(dataset, {
+      where: {
+        id: req.body.id
+      }
+    }).then((dataset) => {
+      return res.json({ success: true, data: dataset });
+    }).catch((err) => {
+      console.log(err);
+      return res.json({ success: false, message: 'The Dataset could not be saved' });
+    });
+  }
 });
 
 /* Create dataset */
@@ -106,10 +113,10 @@ router.delete('/', (req, res, next) => {
       where: { objectId: dataset.id }
     });
   }).then(() => {
-    res.json({ success: true, message: 'Dataset deleted' });
+    return res.json({ success: true, message: 'Dataset deleted' });
   }).catch((err) => {
     console.log(err);
-    return res.json({ success: false, message: 'Dataset could not be saved' });
+    return res.json({ success: false, message: 'Dataset could not be deleted' });
   });
 });
 
