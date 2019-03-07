@@ -436,10 +436,11 @@ require([
           $activeWorkspace = $('.workspaces .dropdown-item.active'),
           $workspaceId = $activeWorkspace.data('id'),
           $workspaceName = $activeWorkspace.data('name'),
-          $newDataset = $datasets.find('.cloner').clone(),
-          $datasetStatus = $newDataset.find('.status'),
+          $newDataset = null,
+          $datasetStatus = null,
           $form = $modal.find('form'),
           $file = $('#dataset-file'),
+          $fileDetails = $('.file-details'),
           $fileFeedback = $file.siblings('.invalid-feedback'),
           file = $('#dataset-file')[0].files[0],
           $datasetName = $('#dataset-name').val(),
@@ -471,7 +472,7 @@ require([
       })
       .then(response => response.json())
       .then((json) => {
-        console.log('then of POST dataset', json);
+        console.log('in .then() of POST dataset', json);
         if (json.success === false) {
           $file.siblings('.invalid-feedback').text(json.message);
           $file.addClass('is-invalid');
@@ -595,6 +596,7 @@ require([
     /* CHANGE SELECTED DATASET */
     $('.datasets').on('click', '.dataset', function(evt) {
       let $this = $(this);
+      $this.addClass('active');
       console.log($this);
     });
 
@@ -603,6 +605,8 @@ require([
       let $this = $(this),
           $dataset = $this.parents('.dataset'),
           $modal = $('#removeDatasetModal');
+
+      evt.stopPropagation();
 
       //link.parentElement.removeChild(link);
       $modal.find('.datasetname').text($dataset.find('.datasetname').text());
