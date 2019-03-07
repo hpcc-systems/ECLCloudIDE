@@ -10,6 +10,32 @@ let buildClusterAddr = (req, res, next) => {
   }
 }
 
+router.get('/', (req, res, next) => {
+  console.log('workunit status', req.query);
+  request({
+    method: 'POST',
+    uri: req.query.clusterAddr + '/WsWorkunits/WUInfo.json',
+    form: { rawxml_: true, Wuid: req.query.wuid },
+    resolveWithFullResponse: true
+  }).then((response) => {
+    let json = JSON.parse(response.body);
+    console.log(json.WUInfoResponse.Workunit);
+    let result = {
+      state: json.WUInfoResponse.Workunit.State,
+      wuid: json.WUInfoResponse.Workunit.Wuid
+    };
+
+    if (json.WUInfoResponse.Workunit.Results) {
+      result.logicalFile = json.WUInfoResponse.Workunit.Results.ECLResult[0].FileName;
+    }
+
+    res.json(result);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
 router.post('/', buildClusterAddr, (req, res, next) => {
   request({
     method: 'POST',
@@ -26,14 +52,35 @@ router.post('/', buildClusterAddr, (req, res, next) => {
 });
 
 router.put('/', buildClusterAddr, (req, res, next) => {
+  let _query = req.body.query.replace(/\#USERNAME\#/g, req.session.user.username);
+
+  console.log('replaced #USERNAME#', _query)
+
   request({
     method: 'POST',
     uri: req.clusterAddr + '/WsWorkunits/WUUpdate.json',
-    form: { wuid: req.body.wuid, query: req.body.query },
+    form: { Wuid: req.body.wuid, QueryText: _query },
     resolveWithFullResponse: true
   }).then((response) => {
+    console.log('response to WUUpdate', response.body);
     let json = JSON.parse(response.body);
-    res.json({ wuid: json.WUCreateResponse.Workunit.Wuid });
+    res.json(json);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
+router.post('/submit', buildClusterAddr, (req, res, next) => {
+  request({
+    method: 'POST',
+    uri: req.clusterAddr + '/WsWorkunits/WUSubmit.json',
+    form: { Wuid: req.body.wuid, Cluster: req.body.cluster },
+    resolveWithFullResponse: true
+  }).then((response) => {
+    console.log('response to WUSubmit', response.body);
+    let json = JSON.parse(response.body);
+    res.json(json);
   }).catch((err) => {
     console.log(err);
     res.json(err);
