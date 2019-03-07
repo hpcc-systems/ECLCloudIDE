@@ -13,12 +13,17 @@ const Workunit = db.Workunit;
 
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
-  Dataset.findAll({
-    where: {
-      workspaceId: req.query.workspaceId
-    }
-  }).then((workspaces) => {
-    res.json(workspaces);
+  const query = `SELECT d.*, w.workunitId \
+    FROM datasets AS d \
+    LEFT JOIN workunits AS w ON d.id = w.objectId \
+    WHERE d.workspaceId = "${req.query.workspaceId}" \
+    AND w.workunitId LIKE "W%" \
+    AND d.deletedAt IS NULL`;
+
+  db.sequelize.query(query, {
+    type: db.sequelize.QueryTypes.SELECT
+  }).then((datasets) => {
+    res.json(datasets);
   }).catch((err) => {
     console.log(err);
     res.json(err);
