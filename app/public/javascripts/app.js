@@ -486,37 +486,63 @@ require([
             sprayFile(json.file, $workspaceName)
             .then(response => response.json())
             .then((json) => {
-              dataset.wuid = json.wuid;
-              console.log('sprayed file', dataset.wuid);
+              console.log('sprayed file', json.wuid);
+              saveWorkunit(dataset.id, json.wuid);
             }).then(() => {
-              console.log('update dataset ' + dataset.id);
-
               addDataset(dataset);
-              let $newDataset = $datasets.children().last();
-              $newDataset.find('.status').removeClass('d-none');
+              $newDataset = $datasets.children().last();
+              $datasetStatus = $newDataset.find('.status');
+              $datasetStatus.removeClass('d-none');
 
               showDatasets();
-
-              fetch('/workunits/', {
-                method: 'POST',
-                body: JSON.stringify({
-                  objectId: dataset.id,
-                  workunitId: dataset.wuid
-                }),
-                headers:{
-                  'Content-Type': 'application/json'
-                }
-              });
             }).then(() => {
-              $modal.modal('hide');
-              $modal.find('#dataset-name').val('');
-              $form.removeClass('was-validated');
+              let _wuid = '';
 
+              createWorkunit()
+              .then(response => response.json())
+              .then((json) => {
+                _wuid = json.wuid;
+                saveWorkunit(dataset.id, _wuid);
+                $newDataset.data('wuid', _wuid);
+              }).then(() => {
+                let _query = dataset.name + ":=RECORD\n",
+                    _keys = Object.keys(currentDatasetFile),
+                    _avgs = Object.values(currentDatasetFile);
 
+                $fileDetails.find('.form-group').each((idx, group) => {
+                  _query += "\tSTRING" + _avgs[idx] + " " + $(group).children('input:eq(0)').val() + ";\n";
+                });
+
+                _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
+                  dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
+                  "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
+                  ",CLUSTER('mythor'),OVERWRITE);";
+
+                console.log(_query);
+                updateWorkunit(_wuid, _query).then(() => {
+                  submitWorkunit(_wuid).then(() => {
+                    $datasetStatus.addClass('fa-spin');
+
+                    console.log('check status of workunit');
+
+                    checkWorkunitStatus(_wuid);
+                  });
+                });
+
+                $modal.modal('hide');
+                $modal.find('#dataset-name').val('');
+                $form.removeClass('was-validated');
+              });
             });
           });
         }
       });
+    });
+
+    $('.datasets').on('click', '.dataset .status', function(evt) {
+      let $dataset = $(evt.target).parents('.dataset');
+      evt.stopPropagation();
+      checkWorkunitStatus($dataset.data('wuid'));
     });
 
     /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
@@ -552,7 +578,7 @@ require([
 
         $fileDetails.html('');
 
-        labels.map((label, idx) => {
+        labels.forEach((label, idx) => {
           let $newFormRow = $('<div class="form-group"></div>'),
               headingsEl = '<label data-toggle="popover" data-placement="right" ' +
                 'title="Headings" data-content="This is the first row from your file, ' +
