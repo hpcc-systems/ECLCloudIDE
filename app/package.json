@@ -11,7 +11,8 @@
     "linenav:clean": "rm -rf ./public/javascripts/line-navigator/",
     "linenav:mkdir": "mkdir .\\public\\javascripts\\line-navigator\\",
     "linenav:copy": "cp ./node_modules/line-navigator/{file-wrapper.min.js,line-navigator.min.js} ./public/javascripts/line-navigator/",
-    "linenav": "npm run linenav:clean && npm run linenav:mkdir && npm run linenav:copy"
+    "linenav": "npm run linenav:clean && npm run linenav:mkdir && npm run linenav:copy",
+    "clientdeps": "npm run monaco && npm run linenav"
   },
   "dependencies": {
     "bcrypt": "^3.0.3",
