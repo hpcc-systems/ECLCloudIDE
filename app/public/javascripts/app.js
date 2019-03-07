@@ -52,7 +52,7 @@ let populateDatasets = () => {
   fetch(url)
     .then(response => response.json())
     .then((datasets) => {
-      console.log(datasets);
+      console.log('populateDatasets', datasets);
       datasets.forEach((dataset) => {
         addDataset(dataset);
         if (!dataset.logicalfile) {
@@ -73,6 +73,7 @@ let addDataset = (dataset) => {
   $newDataset.removeClass('d-none cloner');
   $newDataset.data('id', dataset.id);
   $newDataset.data('name', dataset.name);
+  $newDataset.data('wuid', dataset.workunitId);
   $newDataset.find('.datasetname').contents()[0].nodeValue = dataset.name;
   $datasets.append($newDataset);
 };
@@ -268,12 +269,9 @@ let saveWorkunit = (objectId, workunitId) => {
   });
 };
 
-let checkWorkunitStatus = async (wuid) => {
-  let response = await fetch('/hpcc/workunits?wuid=' + wuid +
+let checkWorkunitStatus = (wuid) => {
+  return fetch('/hpcc/workunits?wuid=' + wuid +
     '&clusterAddr=http%3A%2F%2F10.173.147.1%3A8010');
-
-  let json = await response.json();
-  console.log(json);
 };
 
 require([
@@ -521,11 +519,32 @@ require([
                 console.log(_query);
                 updateWorkunit(_wuid, _query).then(() => {
                   submitWorkunit(_wuid).then(() => {
-                    $datasetStatus.addClass('fa-spin');
-
                     console.log('check status of workunit');
 
-                    checkWorkunitStatus(_wuid);
+                    $datasetStatus.addClass('fa-spin');
+                    let awaitWorkunitStatusComplete = () => {
+                      checkWorkunitStatus(_wuid)
+                      .then(response => response.json())
+                      .then((json) => {
+                        if (json.state == 'completed' && json.logicalFile) {
+                          $datasetStatus.removeClass('fa-spin');
+                          dataset.logicalfile = json.logicalFile
+
+                          fetch('/datasets/', {
+                            method: 'PUT',
+                            body: JSON.stringify(dataset),
+                            headers:{
+                              'Content-Type': 'application/json'
+                            }
+                          })
+                        } else {
+                          let t = window.setTimeout(function() {
+                            awaitWorkunitStatusComplete();
+                          }, 1500);
+                        }
+                      });
+                    };
+                    awaitWorkunitStatusComplete();
                   });
                 });
 
@@ -540,9 +559,32 @@ require([
     });
 
     $('.datasets').on('click', '.dataset .status', function(evt) {
-      let $dataset = $(evt.target).parents('.dataset');
+      let $dataset = $(evt.target).parents('.dataset'),
+          dataset = { id: $dataset.data('id') },
+          $datasetStatus = $dataset.find('.status');
+
       evt.stopPropagation();
-      checkWorkunitStatus($dataset.data('wuid'));
+      $datasetStatus.addClass('fa-spin');
+      let t = window.setTimeout(function() {
+        checkWorkunitStatus($dataset.data('wuid'))
+        .then(response => response.json())
+        .then((json) => {
+          console.log(json);
+          if (json.logicalFile) {
+            dataset.logicalfile = json.logicalFile;
+            $datasetStatus.removeClass('fa-spin');
+
+            fetch('/datasets/', {
+              method: 'PUT',
+              body: JSON.stringify(dataset),
+              headers:{
+                'Content-Type': 'application/json'
+              }
+            });
+          }
+          window.clearTimeout(t);
+        });
+      }, 1000);
     });
 
     /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
