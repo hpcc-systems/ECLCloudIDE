@@ -96,6 +96,9 @@ router.delete('/', (req, res, next) => {
     Dataset.destroy({
       where: { id: dataset.id }
     });
+    Workunit.destroy({
+      where: { objectId: dataset.id }
+    });
   }).then(() => {
     res.json({ success: true, message: 'Dataset deleted' });
   }).catch((err) => {
