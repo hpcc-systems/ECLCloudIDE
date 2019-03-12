@@ -55,8 +55,15 @@ let populateDatasets = () => {
       console.log('populateDatasets', datasets);
       datasets.forEach((dataset) => {
         addDataset(dataset);
+        let $dataset = $datasets.children().last();
         if (!dataset.logicalfile) {
-          $datasets.children().last().find('.status').removeClass('d-none');
+          $dataset.find('.status').removeClass('d-none');
+        }
+        if (dataset.rowCount) {
+          $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
+        }
+        if (dataset.columnCount) {
+          $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
         }
       });
 
@@ -74,6 +81,8 @@ let addDataset = (dataset) => {
   $newDataset.data('id', dataset.id);
   $newDataset.data('name', dataset.name);
   $newDataset.data('wuid', dataset.workunitId);
+  $newDataset.data('rows', dataset.rowCount);
+  $newDataset.data('cols', dataset.columnCount);
   $newDataset.find('.datasetname').contents()[0].nodeValue = dataset.name;
   $datasets.append($newDataset);
 };
@@ -528,7 +537,13 @@ require([
                       .then((json) => {
                         if (json.state == 'completed' && json.logicalFile) {
                           $datasetStatus.removeClass('fa-spin');
-                          dataset.logicalfile = json.logicalFile
+                          dataset.logicalfile = json.logicalFile;
+
+                          if (json.schema) {
+                            dataset.rowCount = json.rows;
+                            dataset.columnCount = json.columns;
+                            dataset.eclSchema = JSON.stringify(json.schema);
+                          }
 
                           fetch('/datasets/', {
                             method: 'PUT',
@@ -570,9 +585,15 @@ require([
         .then(response => response.json())
         .then((json) => {
           console.log(json);
-          if (json.logicalFile) {
-            dataset.logicalfile = json.logicalFile;
+          if (json.state == 'completed' && json.logicalFile) {
             $datasetStatus.removeClass('fa-spin');
+            dataset.logicalfile = json.logicalFile;
+
+            if (json.schema) {
+              dataset.rowCount = json.rows;
+              dataset.columnCount = json.columns;
+              dataset.eclSchema = JSON.stringify(json.schema);
+            }
 
             fetch('/datasets/', {
               method: 'PUT',
@@ -580,6 +601,9 @@ require([
               headers:{
                 'Content-Type': 'application/json'
               }
+            }).then(() => {
+              $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
+              $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
             });
           }
           window.clearTimeout(t);
