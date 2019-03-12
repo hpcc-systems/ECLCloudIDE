@@ -283,6 +283,23 @@ let checkWorkunitStatus = (wuid) => {
     '&clusterAddr=http%3A%2F%2F10.173.147.1%3A8010');
 };
 
+let getWorkunitResults = (wuid, count) => {
+  console.log('request /hpcc/workunits/results', wuid, count);
+
+  return fetch('/hpcc/workunits/results', {
+    method: 'POST',
+    body: JSON.stringify({
+      clusterAddr: 'http://10.173.147.1',
+      clusterPort: '8010',
+      wuid: wuid,
+      count: ((count) ? count : 1000)
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
 require([
   'vs/editor/editor.main',
   'ln/line-navigator.min'
@@ -713,6 +730,11 @@ require([
     $('.datasets').on('click', '.dataset', function(evt) {
       let $this = $(this);
       $this.addClass('active');
+      getWorkunitResults($this.data('wuid'), 1000)
+      .then(response => response.json())
+      .then((results) => {
+        console.log(results);
+      });
       console.log($this);
     });
 
