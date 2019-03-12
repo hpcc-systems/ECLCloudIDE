@@ -93,4 +93,21 @@ router.post('/submit', buildClusterAddr, (req, res, next) => {
   });
 });
 
+router.post('/results', buildClusterAddr, (req, res, next) => {
+  console.log('requesting /WsWorkunits/WUResult.json');
+  request({
+    method: 'POST',
+    uri: req.clusterAddr + '/WsWorkunits/WUResult.json',
+    form: { Wuid: req.body.wuid, Count: req.body.count },
+    resolveWithFullResponse: true
+  }).then((response) => {
+    console.log('response to WUResult', response.body);
+    let json = JSON.parse(response.body);
+    res.json(json);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
 module.exports = router;
