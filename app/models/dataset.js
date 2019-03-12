@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     filename: DataTypes.STRING,
     logicalfile: DataTypes.STRING,
+    rowCount: DataTypes.INTEGER,
+    columnCount: DataTypes.INTEGER,
+    eclSchema: DataTypes.JSON,
     workspaceId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

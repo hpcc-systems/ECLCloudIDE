@@ -26,7 +26,13 @@ router.get('/', (req, res, next) => {
     };
 
     if (json.WUInfoResponse.Workunit.Results) {
-      result.logicalFile = json.WUInfoResponse.Workunit.Results.ECLResult[0].FileName;
+      let _wuResult = json.WUInfoResponse.Workunit.Results.ECLResult[0],
+          _schema = _wuResult.ECLSchemas.ECLSchemaItem;
+
+      result.logicalFile = _wuResult.FileName;
+      result.rows = _wuResult.Total;
+      result.columns = _schema.length;
+      result.schema = _schema;
     }
 
     res.json(result);

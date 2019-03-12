@@ -84,6 +84,9 @@ router.put('/', (req, res, next) => {
   if (req.body.filename) dataset.filename = req.body.filename;
   if (req.body.logicalfile) dataset.logicalfile = req.body.logicalfile;
   if (req.body.workspaceId) dataset.workspaceId = req.body.workspaceId;
+  if (req.body.rowCount) dataset.rowCount = req.body.rowCount;
+  if (req.body.columnCount) dataset.columnCount = req.body.columnCount;
+  if (req.body.eclSchema) dataset.eclSchema = JSON.parse(req.body.eclSchema);
   if (Object.keys(dataset).length > 0) {
     Dataset.update(dataset, {
       where: {
