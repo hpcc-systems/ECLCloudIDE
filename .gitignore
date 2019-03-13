@@ -15,5 +15,5 @@ node_modules/
 config.json
 
 #dist/public javascripts
-monaco-editor/
-line-navigator
+codemirror/
+line-navigator/

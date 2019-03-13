@@ -185,6 +185,10 @@ main .loader p {
   margin-left: 17.5%;
 }
 
+#editor .CodeMirror {
+  height: 100%;
+}
+
 .script-panel .run-script {
   padding-left: 10px;
   padding-bottom: 2px;

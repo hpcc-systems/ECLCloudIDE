@@ -1,12 +1,5 @@
 'use strict';
 
-require.config({
-  paths: {
-    'vs': '/javascripts/monaco-editor/min/vs',
-    'ln': '/javascripts/line-navigator',
-  }
-});
-
 let hostname = 'http://localhost:3000';
 
 const NO_WORKSPACE = 'Select Workspace...';
@@ -300,21 +293,51 @@ let getWorkunitResults = (wuid, count) => {
   });
 };
 
+require.config({
+  paths: {
+    'ln': '/javascripts/line-navigator',
+  },
+  packages: [{
+    name: 'codemirror',
+    location: "/javascripts/codemirror/",
+    main: "lib/codemirror"
+  }]
+});
+
 require([
-  'vs/editor/editor.main',
-  'ln/line-navigator.min'
-], function(monaco, LineNavigator) {
-  var editor;
+  'ln/line-navigator.min', 'codemirror',
+  'codemirror/mode/ecl/ecl'
+], function(LineNavigator, CodeMirror) {
+  let editor;
 
   if ($('#editor').length > 0) {
-    editor = monaco.editor.create($('#editor')[0], {
+    editor = CodeMirror($('#editor')[0], {
+      mode: "ecl",
+      lineNumbers: true,
+      extraKeys: {"Ctrl-Space": "autocomplete"},
+      // keyMap: "sublime",
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      showCursorWhenSelecting: true,
+      theme: "monokai",
+      tabSize: 2,
       value: [
-        'function x() {',
-        '\tconsole.log("Hello world!");',
-        '}'
-      ].join('\n'),
-      language: 'javascript',
-      automaticLayout: true,
+        "PersonLayout := RECORD",
+        "\tUNSIGNED1 PersonID;",
+        "\tSTRING15 FirstName;",
+        "\tSTRING25 LastName;",
+        "END;",
+        "",
+        "Person := DATASET([",
+        "\t{1, 'Fred', 'Smith'},",
+        "\t{2, 'Joe', 'Blow'},",
+        "\t{3, 'Jane', 'Doe'}",
+        "], PersonLayout);",
+        "",
+        "SortedPerson := SORT(Person, LastName, FirstName);",
+        "",
+        "SortedPerson;"
+      ].join("\n")
     });
   }
 
@@ -965,6 +988,7 @@ require([
     $('#scripts').on('click', '.script', function() {
       $('.script-panel-placeholder').removeClass('d-none');
       $('.script-panel').removeClass('d-none');
+      editor.refresh();
     });
 
     if ('serviceWorker' in navigator) {
