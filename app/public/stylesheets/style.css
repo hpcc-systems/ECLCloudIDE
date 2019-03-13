@@ -26,7 +26,6 @@ a {
   border-radius: 0.25rem;
 }
 
-
 [role="main"] {
   padding-top: 58px;
 }
@@ -62,7 +61,6 @@ a {
   left: 0;
   z-index: 100; /* Behind the navbar */
   padding: 48px 0 0; /* Height of navbar */
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
 .sidebar a:hover {
@@ -120,8 +118,26 @@ a {
   cursor: pointer;
 }
 
+main .loader {
+  margin: 100px auto;
+  text-align: center;
+  color: #ccc;
+}
+
+main .loader .fa {
+  font-size: 12em;
+}
+
+main .loader p {
+  font-size: 2em;
+}
+
 .table-wrapper {
   margin-bottom: 20px;
+}
+
+.table-wrapper .dataTables_wrapper {
+  width: 95%;
 }
 
 .script-panel-placeholder {

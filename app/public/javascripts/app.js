@@ -399,9 +399,14 @@ require([
           $options = $('.workspaces .dropdown-item'),
           $selected = $('#workspaceSelect'),
           $scriptPanelClose = $('.js-close'),
-          $deleteWorkspace = $('.delete-workspace').parent();
+          $deleteWorkspace = $('.delete-workspace').parent(),
+          $datasetContent = $('.dataset-content'),
+          $tableWrapper = $datasetContent.find('.table-wrapper');
 
       evt.preventDefault();
+
+      $datasetContent.addClass('d-none');
+      $tableWrapper.html('');
 
       $options.removeClass('active');
       $this.addClass('active');
@@ -728,12 +733,48 @@ require([
 
     /* CHANGE SELECTED DATASET */
     $('.datasets').on('click', '.dataset', function(evt) {
-      let $this = $(this);
-      $this.addClass('active');
+      let $this = $(this),
+          $datasetContent = $('.dataset-content'),
+          $title = $datasetContent.find('h4'),
+          $loader = $datasetContent.siblings('.loader'),
+          $tableWrapper = $datasetContent.find('.table-wrapper'),
+          $table = null,
+          dataTable = null;
+
+      $this.addClass('active').siblings().removeClass('active');
+      $title.text($this.data('name'));
+      $datasetContent.addClass('d-none');
+      $loader.removeClass('d-none');
+
       getWorkunitResults($this.data('wuid'), 1000)
       .then(response => response.json())
-      .then((results) => {
-        console.log(results);
+      .then((wuResult) => {
+        let results = wuResult.WUResultResponse.Result.Row;
+        console.log(wuResult);
+        $tableWrapper.html(
+          '<table class="table" style="width: 100%;">' +
+          '<thead><tr></tr></thead><tbody></tbody>' +
+          '<tfoot><tr></tr></tfoot></table>'
+        );
+        $table = $tableWrapper.find('.table');
+        Object.keys(results[0]).forEach((key) => {
+          $table.find('thead tr').append('<th scope="col">' + key + '</th>');
+          $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
+        });
+        results.forEach((row) => {
+          $table.find('tbody').append('<tr></tr>');
+          let $row = $table.find('tbody tr:last-child');
+          for (var x in row) {
+            $row.append('<td scope="row">' + row[x] + '</td>');
+          }
+        });
+
+        dataTable = $table.DataTable({
+          order: [[Object.keys(results[0]).length - 1, 'asc']],
+          pageLength: 25
+        });
+        $loader.addClass('d-none');
+        $datasetContent.removeClass('d-none');
       });
       console.log($this);
     });

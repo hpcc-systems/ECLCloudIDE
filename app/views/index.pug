@@ -8,6 +8,9 @@ block content
       include ./includes/sidebar
 
       main.col-md-9.ml-sm-auto.col-lg-10.px-4(role='main')
+        div.loader.d-none
+          i.fa.fa-refresh.fa-spin
+          p Loading...
         div.dataset-content.d-none
           h4 Taxi Trips Raw
           div.table-wrapper

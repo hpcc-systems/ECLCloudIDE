@@ -101,7 +101,7 @@ router.post('/results', buildClusterAddr, (req, res, next) => {
     form: { Wuid: req.body.wuid, Count: req.body.count },
     resolveWithFullResponse: true
   }).then((response) => {
-    console.log('response to WUResult', response.body);
+    console.log('response to WUResult');
     let json = JSON.parse(response.body);
     res.json(json);
   }).catch((err) => {
