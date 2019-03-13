@@ -952,7 +952,21 @@ require([
       $('.table').DataTable();
     }
 
-    $('.script-panel-controls').on('click', '.js-close', function() {
+    /*==========================================================================*
+     *  SCRIPT PANEL CONTROLS                                                   *
+     *==========================================================================*/
+
+    let $scriptPanelControls = $('.script-panel-controls'),
+        $scriptControls = $('.script-controls');
+
+    $scriptControls.on('click', '.run-script', function(evt) {
+      $(this).blur();
+      evt.preventDefault();
+      console.log(editor);
+      console.log(editor.getValue().replace(/\s+/g, ' '));
+    });
+
+    $scriptPanelControls.on('click', '.js-close', function() {
       $('.script-panel-placeholder').addClass('d-none');
       $('.script-panel').addClass('d-none');
       $('.scripts .script').removeClass('active');
@@ -960,7 +974,7 @@ require([
       $('.script-panel').removeClass('maximized').removeClass('minimized');
     });
 
-    $('.script-panel-controls').on('click', '.js-minimize', function() {
+    $scriptPanelControls.on('click', '.js-minimize', function() {
       if ($('.script-panel').hasClass('minimized') || $('.script-panel').hasClass('maximized')) return;
 
       $('.script-panel').addClass('minimized');
@@ -971,7 +985,7 @@ require([
       }
     });
 
-    $('.script-panel-controls').on('click', '.js-restore', function() {
+    $scriptPanelControls.on('click', '.js-restore', function() {
       if ($('.script-panel').hasClass('minimized')) {
         $('.script-panel').removeClass('minimized');
         $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
