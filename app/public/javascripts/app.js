@@ -578,6 +578,9 @@ require([
                     console.log('check status of workunit');
 
                     $datasetStatus.addClass('fa-spin');
+
+                    let t = null;
+
                     let awaitWorkunitStatusComplete = () => {
                       checkWorkunitStatus(_wuid)
                       .then(response => response.json())
@@ -598,9 +601,11 @@ require([
                             headers:{
                               'Content-Type': 'application/json'
                             }
-                          })
+                          }).then(() => {
+                            window.clearTimeout(t);
+                          });
                         } else {
-                          let t = window.setTimeout(function() {
+                          t = window.setTimeout(function() {
                             awaitWorkunitStatusComplete();
                           }, 1500);
                         }
