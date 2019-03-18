@@ -964,13 +964,73 @@ require([
      *==========================================================================*/
 
     let $scriptPanelControls = $('.script-panel-controls'),
-        $scriptControls = $('.script-controls');
+        $scriptControls = $('.script-controls'),
+        $runButton = $('.script-controls .run-script');
+
+    let changeRunButtonState = ($runButton, state) => {
+      switch (state) {
+        case 'ready':
+          $runButton.removeClass('disabled')
+            .find('.fa').removeClass('fa-refresh fa-spin').addClass('fa-play');
+          $runButton.contents()[0].nodeValue = 'RUN';
+          break;
+        default:
+          $runButton.addClass('disabled')
+            .find('.fa').removeClass('fa-play').addClass('fa-refresh fa-spin');
+          $runButton.contents()[0].nodeValue = state.toUpperCase();
+          break;
+      }
+    };
 
     $scriptControls.on('click', '.run-script', function(evt) {
+      let $script = $('.scripts .active'),
+          _query = editor.getValue().replace(/\s+/g, ' '),
+          _wuid = '',
+          script = {
+            id: $script.data('id')
+          };
+
       $(this).blur();
       evt.preventDefault();
-      console.log(editor);
-      console.log(editor.getValue().replace(/\s+/g, ' '));
+      changeRunButtonState($runButton, 'running');
+
+      createWorkunit()
+      .then(response => response.json())
+      .then((json) => {
+        _wuid = json.wuid;
+        saveWorkunit($script.data('id'), _wuid);
+        $script.data('wuid', _wuid);
+        script.wuid = _wuid;
+      })
+      .then(() => {
+        console.log(_query);
+        updateWorkunit(_wuid, _query).then(() => {
+          submitWorkunit(_wuid).then(() => {
+            console.log('check status of workunit');
+
+            let t = null;
+            let awaitWorkunitStatusComplete = () => {
+              checkWorkunitStatus(_wuid)
+              .then(response => response.json())
+              .then((json) => {
+                if (json.state == 'completed') {
+                  console.log(json);
+                  window.clearTimeout(t);
+                  changeRunButtonState($runButton, 'ready');
+                } else {
+                  let _status = json.state;
+                  _status = (_status == 'unknown') ? 'running' : _status;
+                  changeRunButtonState($runButton, _status);
+                  t = window.setTimeout(function() {
+                    awaitWorkunitStatusComplete();
+                  }, 1500);
+                }
+              });
+            };
+            awaitWorkunitStatusComplete();
+          });
+        });
+      });
     });
 
     $scriptPanelControls.on('click', '.js-close', function() {
