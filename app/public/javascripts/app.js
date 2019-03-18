@@ -863,6 +863,12 @@ require([
       let $this = $(this);
       $this.siblings().removeClass('active');
       $this.addClass('active');
+
+      if ($this.data('content')) {
+        editor.getDoc().setValue($this.data('content'));
+      } else {
+        editor.getDoc().setValue('');
+      }
     });
 
     toggleNewScriptPopover();
