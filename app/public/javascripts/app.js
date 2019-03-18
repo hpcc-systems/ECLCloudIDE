@@ -297,6 +297,51 @@ let getWorkunitResults = (wuid, count) => {
   });
 };
 
+let displayWorkunitResults = (wuid, title) => {
+  let $datasetContent = $('.dataset-content'),
+      $title = $datasetContent.find('h4'),
+      $loader = $datasetContent.siblings('.loader'),
+      $tableWrapper = $datasetContent.find('.table-wrapper'),
+      $table = null,
+      dataTable = null;
+
+  $title.text(title);
+
+  $datasetContent.addClass('d-none');
+  $loader.removeClass('d-none');
+
+  getWorkunitResults(wuid, 1000)
+  .then(response => response.json())
+  .then((wuResult) => {
+    let results = wuResult.WUResultResponse.Result.Row;
+    console.log(wuResult);
+    $tableWrapper.html(
+      '<table class="table" style="width: 100%;">' +
+      '<thead><tr></tr></thead><tbody></tbody>' +
+      '<tfoot><tr></tr></tfoot></table>'
+    );
+    $table = $tableWrapper.find('.table');
+    Object.keys(results[0]).forEach((key) => {
+      $table.find('thead tr').append('<th scope="col">' + key + '</th>');
+      $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
+    });
+    results.forEach((row) => {
+      $table.find('tbody').append('<tr></tr>');
+      let $row = $table.find('tbody tr:last-child');
+      for (var x in row) {
+        $row.append('<td scope="row">' + row[x] + '</td>');
+      }
+    });
+
+    dataTable = $table.DataTable({
+      order: [[Object.keys(results[0]).length - 1, 'asc']],
+      pageLength: 25
+    });
+    $loader.addClass('d-none');
+    $datasetContent.removeClass('d-none');
+  });
+};
+
 require.config({
   paths: {
     'ln': '/javascripts/line-navigator',
@@ -767,50 +812,11 @@ require([
 
     /* CHANGE SELECTED DATASET */
     $('.datasets').on('click', '.dataset', function(evt) {
-      let $this = $(this),
-          $datasetContent = $('.dataset-content'),
-          $title = $datasetContent.find('h4'),
-          $loader = $datasetContent.siblings('.loader'),
-          $tableWrapper = $datasetContent.find('.table-wrapper'),
-          $table = null,
-          dataTable = null;
+      let $this = $(this);
 
       $this.addClass('active').siblings().removeClass('active');
-      $title.text($this.data('name'));
-      $datasetContent.addClass('d-none');
-      $loader.removeClass('d-none');
 
-      getWorkunitResults($this.data('wuid'), 1000)
-      .then(response => response.json())
-      .then((wuResult) => {
-        let results = wuResult.WUResultResponse.Result.Row;
-        console.log(wuResult);
-        $tableWrapper.html(
-          '<table class="table" style="width: 100%;">' +
-          '<thead><tr></tr></thead><tbody></tbody>' +
-          '<tfoot><tr></tr></tfoot></table>'
-        );
-        $table = $tableWrapper.find('.table');
-        Object.keys(results[0]).forEach((key) => {
-          $table.find('thead tr').append('<th scope="col">' + key + '</th>');
-          $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
-        });
-        results.forEach((row) => {
-          $table.find('tbody').append('<tr></tr>');
-          let $row = $table.find('tbody tr:last-child');
-          for (var x in row) {
-            $row.append('<td scope="row">' + row[x] + '</td>');
-          }
-        });
-
-        dataTable = $table.DataTable({
-          order: [[Object.keys(results[0]).length - 1, 'asc']],
-          pageLength: 25
-        });
-        $loader.addClass('d-none');
-        $datasetContent.removeClass('d-none');
-      });
-      console.log($this);
+      displayWorkunitResults($this.data('wuid'), $this.data('name'));
     });
 
     /* SHOW DELETE DATASET CONFIRMATION */
@@ -1042,6 +1048,7 @@ require([
                     console.log(json);
                     window.clearTimeout(t);
                     changeRunButtonState($runButton, 'ready');
+                    displayWorkunitResults(_wuid, $script.data('name'));
                   } else {
                     let _status = json.state;
                     _status = (_status == 'unknown') ? 'running' : _status;
