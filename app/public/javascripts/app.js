@@ -990,48 +990,64 @@ require([
       let $script = $('.scripts .active'),
           _query = editor.getValue().replace(/\s+/g, ' '),
           _wuid = '',
+          revisionId = 0,
           script = {
-            id: $script.data('id')
+            id: $script.data('id'),
           };
 
       $(this).blur();
       evt.preventDefault();
       changeRunButtonState($runButton, 'running');
 
-      createWorkunit()
+      fetch('/scripts/revision/', {
+        method: 'POST',
+        body: JSON.stringify({
+          scriptId: $script.data('id'),
+          content: editor.getValue()
+        }),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
       .then(response => response.json())
       .then((json) => {
-        _wuid = json.wuid;
-        saveWorkunit($script.data('id'), _wuid);
-        $script.data('wuid', _wuid);
-        script.wuid = _wuid;
-      })
-      .then(() => {
-        console.log(_query);
-        updateWorkunit(_wuid, _query).then(() => {
-          submitWorkunit(_wuid).then(() => {
-            console.log('check status of workunit');
+        $script.data('revisionId', json.data.id);
 
-            let t = null;
-            let awaitWorkunitStatusComplete = () => {
-              checkWorkunitStatus(_wuid)
-              .then(response => response.json())
-              .then((json) => {
-                if (json.state == 'completed') {
-                  console.log(json);
-                  window.clearTimeout(t);
-                  changeRunButtonState($runButton, 'ready');
-                } else {
-                  let _status = json.state;
-                  _status = (_status == 'unknown') ? 'running' : _status;
-                  changeRunButtonState($runButton, _status);
-                  t = window.setTimeout(function() {
-                    awaitWorkunitStatusComplete();
-                  }, 1500);
-                }
-              });
-            };
-            awaitWorkunitStatusComplete();
+        createWorkunit()
+        .then(response => response.json())
+        .then((json) => {
+          _wuid = json.wuid;
+          saveWorkunit($script.data('revisionId'), _wuid);
+          $script.data('wuid', _wuid);
+          script.wuid = _wuid;
+        })
+        .then(() => {
+          console.log(_query);
+          updateWorkunit(_wuid, _query).then(() => {
+            submitWorkunit(_wuid).then(() => {
+              console.log('check status of workunit');
+
+              let t = null;
+              let awaitWorkunitStatusComplete = () => {
+                checkWorkunitStatus(_wuid)
+                .then(response => response.json())
+                .then((json) => {
+                  if (json.state == 'completed') {
+                    console.log(json);
+                    window.clearTimeout(t);
+                    changeRunButtonState($runButton, 'ready');
+                  } else {
+                    let _status = json.state;
+                    _status = (_status == 'unknown') ? 'running' : _status;
+                    changeRunButtonState($runButton, _status);
+                    t = window.setTimeout(function() {
+                      awaitWorkunitStatusComplete();
+                    }, 1500);
+                  }
+                });
+              };
+              awaitWorkunitStatusComplete();
+            });
           });
         });
       });
