@@ -9,16 +9,23 @@ const WorkspaceUser = db.WorkspaceUser;
 
 const Dataset = db.Dataset;
 const Script = db.Script;
+const ScriptRevision = db.ScriptRevision;
 const Workunit = db.Workunit;
 
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
   Script.findAll({
+    include: [{
+      model: ScriptRevision,
+    }],
     where: {
       workspaceId: req.query.workspaceId
-    }
-  }).then((workspaces) => {
-    res.json(workspaces);
+    },
+    order: [
+      [ ScriptRevision, 'createdAt', 'desc' ]
+    ]
+  }).then((scripts) => {
+    res.json(scripts);
   }).catch((err) => {
     console.log(err);
     res.json(err);
