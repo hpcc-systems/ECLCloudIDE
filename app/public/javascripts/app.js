@@ -306,7 +306,8 @@ require.config({
 
 require([
   'ln/line-navigator.min', 'codemirror',
-  'codemirror/mode/ecl/ecl'
+  'codemirror/mode/ecl/ecl',
+  'codemirror/addon/selection/active-line'
 ], function(LineNavigator, CodeMirror) {
   let editor;
 
@@ -319,7 +320,8 @@ require([
       autoCloseBrackets: true,
       matchBrackets: true,
       showCursorWhenSelecting: true,
-      theme: "monokai",
+      styleActiveLine: true,
+      theme: "darcula",
       tabSize: 2,
       value: [
         "PersonLayout := RECORD",

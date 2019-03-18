@@ -194,7 +194,20 @@ main .loader p {
   padding-bottom: 2px;
 }
 
-.run-script .fa {
+.run-script.disabled {
+  color: #666 !important;
+  background: #ccc;
+}
+
+.run-script.disabled:hover,
+.run-script.disabled:focus,
+.run-script.disabled .fa:hover {
+  cursor: wait;
+  color: #666 !important;
+  background: #ccc !important;
+}
+
+.run-script .fa-play {
   padding-left: 6px;
 }
 
