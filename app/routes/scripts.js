@@ -39,10 +39,24 @@ router.post('/', (req, res, next) => {
     name: req.body.scriptName,
     workspaceId: req.body.workspaceId
   }).then((script) => {
-    return res.json(script);
+    return res.json({ success: true, data: script });
   }).catch((err) => {
     console.log(err);
-    return res.json({ message: 'Script could not be saved' });
+    return res.json({ success: false, message: 'Script could not be saved' });
+  });
+});
+
+/* Create script revision */
+router.post('/revision', (req, res, next) => {
+  console.log('request body', req.body);
+  ScriptRevision.create({
+    scriptId: req.body.scriptId,
+    content: req.body.content
+  }).then((revision) => {
+    return res.json({ success: true, data: revision });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Script Revision could not be saved' });
   });
 });
 
@@ -82,10 +96,10 @@ router.delete('/', (req, res, next) => {
       where: { id: script.id }
     });
   }).then(() => {
-    res.json({ message: 'Script deleted' });
+    res.json({ success: true, message: 'Script deleted' });
   }).catch((err) => {
     console.log(err);
-    return res.json({ message: 'Script could not be saved' });
+    return res.json({ success: false, message: 'Script could not be saved' });
   });
 });
 
