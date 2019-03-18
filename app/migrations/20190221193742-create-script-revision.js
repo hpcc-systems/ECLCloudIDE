@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.UUID
       },
       content: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(8192)
       },
       createdAt: {
         allowNull: false,
