@@ -1083,6 +1083,8 @@ require([
       $('.scripts .script').removeClass('active');
       $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
       $('.script-panel').removeClass('maximized').removeClass('minimized');
+      $('#editor').removeClass('cmReady');
+      $('.save-script').removeClass('badge-info').addClass('badge-secondary');
     });
 
     $scriptPanelControls.on('click', '.js-minimize', function() {
@@ -1113,13 +1115,28 @@ require([
     $('#scripts').on('click', '.script', function() {
       $('.script-panel-placeholder').removeClass('d-none');
       $('.script-panel').removeClass('d-none');
+      $('#editor').removeClass('cmReady');
+      $('.save-script').removeClass('badge-info').addClass('badge-secondary');
       changeRunButtonState($('.run-script'), 'ready');
       editor.refresh();
     });
 
     editor.on('change', (instance, changeObj) => {
-      console.log(changeObj);
+      let $saveButton = $('.save-script');
+
+      if ($('#editor').hasClass('cmReady')) {
+        $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
+        $saveButton.contents()[0].nodeValue = 'SAVE';
+      }
+
+      console.log(instance, changeObj);
       changeRunButtonState($('.run-script'), 'ready');
+    });
+
+    editor.on('focus', (instance, evt) => {
+      if (false == $('#editor').hasClass('cmReady')) {
+        $('#editor').addClass('cmReady');
+      }
     });
 
     $(document).on('dragstart', (evt) => {

@@ -211,6 +211,11 @@ main .loader p {
   padding-left: 6px;
 }
 
+.save-script.badge-secondary,
+.save-script.badge-secondary .fa {
+  cursor: not-allowed;
+}
+
 .script-panel.minimized {
   height: 38px;
   transition: height 0.33s;
