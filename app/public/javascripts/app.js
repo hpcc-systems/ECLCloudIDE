@@ -693,6 +693,7 @@ require([
               dataset.rowCount = json.rows;
               dataset.columnCount = json.columns;
               dataset.eclSchema = JSON.stringify(json.schema);
+              dataset.eclQuery = json.query;
             }
 
             fetch('/datasets/', {
@@ -704,6 +705,8 @@ require([
             }).then(() => {
               $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
               $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
+              $dataset.data('eclSchema', dataset.eclSchema);
+              $dataset.data('eclQuery', dataset.eclQuery);
             });
           }
           window.clearTimeout(t);
