@@ -986,9 +986,14 @@ require([
     let changeRunButtonState = ($runButton, state) => {
       switch (state) {
         case 'ready':
-          $runButton.removeClass('disabled')
+          $runButton.removeClass('disabled badge-danger').addClass('badge-success')
             .find('.fa').removeClass('fa-refresh fa-spin').addClass('fa-play');
           $runButton.contents()[0].nodeValue = 'RUN';
+          break;
+        case 'failed':
+          $runButton.removeClass('disabled badge-success').addClass('badge-danger')
+            .find('.fa').removeClass('fa-refresh fa-spin').addClass('fa-close');
+          $runButton.contents()[0].nodeValue = 'FAILED';
           break;
         default:
           $runButton.addClass('disabled')
@@ -1049,6 +1054,10 @@ require([
                     window.clearTimeout(t);
                     changeRunButtonState($runButton, 'ready');
                     displayWorkunitResults(_wuid, $script.data('name'));
+                  } else if (json.state == 'failed') {
+                    console.log(json);
+                    window.clearTimeout(t);
+                    changeRunButtonState($runButton, 'failed');
                   } else {
                     let _status = json.state;
                     _status = (_status == 'unknown') ? 'running' : _status;
@@ -1102,7 +1111,13 @@ require([
     $('#scripts').on('click', '.script', function() {
       $('.script-panel-placeholder').removeClass('d-none');
       $('.script-panel').removeClass('d-none');
+      changeRunButtonState($('.run-script'), 'ready');
       editor.refresh();
+    });
+
+    editor.on('change', (instance, changeObj) => {
+      console.log(changeObj);
+      changeRunButtonState($('.run-script'), 'ready');
     });
 
     if ('serviceWorker' in navigator) {
