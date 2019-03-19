@@ -369,6 +369,8 @@ require([
       matchBrackets: true,
       showCursorWhenSelecting: true,
       styleActiveLine: true,
+      viewPortMargin: 10,
+      scrollbarStyle: 'null',
       theme: "darcula",
       tabSize: 2,
       value: [
