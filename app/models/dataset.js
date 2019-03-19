@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     rowCount: DataTypes.INTEGER,
     columnCount: DataTypes.INTEGER,
     eclSchema: DataTypes.JSON,
+    eclQuery: DataTypes.STRING,
     workspaceId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
