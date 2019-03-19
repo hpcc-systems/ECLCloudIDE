@@ -347,8 +347,8 @@ require.config({
   },
   packages: [{
     name: 'codemirror',
-    location: "/javascripts/codemirror/",
-    main: "lib/codemirror"
+    location: '/javascripts/codemirror/',
+    main: 'lib/codemirror'
   }]
 });
 
@@ -357,7 +357,7 @@ require([
   'codemirror/mode/ecl/ecl',
   'codemirror/addon/selection/active-line'
 ], function(LineNavigator, CodeMirror) {
-  let editor;
+  let editor = null, $draggedObject = null;
 
   if ($('#editor').length > 0) {
     editor = CodeMirror($('#editor')[0], {
@@ -1120,6 +1120,27 @@ require([
     editor.on('change', (instance, changeObj) => {
       console.log(changeObj);
       changeRunButtonState($('.run-script'), 'ready');
+    });
+
+    $(document).on('dragstart', (evt) => {
+      let $target = $(evt.target);
+      console.log($target);
+      if ($target.hasClass('dataset') || $target.hasClass('script')) {
+        $draggedObject = $(evt.target);
+        console.log($draggedObject.data());
+      }
+    });
+
+    editor.on('drop', (instance, evt) => {
+      console.log(instance, evt);
+      let doc = instance.getDoc();
+      let content = '';
+
+      if ($draggedObject.data('query')) content = $draggedObject.data('query');
+      else if ($draggedObject.data('content')) content = $draggedObject.data('content');
+
+      doc.replaceRange(content, doc.getCursor());
+      evt.preventDefault();
     });
 
     if ('serviceWorker' in navigator) {
