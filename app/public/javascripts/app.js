@@ -76,6 +76,7 @@ let addDataset = (dataset) => {
   $newDataset.data('wuid', dataset.workunitId);
   $newDataset.data('rows', dataset.rowCount);
   $newDataset.data('cols', dataset.columnCount);
+  $newDataset.data('query', dataset.eclQuery);
   $newDataset.find('.datasetname').contents()[0].nodeValue = dataset.name;
   $datasets.append($newDataset);
 };

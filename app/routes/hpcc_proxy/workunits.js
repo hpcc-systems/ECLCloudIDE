@@ -33,6 +33,7 @@ router.get('/', (req, res, next) => {
       result.rows = _wuResult.Total;
       result.columns = _schema.length;
       result.schema = _schema;
+      result.query = json.WUInfoResponse.Workunit.Query.Text;
     }
 
     res.json(result);
