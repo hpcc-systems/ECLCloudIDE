@@ -1079,6 +1079,48 @@ require([
       });
     });
 
+    $scriptControls.on('click', '.save-script', function(evt) {
+      let $script = $('.scripts .active'),
+          $saveButton = $(this),
+          _query = editor.getValue().replace(/\s+/g, ' '),
+          _wuid = '',
+          revisionId = 0,
+          script = {
+            id: $script.data('id'),
+          };
+
+      if ($saveButton.hasClass('badge-secondary')) {
+        return false;
+      }
+
+      $saveButton.blur();
+      evt.preventDefault();
+
+      $saveButton.contents()[0].nodeValue = 'SAVING';
+      $saveButton.removeClass('badge-info').addClass('badge-secondary');
+
+      let t = window.setTimeout(function() {
+        fetch('/scripts/revision/', {
+          method: 'POST',
+          body: JSON.stringify({
+            scriptId: $script.data('id'),
+            content: editor.getValue()
+          }),
+          headers:{
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then((json) => {
+          $saveButton.contents()[0].nodeValue = 'SAVED';
+          $script.data('revisionId', json.data.id);
+          $script.data('content', json.data.content);
+          $saveButton.attr('title', 'No Changes');
+          window.clearTimeout(t);
+        });
+      }, 1000);
+    });
+
     $scriptPanelControls.on('click', '.js-close', function() {
       $('.script-panel-placeholder').addClass('d-none');
       $('.script-panel').addClass('d-none');
