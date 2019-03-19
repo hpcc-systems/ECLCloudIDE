@@ -49,11 +49,13 @@ block content
       div.script-panel.bg-dark.d-none
         div.script-panel-controls-wrapper
           div.script-controls.ml-30.mt-2
-            a.run-script.text-light.badge.badge-pill.badge-success(href="#") RUN
+            a.run-script.text-light.badge.badge-pill.badge-success(href="#", title="Execute Script") RUN
               i.fa.fa-play
+            a.save-script.text-light.badge.badge-pill.badge-info.ml-2(href="#", title="Save Script") SAVE
+              i.fa.fa-save
 
           div.script-panel-controls.mr-3.mt-2
-            i.fa.fa-window-minimize.js-minimize
-            i.fa.fa-window-maximize.js-restore
-            i.fa.fa-window-close-o.js-close
+            i.fa.fa-window-minimize.js-minimize(title="Minimize Script")
+            i.fa.fa-window-maximize.js-restore(title="Restore Script")
+            i.fa.fa-window-close-o.js-close(title="Close Script")
         div#editor
