@@ -121,10 +121,8 @@ let addScript = (script) => {
   $newScript.removeClass('d-none cloner');
   $newScript.data('id', script.id);
   $newScript.data('name', script.name);
-  if (script.ScriptRevisions.length > 0) {
-    $newScript.data('revisionId', script.ScriptRevisions[0].id);
-    $newScript.data('content', script.ScriptRevisions[0].content);
-  }
+  $newScript.data('revisionId', script.revisionId);
+  $newScript.data('content', script.content);
   $newScript.find('.scriptname').contents()[0].nodeValue = script.name;
   $scripts.append($newScript);
 };

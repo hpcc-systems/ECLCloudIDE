@@ -14,18 +14,24 @@ const Workunit = db.Workunit;
 
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
-  Script.findAll({
-    include: [{
-      model: ScriptRevision,
-    }],
-    where: {
-      workspaceId: req.query.workspaceId
-    },
-    order: [
-      [ ScriptRevision, 'createdAt', 'desc' ]
-    ]
-  }).then((scripts) => {
-    res.json(scripts);
+  const query = `SELECT s.id, s.name, sr.id AS revisionId, sr.content, \
+    sr.createdAt, sr.updatedAt, w.workunitId \
+    FROM scripts AS s \
+    JOIN ( \
+      SELECT sr1.* FROM scriptrevisions sr1 \
+      LEFT JOIN scriptrevisions sr2 ON sr2.scriptId = sr1.scriptId AND sr2.updatedAt > sr1.updatedAt \
+      WHERE sr2.id IS NULL \
+    ) AS sr ON sr.scriptId = s.id \
+    LEFT JOIN workunits AS w ON sr.id = w.objectId \
+    WHERE s.workspaceId = "${req.query.workspaceId}" \
+    AND w.workunitId LIKE "W%" \
+    AND s.deletedAt IS NULL \
+    ORDER BY sr.updatedAt desc`;
+
+  db.sequelize.query(query, {
+    type: db.sequelize.QueryTypes.SELECT
+  }).then((datasets) => {
+    res.json(datasets);
   }).catch((err) => {
     console.log(err);
     res.json(err);
