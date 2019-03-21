@@ -1,6 +1,6 @@
 'use strict';
 
-let hostname = 'http://localhost:3000';
+let hostname = 'http://' + window.location.hostname + ':3000';
 
 const NO_WORKSPACE = 'Select Workspace...';
 const NEW_SCRIPT = 'New Script...';
