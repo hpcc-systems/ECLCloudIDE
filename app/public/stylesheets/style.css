@@ -7,6 +7,10 @@ a {
   color: #00B7FF;
 }
 
+.badge-primary {
+  background-color: #1f6192;
+}
+
 .login-page form {
   width: 400px;
   margin: 0 auto;
@@ -28,6 +32,48 @@ a {
 
 [role="main"] {
   padding-top: 58px;
+}
+
+[role="main"].show-outputs {
+  padding-top: 88px;
+}
+
+[role="main"] h4 {
+  margin: 0;
+}
+
+.outputs-panel {
+  display: none;
+  position: absolute;
+  width: 100%;
+  top: 53px;
+  background: #343a40;
+  padding: 6px 0 7px 14px;
+  left: 0;
+  border-bottom: 1px solid #242a30;
+}
+
+.outputs-panel .badge {
+  font-weight: 500;
+}
+
+.outputs-label {
+  margin: 0 0 0 10px;
+  color: #f8f9fa;
+  vertical-align: bottom;
+}
+
+.show-outputs .outputs-panel {
+  display: block;
+}
+
+.show-outputs h4 {
+  display: none;
+}
+
+
+.navbar {
+  border-bottom: 1px solid #242a30;
 }
 
 .navbar .home-logo {
@@ -60,7 +106,8 @@ a {
   bottom: 0;
   left: 0;
   z-index: 100; /* Behind the navbar */
-  padding: 48px 0 0; /* Height of navbar */
+  padding: 52px 0 0; /* Height of navbar */
+  border-right: 1px solid #242a30;
 }
 
 .sidebar a:hover {
@@ -133,7 +180,7 @@ main .loader p {
 }
 
 .table-wrapper {
-  margin-bottom: 20px;
+  margin: 10px 0;
 }
 
 .table-wrapper .dataTables_wrapper {
@@ -152,6 +199,7 @@ main .loader p {
   width: 100%;
   height: 400px;
   z-index: 10;
+  border-top: 1px solid #242a30;
 }
 
 .script-panel-controls-wrapper {

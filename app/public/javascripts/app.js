@@ -279,7 +279,7 @@ let checkWorkunitStatus = (wuid) => {
     '&clusterAddr=http%3A%2F%2F10.173.147.1%3A8010');
 };
 
-let getWorkunitResults = (wuid, count) => {
+let getWorkunitResults = (wuid, count, sequence) => {
   console.log('request /hpcc/workunits/results', wuid, count);
 
   return fetch('/hpcc/workunits/results', {
@@ -288,7 +288,8 @@ let getWorkunitResults = (wuid, count) => {
       clusterAddr: 'http://10.173.147.1',
       clusterPort: '8010',
       wuid: wuid,
-      count: ((count) ? count : 1000)
+      count: ((count) ? count : 1000),
+      sequence: ((sequence) ? sequence : 0)
     }),
     headers: {
       'Content-Type': 'application/json'
@@ -296,7 +297,7 @@ let getWorkunitResults = (wuid, count) => {
   });
 };
 
-let displayWorkunitResults = (wuid, title) => {
+let displayWorkunitResults = (wuid, title, sequence = 0) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
       $loader = $datasetContent.siblings('.loader'),
@@ -309,7 +310,7 @@ let displayWorkunitResults = (wuid, title) => {
   $datasetContent.addClass('d-none');
   $loader.removeClass('d-none');
 
-  getWorkunitResults(wuid, 1000)
+  getWorkunitResults(wuid, 1000, sequence)
   .then(response => response.json())
   .then((wuResult) => {
     let results = wuResult.WUResultResponse.Result.Row;
@@ -816,9 +817,11 @@ require([
 
     /* CHANGE SELECTED DATASET */
     $('.datasets').on('click', '.dataset', function(evt) {
-      let $this = $(this);
+      let $this = $(this),
+          $main = $('.dataset-content').parents('main');
 
       $this.addClass('active').siblings().removeClass('active');
+      $main.removeClass('show-outputs');
 
       displayWorkunitResults($this.data('wuid'), $this.data('name'));
     });
@@ -985,7 +988,8 @@ require([
 
     let $scriptPanelControls = $('.script-panel-controls'),
         $scriptControls = $('.script-controls'),
-        $runButton = $('.script-controls .run-script');
+        $runButton = $('.script-controls .run-script'),
+        $outputsList = $('.outputs-list');
 
     let changeRunButtonState = ($runButton, state) => {
       switch (state) {
@@ -1011,6 +1015,7 @@ require([
       let $script = $('.scripts .active'),
           _query = editor.getValue().replace(/\s+/g, ' '),
           _wuid = '',
+          $main = $('.dataset-content').parents('main'),
           revisionId = 0,
           script = {
             id: $script.data('id'),
@@ -1057,7 +1062,16 @@ require([
                     console.log(json);
                     window.clearTimeout(t);
                     changeRunButtonState($runButton, 'ready');
-                    displayWorkunitResults(_wuid, $script.data('name'));
+                    $main.addClass('show-outputs');
+                    $outputsList.html('');
+                    json.results.forEach((result, idx) => {
+                      let classList = ['output', 'text-light', 'badge', 'ml-2'];
+                      if (idx == 0) classList.push('badge-primary');
+                      else classList.push('badge-secondary');
+
+                      $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + result.name + '</a>');
+                    });
+                    $outputsList.children().eq(0).trigger('click');
                   } else if (json.state == 'failed') {
                     console.log(json);
                     window.clearTimeout(t);
@@ -1119,6 +1133,15 @@ require([
           window.clearTimeout(t);
         });
       }, 1000);
+    });
+
+    $outputsList.on('click', '.output', function(evt) {
+      let $output = $(this),
+          $script = $('.scripts .active');
+
+      $output.addClass('badge-primary').removeClass('badge-secondary')
+        .siblings().addClass('badge-secondary').removeClass('badge-primary');
+      displayWorkunitResults($script.data('wuid'), $output.text(), $output.index());
     });
 
     $scriptPanelControls.on('click', '.js-close', function() {

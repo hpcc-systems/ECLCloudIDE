@@ -20,23 +20,29 @@ router.get('/', (req, res, next) => {
   }).then((response) => {
     let json = JSON.parse(response.body);
     console.log(json.WUInfoResponse.Workunit);
-    let result = {
+    let wuInfo = {
       state: json.WUInfoResponse.Workunit.State,
-      wuid: json.WUInfoResponse.Workunit.Wuid
+      wuid: json.WUInfoResponse.Workunit.Wuid,
+      results: []
     };
 
     if (json.WUInfoResponse.Workunit.Results) {
-      let _wuResult = json.WUInfoResponse.Workunit.Results.ECLResult[0],
-          _schema = _wuResult.ECLSchemas.ECLSchemaItem;
+      json.WUInfoResponse.Workunit.Results.ECLResult.forEach((result) => {
+        console.log(result);
+        let _result = {
+          name: result.Name,
+          logicalFile: result.FileName,
+          rows: result.Total,
+          columns: result.ECLSchemas.ECLSchemaItem.length,
+          schema: result.ECLSchemas.ECLSchemaItem
+        };
+        wuInfo.results.push(_result);
+      });
 
-      result.logicalFile = _wuResult.FileName;
-      result.rows = _wuResult.Total;
-      result.columns = _schema.length;
-      result.schema = _schema;
-      result.query = json.WUInfoResponse.Workunit.Query.Text;
+      wuInfo.query = json.WUInfoResponse.Workunit.Query.Text;
     }
 
-    res.json(result);
+    res.json(wuInfo);
   }).catch((err) => {
     console.log(err);
     res.json(err);
@@ -99,7 +105,7 @@ router.post('/results', buildClusterAddr, (req, res, next) => {
   request({
     method: 'POST',
     uri: req.clusterAddr + '/WsWorkunits/WUResult.json',
-    form: { Wuid: req.body.wuid, Count: req.body.count },
+    form: { Wuid: req.body.wuid, Count: req.body.count, Sequence: req.body.sequence },
     resolveWithFullResponse: true
   }).then((response) => {
     console.log('response to WUResult');
