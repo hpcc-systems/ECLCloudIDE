@@ -1227,6 +1227,13 @@ require([
       evt.preventDefault();
     });
 
+    $(document).on('keydown', function(evt) {
+      if (evt.ctrlKey && evt.keyCode == 80) {
+        evt.preventDefault();
+        $('.ctrl-p').toggleClass('d-none');
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/service-worker.js', { scope: '/' })

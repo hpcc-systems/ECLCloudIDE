@@ -30,6 +30,31 @@ a {
   border-radius: 0.25rem;
 }
 
+.ctrl-p {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(52, 58, 64, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.ctrl-p .form-control {
+  position: fixed;
+  width: 33%;
+  top: 20%;
+  background-color: #51565b;
+  height: 48px;
+  font-size: 36px;
+  color: #343a40;
+  border-color: #343a40;
+  border-width: 3px;
+}
+
 [role="main"] {
   padding-top: 58px;
 }
