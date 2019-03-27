@@ -637,14 +637,14 @@ require([
                       checkWorkunitStatus(_wuid)
                       .then(response => response.json())
                       .then((json) => {
-                        if (json.state == 'completed' && json.logicalFile) {
+                        if (json.state == 'completed' && json.results[0].logicalFile) {
                           $datasetStatus.removeClass('fa-spin');
-                          dataset.logicalfile = json.logicalFile;
+                          dataset.logicalfile = json.results[0].logicalFile;
 
-                          if (json.schema) {
-                            dataset.rowCount = json.rows;
-                            dataset.columnCount = json.columns;
-                            dataset.eclSchema = JSON.stringify(json.schema);
+                          if (json.results[0].schema) {
+                            dataset.rowCount = json.results[0].rows;
+                            dataset.columnCount = json.results[0].columns;
+                            dataset.eclSchema = JSON.stringify(json.results[0].schema);
                           }
 
                           fetch('/datasets/', {
@@ -654,9 +654,13 @@ require([
                               'Content-Type': 'application/json'
                             }
                           }).then(() => {
+                            let $dataset = $('.datasets').children().last();
+                            $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
+                            $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
                             window.clearTimeout(t);
                           });
                         } else {
+                          window.clearTimeout(t);
                           t = window.setTimeout(function() {
                             awaitWorkunitStatusComplete();
                           }, 1500);
