@@ -23,7 +23,8 @@ router.get('/', (req, res, next) => {
     let wuInfo = {
       state: json.WUInfoResponse.Workunit.State,
       wuid: json.WUInfoResponse.Workunit.Wuid,
-      results: []
+      results: [],
+      errors: []
     };
 
     if (json.WUInfoResponse.Workunit.Results) {
@@ -40,6 +41,8 @@ router.get('/', (req, res, next) => {
       });
 
       wuInfo.query = json.WUInfoResponse.Workunit.Query.Text;
+    } else if (json.WUInfoResponse.Workunit.Exceptions) {
+      wuInfo.errors = json.WUInfoResponse.Workunit.Exceptions.ECLException;
     }
 
     res.json(wuInfo);
