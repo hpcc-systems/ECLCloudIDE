@@ -93,7 +93,7 @@ router.put('/', (req, res, next) => {
       where: {
         id: req.body.id
       }
-    }).then((dataset) => {
+    }).then((_dataset) => {
       return res.json({ success: true, data: dataset });
     }).catch((err) => {
       console.log(err);
