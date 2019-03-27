@@ -262,6 +262,10 @@ main .loader p {
   height: 100%;
 }
 
+.cm-errors {
+  width: 15px;
+}
+
 .script-panel .run-script {
   padding-left: 10px;
   padding-bottom: 2px;

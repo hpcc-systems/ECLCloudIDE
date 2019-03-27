@@ -374,6 +374,7 @@ require([
       scrollbarStyle: 'null',
       theme: "darcula",
       tabSize: 2,
+      gutters: ['CodeMirror-linenumbers', 'cm-errors'],
       value: [
         "PersonLayout := RECORD",
         "\tUNSIGNED1 PersonID;",
@@ -1058,6 +1059,9 @@ require([
                 checkWorkunitStatus(_wuid)
                 .then(response => response.json())
                 .then((json) => {
+
+                  editor.getDoc().clearGutter('cm-errors');
+
                   if (json.state == 'completed') {
                     console.log(json);
                     window.clearTimeout(t);
@@ -1076,6 +1080,21 @@ require([
                     console.log(json);
                     window.clearTimeout(t);
                     changeRunButtonState($runButton, 'failed');
+
+                    let _annotateTimeout = window.setTimeout(function() {
+                      updateCodemirrorAnnotations(json.errors);
+                      window.clearTimeout(_annotateTimeout);
+                    }, 500);
+
+                    let updateCodemirrorAnnotations = (errors) => {
+                      errors.forEach((err) => {
+                        console.log(err);
+                        let marker = document.createElement('div');
+                        marker.style.color = '#dc3545';
+                        marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
+                        editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
+                      });
+                    };
                   } else {
                     let _status = json.state;
                     _status = (_status == 'unknown') ? 'running' : _status;
