@@ -918,8 +918,8 @@ require([
       .then((script) => {
         $modal.modal('hide');
         $newScript.removeClass('d-none cloner');
-        $newScript.data('id', script.id);
-        $newScript.data('name', script.name);
+        $newScript.data('id', script.data.id);
+        $newScript.data('name', script.data.name);
         $newScript.find('.scriptname').text($newScript.data('name'));
         $scripts.append($newScript);
         $modal.find('#script-name').val('');
