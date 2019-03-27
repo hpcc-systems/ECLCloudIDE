@@ -1013,7 +1013,7 @@ require([
 
     $scriptControls.on('click', '.run-script', function(evt) {
       let $script = $('.scripts .active'),
-          _query = editor.getValue().replace(/\s+/g, ' '),
+          _query = editor.getValue(),
           _wuid = '',
           $main = $('.dataset-content').parents('main'),
           revisionId = 0,
