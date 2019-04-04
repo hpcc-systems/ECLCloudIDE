@@ -1034,6 +1034,7 @@ require([
         method: 'POST',
         body: JSON.stringify({
           scriptId: $script.data('id'),
+          name: $script.data('name'),
           content: editor.getValue()
         }),
         headers:{

@@ -45,6 +45,10 @@ router.post('/', (req, res, next) => {
     name: req.body.scriptName,
     workspaceId: req.body.workspaceId
   }).then((script) => {
+    let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
+    if (!fs.existsSync(scriptFilePath)) {
+      fs.closeSync(fs.openSync(scriptFilePath, 'w'));
+    }
     return res.json({ success: true, data: script });
   }).catch((err) => {
     console.log(err);
@@ -59,7 +63,20 @@ router.post('/revision', (req, res, next) => {
     scriptId: req.body.scriptId,
     content: req.body.content
   }).then((revision) => {
-    return res.json({ success: true, data: revision });
+    console.log('find script by id', req.body.scriptId);
+    Script.findOne({
+      where: {
+        id: req.body.scriptId,
+      }
+    }).then((script) => {
+      console.log('update contents of script file');
+      let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
+      if (fs.existsSync(scriptFilePath)) {
+        fs.writeFileSync(scriptFilePath, revision.content);
+      }
+    }).then(() => {
+      return res.json({ success: true, data: revision });
+    });
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Script Revision could not be saved' });
@@ -98,6 +115,10 @@ router.delete('/', (req, res, next) => {
       id: req.body.scriptId,
     }
   }).then((script) => {
+    let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
+    if (fs.existsSync(scriptFilePath)) {
+      fs.unlinkSync(scriptFilePath);
+    }
     Script.destroy({
       where: { id: script.id }
     });
