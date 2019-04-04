@@ -3,6 +3,8 @@ const router = express.Router();
 
 const db = require('../models/index');
 
+const fs = require('fs-extra');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
@@ -40,6 +42,10 @@ router.delete('/', (req, res, next) => {
       where: { role: WorkspaceUser.roles.OWNER }
     }
   }).then(workspace => {
+    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
+    if (fs.existsSync(workspaceDirPath)) {
+      fs.removeSync(workspaceDirPath);
+    }
     Workspace.destroy({
       where: { id: workspace.id }
     });

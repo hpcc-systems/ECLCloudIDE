@@ -3,6 +3,8 @@ const router = express.Router();
 
 const db = require('../models/index');
 
+const fs = require('fs-extra');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
