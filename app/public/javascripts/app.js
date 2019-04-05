@@ -497,6 +497,18 @@ require([
       toggleNewScriptPopover();
     });
 
+    /* SHOW DELETE WORKSPACE CONFIRMATION */
+    $('.navbar-nav').on('click', '.delete-workspace', function(evt) {
+      let $this = $(this),
+          $modal = $('#removeWorkspaceModal'),
+          $workspaceSelect = $('#workspaceSelect');
+
+      evt.stopPropagation();
+
+      $modal.find('.workspacename').text($workspaceSelect.text());
+      $modal.modal('show');
+    });
+
     /* DELETE SELECTED WORKSPACE */
     $('#removeWorkspaceModal').on('click', '.btn-danger', function(evt) {
       let $modal = $('#removeWorkspaceModal'),
