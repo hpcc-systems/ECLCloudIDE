@@ -196,6 +196,11 @@ a {
   margin-top: 2px;
 }
 
+.cardname-wrapper {
+  width: 130px;
+  overflow-wrap: anywhere;
+}
+
 main .loader {
   margin: 100px auto;
   text-align: center;
