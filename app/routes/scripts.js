@@ -72,10 +72,12 @@ router.post('/revision', (req, res, next) => {
       }
     }).then((script) => {
       console.log('update contents of script file');
-      let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
-      if (fs.existsSync(scriptFilePath)) {
-        fs.writeFileSync(scriptFilePath, revision.content);
+      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId,
+          scriptFilePath = workspaceDirPath + '/' + script.name + '.ecl';
+      if (!fs.existsSync(workspaceDirPath)) {
+        fs.mkdirSync(workspaceDirPath);
       }
+      fs.writeFileSync(scriptFilePath, revision.content);
     }).then(() => {
       return res.json({ success: true, data: revision });
     });
