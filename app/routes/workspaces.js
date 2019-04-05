@@ -16,7 +16,10 @@ const Workunit = db.Workunit;
 /* Create workspace */
 router.post('/', (req, res, next) => {
   console.log('request body', req.body);
-  Workspace.create({ name: req.body.workspaceName }).then((workspace) => {
+  Workspace.create({
+    name: req.body.workspaceName,
+    cluster: req.body.workspaceCluster
+  }).then((workspace) => {
     let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
     if (!fs.existsSync(workspaceDirPath)) {
       fs.mkdirSync(workspaceDirPath);
