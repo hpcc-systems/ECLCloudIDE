@@ -926,7 +926,7 @@ require([
         $newScript.data('name', script.data.name);
         $newScript.find('.scriptname').text($newScript.data('name'));
         $scripts.append($newScript);
-        $modal.find('#script-name').val('');
+        $modal.find('#new-script-name').val('');
         $form.removeClass('was-validated');
 
         showScripts();
@@ -939,6 +939,66 @@ require([
     $('#newScriptModal').on('hide.bs.modal', function(evt) {
       $('#newScriptModal form').removeClass('was-validated');
       $('#newScriptModal form')[0].reset();
+    });
+
+    /* SHOW EDIT SCRIPT MODAL */
+    $('.scripts').on('click', '.script .edit', function(evt) {
+      let $this = $(this),
+          $script = $this.parents('.script'),
+          $modal = $('#editScriptModal');
+
+      evt.stopPropagation();
+
+      //link.parentElement.removeChild(link);
+      $modal.find('#edit-script-name').val($script.find('.scriptname').text());
+      $modal.modal('show');
+      console.log($script.index());
+      $modal.find('.btn-primary').data('script', $script.index());
+      console.log($modal.find('.btn-primary').data('script'));
+    });
+
+    /* EDIT SCRIPT */
+    $('#editScriptModal').on('click', '.btn-primary', function(evt) {
+      let $modal = $('#editScriptModal'),
+          $scripts = $('.scripts'),
+          $script = $scripts.children().eq($(this).data('script')),
+          $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
+          $form = $modal.find('form'),
+          data = getFormData($form);
+
+      if ($form[0].checkValidity() === false) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        $form.addClass('was-validated');
+        return false;
+      }
+
+      data.id = $script.data('id');
+      data.prevName = $script.data('name');
+      data.workspaceId = $workspaceId;
+      console.log('submitting PUT with: ', JSON.stringify(data));
+
+      fetch('/scripts/', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((script) => {
+        $modal.modal('hide');
+        $script.data('name', script.data.name);
+        $script.find('.scriptname').text($script.data('name'));
+        $modal.find('#edit-script-name').val('');
+        $form.removeClass('was-validated');
+      });
+    });
+
+    /* RESET EDIT SCRIPT FORM ON MODAL HIDE */
+    $('#editScriptModal').on('hide.bs.modal', function(evt) {
+      $('#editScriptModal form').removeClass('was-validated');
+      $('#editScriptModal form')[0].reset();
     });
 
     /* SHOW DELETE SCRIPT CONFIRMATION */

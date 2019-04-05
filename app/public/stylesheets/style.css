@@ -190,6 +190,12 @@ a {
   cursor: pointer;
 }
 
+.dataset:hover .edit,
+.script:hover .edit {
+  display: inline !important;
+  margin-top: 2px;
+}
+
 main .loader {
   margin: 100px auto;
   text-align: center;

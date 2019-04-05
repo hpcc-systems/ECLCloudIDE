@@ -96,11 +96,16 @@ router.put('/', (req, res, next) => {
   if (req.body.columnCount) script.columnCount = req.body.columnCount;
   if (req.body.eclSchema) script.eclSchema = JSON.parse(req.body.eclSchema);
   if (Object.keys(script).length > 0) {
-    Dataset.update(script, {
+    Script.update(script, {
       where: {
         id: req.body.id
       }
-    }).then((script) => {
+    }).then((result) => {
+      let currentScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + req.body.prevName + '.ecl';
+      let newScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
+      if (fs.existsSync(currentScriptFilePath)) {
+        fs.rename(currentScriptFilePath, newScriptFilePath);
+      }
       return res.json({ success: true, data: script });
     }).catch((err) => {
       console.log(err);
