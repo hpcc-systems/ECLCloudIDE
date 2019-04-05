@@ -35,8 +35,12 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="workspace-name") Name:
-            input.form-control(id="workspace-name", name="workspaceName", type="text", required="required")
+            input.form-control(id="workspace-name", name="workspaceName", type="text", required="required", placeholder="MyWorkspace...")
             .invalid-feedback Please provide a name for the workspace.
+          div.form-group
+            label.col-form-label(for="workspace-cluster") Cluster:
+            input.form-control(id="workspace-cluster", name="workspaceCluster", type="text", required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"...")
+            .invalid-feedback Please provide a valid url for the cluster.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary Save
