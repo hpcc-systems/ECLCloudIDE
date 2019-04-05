@@ -681,6 +681,7 @@ require([
       });
     });
 
+    /* UPDATE DATASET INFO */
     $('.datasets').on('click', '.dataset .status', function(evt) {
       let $dataset = $(evt.target).parents('.dataset'),
           dataset = { id: $dataset.data('id') },
@@ -818,6 +819,66 @@ require([
       $('.file-details').html('');
       $('#dataset-file + .invalid-feedback').text(FILE_FEEDBACK);
       $('#dataset-file').removeClass('is-invalid');
+    });
+
+    /* SHOW EDIT DATASET MODAL */
+    $('.datasets').on('click', '.dataset .edit', function(evt) {
+      let $this = $(this),
+          $dataset = $this.parents('.dataset'),
+          $modal = $('#editDatasetModal');
+
+      evt.stopPropagation();
+
+      //link.parentElement.removeChild(link);
+      $modal.find('#edit-dataset-name').val($dataset.find('.datasetname').text());
+      $modal.modal('show');
+      console.log($dataset.index());
+      $modal.find('.btn-primary').data('dataset', $dataset.index());
+      console.log($modal.find('.btn-primary').data('dataset'));
+    });
+
+    /* EDIT DATASET */
+    $('#editDatasetModal').on('click', '.btn-primary', function(evt) {
+      let $modal = $('#editDatasetModal'),
+          $datasets = $('.datasets'),
+          $dataset = $datasets.children().eq($(this).data('dataset')),
+          $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
+          $form = $modal.find('form'),
+          data = getFormData($form);
+
+      if ($form[0].checkValidity() === false) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        $form.addClass('was-validated');
+        return false;
+      }
+
+      data.id = $dataset.data('id');
+      data.prevName = $dataset.data('name');
+      data.workspaceId = $workspaceId;
+      console.log('submitting PUT with: ', JSON.stringify(data));
+
+      fetch('/datasets/', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((dataset) => {
+        $modal.modal('hide');
+        $dataset.data('name', dataset.data.name);
+        $dataset.find('.datasetname').text($dataset.data('name'));
+        $modal.find('#edit-dataset-name').val('');
+        $form.removeClass('was-validated');
+      });
+    });
+
+    /* RESET EDIT DATASET FORM ON MODAL HIDE */
+    $('#editDatasetModal').on('hide.bs.modal', function(evt) {
+      $('#editDatasetModal form').removeClass('was-validated');
+      $('#editDatasetModal form')[0].reset();
     });
 
     /* CHANGE SELECTED DATASET */

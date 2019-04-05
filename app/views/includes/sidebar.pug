@@ -10,7 +10,8 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
     div.nav.flex-column.datasets.collapse(id="datasets")
       a.text-muted.dataset.cloner.d-none(href='#')
         div
-          i.float-right.fa.fa-close.delete.d-none
+          i.float-right.fa.fa-close.delete.d-none(title="Delete dataset")
+          i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit dataset")
           div.cardname-wrapper
             b.datasetname Name
               i.status.fa.fa-refresh
@@ -99,6 +100,23 @@ div.modal.fade(id="newDatasetModal", role="dialog")
             input.form-control(id="dataset-name", name="datasetName", type="text", required="required")
             .invalid-feedback Please provide a name for the dataset.
           div.file-details
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary(type="submit") Save
+
+div.modal.fade(id="editDatasetModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Edit Dataset
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="edit-dataset-name") Name:
+            input.form-control(id="edit-dataset-name", name="name", type="text", required="required")
+            .invalid-feedback Please provide a name for the dataset.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
