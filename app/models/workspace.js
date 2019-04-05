@@ -8,7 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       autoIncrement: false,
     },
-    name: DataTypes.STRING
+    name: DataTypes.STRING,
+    cluster: DataTypes.STRING
   }, {
     paranoid: true
   });
