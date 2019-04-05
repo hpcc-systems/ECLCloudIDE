@@ -116,6 +116,14 @@ a {
   border-radius: 4px;
 }
 
+#workspaceSelect .edit {
+  margin-top: 2px;
+}
+
+#workspaceSelect:hover .edit {
+  display: inline !important;
+}
+
 .workspace-tip {
   color: #66686f;
   width: 200px;
