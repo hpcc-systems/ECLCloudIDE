@@ -9,6 +9,10 @@ const NEW_DATASET = 'New Dataset...';
 const FILE_FEEDBACK = 'Please select a CSV file to upload.';
 
 let currentDatasetFile = {};
+let cluster = {
+  host: 'http://10.173.147.1',
+  port: '8010'
+};
 
 let populateWorkspaces = () => {
   fetch('/users/workspaces')
@@ -183,8 +187,8 @@ let createWorkunit = () => {
   return fetch('/hpcc/workunits', {
     method: 'POST',
     body: JSON.stringify({
-      clusterAddr: 'http://10.173.147.1',
-      clusterPort: '8010'
+      clusterAddr: cluster.host,
+      clusterPort: cluster.port
     }),
     headers: {
       'Content-Type': 'application/json'
@@ -196,8 +200,8 @@ let updateWorkunit = (wuid, query) => {
   return fetch('/hpcc/workunits', {
     method: 'PUT',
     body: JSON.stringify({
-      clusterAddr: 'http://10.173.147.1',
-      clusterPort: '8010',
+      clusterAddr: cluster.host,
+      clusterPort: cluster.port,
       wuid: wuid,
       query: query
     }),
@@ -211,8 +215,8 @@ let submitWorkunit = (wuid) => {
   return fetch('/hpcc/workunits/submit', {
     method: 'POST',
     body: JSON.stringify({
-      clusterAddr: 'http://10.173.147.1',
-      clusterPort: '8010',
+      clusterAddr: cluster.host,
+      clusterPort: cluster.port,
       wuid: wuid,
       cluster: 'hthor'
     }),
@@ -226,8 +230,8 @@ let sendFileToLandingZone = (file) => {
   console.log(file);
   let formData = new FormData();
   formData.append('file', file);
-  formData.append('clusterAddr', 'http://10.173.147.1');
-  formData.append('clusterPort', '8010');
+  formData.append('clusterAddr', cluster.host);
+  formData.append('clusterPort', cluster.port);
 
   return fetch('/hpcc/filespray/upload', {
     method: 'POST',
@@ -239,8 +243,8 @@ let sprayFile = (clusterFilename, workspaceId) => {
   console.log(clusterFilename);
   let formData = new FormData();
   formData.append('filename', clusterFilename);
-  formData.append('clusterAddr', 'http://10.173.147.1');
-  formData.append('clusterPort', '8010');
+  formData.append('clusterAddr', cluster.host);
+  formData.append('clusterPort', cluster.port);
   formData.append('workspaceId', workspaceId);
 
   return fetch('/hpcc/filespray/spray', {
@@ -252,8 +256,8 @@ let sprayFile = (clusterFilename, workspaceId) => {
 let getDfuWorkunit = (wuid) => {
   let formData = new FormData();
   formData.append('wuid', wuid);
-  formData.append('clusterAddr', 'http://10.173.147.1');
-  formData.append('clusterPort', '8010');
+  formData.append('clusterAddr', cluster.host);
+  formData.append('clusterPort', cluster.port);
 
   return fetch('/hpcc/filespray/getDfuWorkunit', {
     method: 'POST',
@@ -276,7 +280,8 @@ let saveWorkunit = (objectId, workunitId) => {
 
 let checkWorkunitStatus = (wuid) => {
   return fetch('/hpcc/workunits?wuid=' + wuid +
-    '&clusterAddr=http%3A%2F%2F10.173.147.1%3A8010');
+    '&clusterAddr=' + encodeURIComponent(cluster.host) +
+    encodeURIComponent(':') + cluster.port);
 };
 
 let getWorkunitResults = (wuid, count, sequence) => {
@@ -285,8 +290,8 @@ let getWorkunitResults = (wuid, count, sequence) => {
   return fetch('/hpcc/workunits/results', {
     method: 'POST',
     body: JSON.stringify({
-      clusterAddr: 'http://10.173.147.1',
-      clusterPort: '8010',
+      clusterAddr: cluster.host,
+      clusterPort: cluster.port,
       wuid: wuid,
       count: ((count) ? count : 1000),
       sequence: ((sequence) ? sequence : 0)
