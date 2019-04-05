@@ -37,6 +37,24 @@ router.post('/', (req, res, next) => {
   });
 });
 
+/* Update workspace */
+router.put('/', (req, res, next) => {
+  console.log('request body', req.body);
+  let workspace = {};
+  if (req.body.workspaceName) workspace.name = req.body.workspaceName;
+  if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
+  Workspace.update(workspace, {
+    where: {
+      id: req.body.id
+    }
+  }).then((result) => {
+    return res.json({ success: true, data: workspace });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Workspace could not be saved' });
+  });
+});
+
 /* Delete workspace */
 router.delete('/', (req, res, next) => {
   Workspace.findOne({
