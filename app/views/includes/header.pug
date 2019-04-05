@@ -45,6 +45,27 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary Save
 
+div.modal.fade(id="editWorkspaceModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Edit Workspace
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="edit-workspace-name") Name:
+            input.form-control(id="edit-workspace-name", name="workspaceName", type="text", required="required", placeholder="MyWorkspace...")
+            .invalid-feedback Please provide a name for the workspace.
+          div.form-group
+            label.col-form-label(for="edit-workspace-cluster") Cluster:
+            input.form-control(id="edit-workspace-cluster", name="workspaceCluster", type="text", required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"...")
+            .invalid-feedback Please provide a valid url for the cluster.
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary Save
+
 div.modal.fade(id="removeWorkspaceModal", role="dialog")
   div.modal-dialog
     div.modal-content
