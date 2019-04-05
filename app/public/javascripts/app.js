@@ -28,6 +28,7 @@ let populateWorkspaces = () => {
           let $newWorkspace = $workspaces.find('.cloner').clone();
           $newWorkspace.removeClass('d-none cloner');
           $newWorkspace.data('name', workspace.name);
+          $newWorkspace.data('cluster', workspace.cluster);
           $newWorkspace.data('id', workspace.id);
           $newWorkspace.text($newWorkspace.data('name'));
           $workspaces.append($newWorkspace);
