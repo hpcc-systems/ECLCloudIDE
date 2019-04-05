@@ -494,12 +494,74 @@ require([
       $this.addClass('active');
       $selected.text($this.text());
       $deleteWorkspace.removeClass('d-none');
+      $selected.append('<i class="fa fa-pencil-square-o edit float-right d-none"></i>');
 
       $scriptPanelClose.trigger('click');
 
       populateDatasets();
       populateScripts();
       toggleNewScriptPopover();
+    });
+
+    $('#workspaceSelect').on('click', '.edit', function(evt) {
+
+    });
+
+    /* SHOW EDIT WORKSPACE MODAL */
+    $('#workspaceSelect').on('click', '.edit', function(evt) {
+      let $this = $(this),
+          $workspace = $('.workspaces .active'),
+          $modal = $('#editWorkspaceModal');
+
+      evt.stopPropagation();
+
+      //link.parentElement.removeChild(link);
+      $modal.find('#edit-workspace-name').val($workspace.data('name'));
+      $modal.find('#edit-workspace-cluster').val($workspace.data('cluster'));
+      $modal.modal('show');
+    });
+
+    /* EDIT WORKSPACE */
+    $('#editWorkspaceModal').on('click', '.btn-primary', function(evt) {
+      let $modal = $('#editWorkspaceModal'),
+          $selected = $('#workspaceSelect'),
+          $workspace = $('.workspaces .active'),
+          $workspaceId = $workspace.data('id'),
+          $form = $modal.find('form'),
+          data = getFormData($form);
+
+      if ($form[0].checkValidity() === false) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        $form.addClass('was-validated');
+        return false;
+      }
+
+      data.id = $workspace.data('id');
+      console.log('submitting PUT with: ', JSON.stringify(data));
+
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((workspace) => {
+        $modal.modal('hide');
+        $workspace.data('name', workspace.data.name);
+        $selected.text($workspace.data('name'));
+        $selected.append('<i class="fa fa-pencil-square-o edit float-right d-none"></i>');
+        $modal.find('#edit-workspace-name').val('');
+        $form.removeClass('was-validated');
+      });
+    });
+
+    /* RESET EDIT WORKSPACE FORM ON MODAL HIDE */
+    $('#editWorkspaceModal').on('hide.bs.modal', function(evt) {
+      $('#editWorkspaceModal form').removeClass('was-validated');
+      $('#editWorkspaceModal form')[0].reset();
     });
 
     /* SHOW DELETE WORKSPACE CONFIRMATION */
