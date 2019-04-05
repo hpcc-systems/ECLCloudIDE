@@ -27,6 +27,29 @@ router.get('/', (req, res, next) => {
       errors: []
     };
 
+    if (json.WUInfoResponse.Workunit.Archived) {
+      request({
+        method: 'POST',
+        uri: req.query.clusterAddr + '/WsWorkunits/WUAction.json',
+        form: { rawxml_: true, Wuids_i0: req.query.wuid, WUActionType: 'Restore' },
+        resolveWithFullResponse: true
+      }).then((response) => {
+        let _json = JSON.parse(response.body);
+        console.log(_json);
+      }).then(() => {
+        request({
+          method: 'POST',
+          uri: req.query.clusterAddr + '/WsWorkunits/WUInfo.json',
+          form: { rawxml_: true, Wuid: req.query.wuid },
+          resolveWithFullResponse: true
+        }).then((response) => {
+          console.log('restored workunit info');
+          json = JSON.parse(response.body);
+          console.log(json.WUInfoResponse.Workunit);
+        });
+      });
+    }
+
     if (json.WUInfoResponse.Workunit.Results) {
       json.WUInfoResponse.Workunit.Results.ECLResult.forEach((result) => {
         console.log(result);
