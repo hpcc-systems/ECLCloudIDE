@@ -341,12 +341,14 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
         }
       });
 
-    dataTable = $table.DataTable({
-      order: [[Object.keys(results[0]).length - 1, 'asc']],
-      pageLength: 25
+      dataTable = $table.DataTable({
+        order: [[Object.keys(results[0]).length - 1, 'asc']],
+        pageLength: 25
+      });
+      $loader.addClass('d-none');
+      $datasetContent.removeClass('d-none');
     });
-    $loader.addClass('d-none');
-    $datasetContent.removeClass('d-none');
+
   });
 };
 
