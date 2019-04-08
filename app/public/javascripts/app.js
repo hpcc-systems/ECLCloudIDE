@@ -219,7 +219,7 @@ let submitWorkunit = (wuid) => {
       clusterAddr: cluster.host,
       clusterPort: cluster.port,
       wuid: wuid,
-      cluster: 'hthor'
+      cluster: 'thor'
     }),
     headers: {
       'Content-Type': 'application/json'
