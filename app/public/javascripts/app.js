@@ -316,28 +316,30 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
   $datasetContent.addClass('d-none');
   $loader.removeClass('d-none');
 
-  getWorkunitResults(wuid, 1000, sequence)
-  .then(response => response.json())
-  .then((wuResult) => {
-    let results = wuResult.WUResultResponse.Result.Row;
-    console.log(wuResult);
-    $tableWrapper.html(
-      '<table class="table" style="width: 100%;">' +
-      '<thead><tr></tr></thead><tbody></tbody>' +
-      '<tfoot><tr></tr></tfoot></table>'
-    );
-    $table = $tableWrapper.find('.table');
-    Object.keys(results[0]).forEach((key) => {
-      $table.find('thead tr').append('<th scope="col">' + key + '</th>');
-      $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
-    });
-    results.forEach((row) => {
-      $table.find('tbody').append('<tr></tr>');
-      let $row = $table.find('tbody tr:last-child');
-      for (var x in row) {
-        $row.append('<td scope="row">' + row[x] + '</td>');
-      }
-    });
+  checkWorkunitStatus(wuid).then(() => {
+
+    getWorkunitResults(wuid, 1000, sequence)
+    .then(response => response.json())
+    .then((wuResult) => {
+      let results = wuResult.WUResultResponse.Result.Row;
+      console.log(wuResult);
+      $tableWrapper.html(
+        '<table class="table" style="width: 100%;">' +
+        '<thead><tr></tr></thead><tbody></tbody>' +
+        '<tfoot><tr></tr></tfoot></table>'
+      );
+      $table = $tableWrapper.find('.table');
+      Object.keys(results[0]).forEach((key) => {
+        $table.find('thead tr').append('<th scope="col">' + key + '</th>');
+        $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
+      });
+      results.forEach((row) => {
+        $table.find('tbody').append('<tr></tr>');
+        let $row = $table.find('tbody tr:last-child');
+        for (var x in row) {
+          $row.append('<td scope="row">' + row[x] + '</td>');
+        }
+      });
 
     dataTable = $table.DataTable({
       order: [[Object.keys(results[0]).length - 1, 'asc']],
