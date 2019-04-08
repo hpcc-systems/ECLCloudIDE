@@ -719,9 +719,13 @@ require([
                       checkWorkunitStatus(_wuid)
                       .then(response => response.json())
                       .then((json) => {
-                        if (json.state == 'completed' && json.results[0].logicalFile) {
+                        if (json.state == 'completed') {
+
                           $datasetStatus.removeClass('fa-spin');
-                          dataset.logicalfile = json.results[0].logicalFile;
+
+                          if (json.results[0].logicalFile) {
+                            dataset.logicalfile = json.results[0].logicalFile;
+                          }
 
                           if (json.results[0].schema) {
                             dataset.rowCount = json.results[0].rows;
@@ -776,29 +780,35 @@ require([
         .then(response => response.json())
         .then((json) => {
           console.log(json);
-          if (json.state == 'completed' && json.logicalFile) {
-            $datasetStatus.removeClass('fa-spin');
-            dataset.logicalfile = json.logicalFile;
+          if (json.state == 'completed') {
 
-            if (json.schema) {
-              dataset.rowCount = json.rows;
-              dataset.columnCount = json.columns;
-              dataset.eclSchema = JSON.stringify(json.schema);
-              dataset.eclQuery = json.query;
+            $datasetStatus.removeClass('fa-spin');
+
+            if (json.results[0].logicalFile) {
+              dataset.logicalfile = json.results[0].logicalFile;
             }
 
-            fetch('/datasets/', {
-              method: 'PUT',
-              body: JSON.stringify(dataset),
-              headers:{
-                'Content-Type': 'application/json'
-              }
-            }).then(() => {
-              $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
-              $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
-              $dataset.data('eclSchema', dataset.eclSchema);
-              $dataset.data('eclQuery', dataset.eclQuery);
-            });
+            if (json.results[0].schema) {
+              dataset.rowCount = json.results[0].rows;
+              dataset.columnCount = json.results[0].columns;
+              dataset.eclSchema = JSON.stringify(json.results[0].schema);
+              dataset.eclQuery = json.results[0].query;
+            }
+
+            if (dataset.rowCount && dataset.columnCount) {
+              fetch('/datasets/', {
+                method: 'PUT',
+                body: JSON.stringify(dataset),
+                headers:{
+                  'Content-Type': 'application/json'
+                }
+              }).then(() => {
+                $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
+                $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
+                $dataset.data('eclSchema', dataset.eclSchema);
+                $dataset.data('eclQuery', dataset.eclQuery);
+              });
+            }
           }
           window.clearTimeout(t);
         });
