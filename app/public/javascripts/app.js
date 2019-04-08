@@ -1455,9 +1455,20 @@ require([
     });
 
     $(document).on('keydown', function(evt) {
-      if (evt.ctrlKey && evt.keyCode == 80) {
-        evt.preventDefault();
-        $('.ctrl-p').toggleClass('d-none');
+      if (evt.ctrlKey) {
+        switch (evt.keyCode) {
+          case 80: // P
+            evt.preventDefault();
+            $('.ctrl-p').toggleClass('d-none');
+            break;
+          case 118: // F7
+            if (!$('.script-panel').hasClass('d-none')) {
+              window.onhelp = function() { return false; }
+              evt.preventDefault();
+              alert('check syntax');
+            }
+            break;
+        }
       }
     });
 
