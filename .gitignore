@@ -20,3 +20,6 @@ line-navigator/
 
 #ecl workspaces
 workspaces/
+
+#mysql data for docker container
+mysql-data/
