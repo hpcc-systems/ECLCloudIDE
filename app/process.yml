@@ -1,0 +1,5 @@
+apps:
+  - script: 'bin/www'
+    name: 'ecl-ide'
+    error_file: '/tmp/pm2/logs/ecl-ide_error.log'
+    out_file: '/tmp/pm2/logs/ecl-ide_out.log'

@@ -1,0 +1,36 @@
+version: "3"
+services:
+  node_web:
+    #restart: always
+    entrypoint: [/app/docker-entry.sh]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /tmp/pm2
+    networks:
+      - ecl-ide-network
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - mysql_db
+
+  mysql_db:
+    image: mysql:5.7
+    restart: always
+    command: --innodb_use_native_aio=0
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASS: ${DB_PASS}
+    networks:
+      - ecl-ide-network
+
+networks:
+  ecl-ide-network:
+    driver: bridge
