@@ -13,6 +13,7 @@ node_modules/
 
 # Sequelize config file
 config.json
+config.js
 
 #dist/public javascripts
 codemirror/
