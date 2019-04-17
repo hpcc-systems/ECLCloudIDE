@@ -725,6 +725,8 @@ require([
 
                           $datasetStatus.removeClass('fa-spin');
 
+                          dataset.eclQuery = json.query;
+
                           if (json.results[0].logicalFile) {
                             dataset.logicalfile = json.results[0].logicalFile;
                           }
@@ -745,6 +747,8 @@ require([
                             let $dataset = $('.datasets').children().last();
                             $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
                             $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
+                            $dataset.data('eclSchema', dataset.eclSchema);
+                            $dataset.data('eclQuery', dataset.eclQuery);
                             window.clearTimeout(t);
                           });
                         } else {
@@ -786,6 +790,8 @@ require([
 
             $datasetStatus.removeClass('fa-spin');
 
+            dataset.eclQuery = json.query;
+
             if (json.results[0].logicalFile) {
               dataset.logicalfile = json.results[0].logicalFile;
             }
@@ -794,7 +800,6 @@ require([
               dataset.rowCount = json.results[0].rows;
               dataset.columnCount = json.results[0].columns;
               dataset.eclSchema = JSON.stringify(json.results[0].schema);
-              dataset.eclQuery = json.results[0].query;
             }
 
             if (dataset.rowCount && dataset.columnCount) {
