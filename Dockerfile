@@ -31,4 +31,6 @@ RUN npm install -g node-gyp && npm install
 
 RUN npm install sequelize-cli pm2 -g
 
+RUN npm run clientdeps
+
 COPY [".env", "/app/.env"]
