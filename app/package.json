@@ -5,12 +5,12 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "codemirror:clean": "rm -rf ./public/javascripts/codemirror/",
-    "codemirror:mkdir": "mkdir .\\public\\javascripts\\codemirror\\",
+    "codemirror:mkdir": "mkdir -p ./public/javascripts/codemirror/",
     "codemirror:copy": "cp -r ./node_modules/codemirror/* ./public/javascripts/codemirror/",
     "codemirror": "npm run codemirror:clean && npm run codemirror:mkdir && npm run codemirror:copy",
     "linenav:clean": "rm -rf ./public/javascripts/line-navigator/",
-    "linenav:mkdir": "mkdir .\\public\\javascripts\\line-navigator\\",
-    "linenav:copy": "cp ./node_modules/line-navigator/{file-wrapper.min.js,line-navigator.min.js} ./public/javascripts/line-navigator/",
+    "linenav:mkdir": "mkdir ./public/javascripts/line-navigator/",
+    "linenav:copy": "cp ./node_modules/line-navigator/file-wrapper.min.js ./public/javascripts/line-navigator/ && cp ./node_modules/line-navigator/line-navigator.min.js ./public/javascripts/line-navigator/",
     "linenav": "npm run linenav:clean && npm run linenav:mkdir && npm run linenav:copy",
     "clientdeps": "npm run codemirror && npm run linenav"
   },
