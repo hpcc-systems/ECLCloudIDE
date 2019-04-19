@@ -14,8 +14,8 @@ const Workunit = db.Workunit;
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
   const query = `SELECT d.*, w.workunitId \
-    FROM datasets AS d \
-    LEFT JOIN workunits AS w ON d.id = w.objectId \
+    FROM Datasets AS d \
+    LEFT JOIN Workunits AS w ON d.id = w.objectId \
     WHERE d.workspaceId = "${req.query.workspaceId}" \
     AND w.workunitId LIKE "W%" \
     AND d.deletedAt IS NULL`;
