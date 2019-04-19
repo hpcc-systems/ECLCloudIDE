@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('datasets', 'logicalfile', {
+    return queryInterface.addColumn('Datasets', 'logicalfile', {
       type: Sequelize.STRING,
       allowNull: true,
       after: 'filename'
@@ -10,6 +10,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.removeColumn('datasets', 'logicalfile');
+    return queryInterface.removeColumn('Datasets', 'logicalfile');
   }
 };

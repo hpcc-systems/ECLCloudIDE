@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('workspaces', 'cluster', {
+    return queryInterface.addColumn('Workspaces', 'cluster', {
       type: Sequelize.STRING,
       allowNull: true,
       after: 'name'
@@ -10,6 +10,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.removeColumn('workspaces', 'cluster')
+    return queryInterface.removeColumn('Workspaces', 'cluster')
   }
 };

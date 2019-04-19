@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('datasets', 'eclQuery', {
+    return queryInterface.addColumn('Datasets', 'eclQuery', {
       type: Sequelize.STRING(4096),
       allowNull: true,
       after: 'eclSchema'
@@ -10,6 +10,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.removeColumn('datasets', 'eclQuery')
+    return queryInterface.removeColumn('Datasets', 'eclQuery')
   }
 };

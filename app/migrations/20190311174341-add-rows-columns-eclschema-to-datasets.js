@@ -2,19 +2,19 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('datasets', 'rowCount', {
+    return queryInterface.addColumn('Datasets', 'rowCount', {
         type: Sequelize.INTEGER,
         allowNull: true,
         after: 'logicalfile'
       })
       .then(() => {
-        return queryInterface.addColumn('datasets', 'columnCount', {
+        return queryInterface.addColumn('Datasets', 'columnCount', {
           type: Sequelize.INTEGER,
           allowNull: true,
           after: 'rowCount'
         })
         .then(() => {
-          return queryInterface.addColumn('datasets', 'eclSchema', {
+          return queryInterface.addColumn('Datasets', 'eclSchema', {
             type: Sequelize.JSON,
             allowNull: true,
             after: 'columnCount'
@@ -24,11 +24,11 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.removeColumn('datasets', 'rowCount')
+    return queryInterface.removeColumn('Datasets', 'rowCount')
       .then(() => {
-        return queryInterface.removeColumn('datasets', 'columnCount')
+        return queryInterface.removeColumn('Datasets', 'columnCount')
           .then(() => {
-            return queryInterface.removeColumn('datasets', 'eclSchema');
+            return queryInterface.removeColumn('Datasets', 'eclSchema');
           })
       });
   }
