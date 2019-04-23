@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+const cp = require('child_process');
+
 let request = require('request-promise');
 
 let buildClusterAddr = (req, res, next) => {
@@ -8,6 +10,26 @@ let buildClusterAddr = (req, res, next) => {
     req.clusterAddr = req.body.clusterAddr + ':' + req.body.clusterPort;
     next();
   }
+}
+
+let createEclArchive = (args, cwd) => {
+  return new Promise((resolve, _reject) => {
+    console.log('eclcc ' + args.join(' '));
+    const child = cp.spawn('eclcc', args, { cwd: cwd });
+    let stdOut = "", stdErr = "";
+    child.stdout.on("data", (data) => {
+      stdOut += data.toString();
+    });
+    child.stderr.on("data", (data) => {
+      stdErr += data.toString();
+    });
+    child.on("close", (_code, _signal) => {
+      resolve({
+        stdout: stdOut.trim(),
+        stderr: stdErr.trim()
+      });
+    });
+  });
 }
 
 router.get('/', (req, res, next) => {
@@ -91,23 +113,50 @@ router.post('/', buildClusterAddr, (req, res, next) => {
 });
 
 router.put('/', buildClusterAddr, (req, res, next) => {
-  let _query = req.body.query.replace(/\#USERNAME\#/g, req.session.user.username);
+  let _query = req.body.query,
+      _filename = req.body.filename,
+      _workspaceId = req.body.workspace,
+      filePath = process.cwd() + '/workspaces/' + _workspaceId + '/',
+      args = ['-E', filePath + _filename];
 
-  console.log('replaced #USERNAME#', _query)
+  if (_filename) {
+    createEclArchive(args, filePath).then((response) => {
+      _query = response.stdout;
+      console.log(response);
+      console.log('ecl archive: ' + _query);
+      request({
+        method: 'POST',
+        uri: req.clusterAddr + '/WsWorkunits/WUUpdate.json',
+        form: { Wuid: req.body.wuid, QueryText: _query },
+        resolveWithFullResponse: true
+      }).then((response) => {
+        console.log('response to WUUpdate', response.body);
+        let json = JSON.parse(response.body);
+        res.json(json);
+      }).catch((err) => {
+        console.log(err);
+        res.json(err);
+      });
+    });
+  } else {
+    _query = _query.replace(/\#USERNAME\#/g, req.session.user.username)
+    console.log('replaced #USERNAME#', _query);
 
-  request({
-    method: 'POST',
-    uri: req.clusterAddr + '/WsWorkunits/WUUpdate.json',
-    form: { Wuid: req.body.wuid, QueryText: _query },
-    resolveWithFullResponse: true
-  }).then((response) => {
-    console.log('response to WUUpdate', response.body);
-    let json = JSON.parse(response.body);
-    res.json(json);
-  }).catch((err) => {
-    console.log(err);
-    res.json(err);
-  });
+    request({
+      method: 'POST',
+      uri: req.clusterAddr + '/WsWorkunits/WUUpdate.json',
+      form: { Wuid: req.body.wuid, QueryText: _query },
+      resolveWithFullResponse: true
+    }).then((response) => {
+      console.log('response to WUUpdate', response.body);
+      let json = JSON.parse(response.body);
+      res.json(json);
+    }).catch((err) => {
+      console.log(err);
+      res.json(err);
+    });
+
+  }
 });
 
 router.post('/submit', buildClusterAddr, (req, res, next) => {

@@ -197,14 +197,16 @@ let createWorkunit = () => {
   });
 };
 
-let updateWorkunit = (wuid, query) => {
+let updateWorkunit = (wuid, query, filename, workspaceId) => {
   return fetch('/hpcc/workunits', {
     method: 'PUT',
     body: JSON.stringify({
       clusterAddr: cluster.host,
       clusterPort: cluster.port,
       wuid: wuid,
-      query: query
+      query: query,
+      filename: filename,
+      workspace: workspaceId
     }),
     headers: {
       'Content-Type': 'application/json'
@@ -709,7 +711,7 @@ require([
                   ",CLUSTER('mythor'),OVERWRITE);";
 
                 console.log(_query);
-                updateWorkunit(_wuid, _query).then(() => {
+                updateWorkunit(_wuid, _query, null, null).then(() => {
                   submitWorkunit(_wuid).then(() => {
                     console.log('check status of workunit');
 
@@ -1240,6 +1242,8 @@ require([
       let $script = $('.scripts .active'),
           _query = editor.getValue(),
           _wuid = '',
+          _filename = $script.data('name') + '.ecl',
+          $activeWorkspace = $('.workspaces .active'),
           $main = $('.dataset-content').parents('main'),
           revisionId = 0,
           script = {
@@ -1274,8 +1278,8 @@ require([
           script.wuid = _wuid;
         })
         .then(() => {
-          console.log(_query);
-          updateWorkunit(_wuid, _query).then(() => {
+          console.log(_filename);
+          updateWorkunit(_wuid, null, _filename, $activeWorkspace.data('id')).then(() => {
             submitWorkunit(_wuid).then(() => {
               console.log('check status of workunit');
 
