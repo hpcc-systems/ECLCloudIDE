@@ -502,7 +502,10 @@ require([
       $this.addClass('active');
       $selected.text($this.text());
       $deleteWorkspace.removeClass('d-none');
-      $selected.append('<i class="fa fa-pencil-square-o edit float-right d-none"></i>');
+      $selected.append(
+        '<i class="fa fa-pencil-square-o edit float-right d-none"></i>' +
+        '<i class="fa fa-users members float-right d-none"></i>'
+      );
 
       $scriptPanelClose.trigger('click');
 
@@ -511,8 +514,55 @@ require([
       toggleNewScriptPopover();
     });
 
-    $('#workspaceSelect').on('click', '.edit', function(evt) {
+    /* SHOW WORKSPACE MEMBERS MODAL */
+    $('#workspaceSelect').on('click', '.members', function(evt) {
+      let $this = $(this),
+          $workspace = $('.workspaces .active'),
+          $modal = $('#membersWorkspaceModal');
 
+      evt.stopPropagation();
+
+      //link.parentElement.removeChild(link);
+      $modal.modal('show');
+    });
+
+    /* FIND USERS TO ADD TO WORKSPACE */
+    $('#membersWorkspaceModal').on('keyup', '.user-search', _.debounce(function(evt) {
+      let $this = $(this),
+          $workspace = $('.workspaces .active'),
+          username = $('#edit-workspace-users').val(),
+          $modal = $('#membersWorkspaceModal'),
+          url = new URL(hostname + '/users/search'),
+          params = { username: username };
+
+      url.search = new URLSearchParams(params);
+
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      console.log(username);
+
+      fetch(url)
+        .then(response => response.json())
+        .then((users) => {
+          console.log(users);
+        });
+    }, 500));
+
+    /* SAVE WORKSPACE MEMBERS */
+    $('#membersWorkspaceModal').on('click', '.btn-primary', function(evt) {
+      let $this = $(this),
+          $workspace = $('.workspaces .active'),
+          $modal = $('#membersWorkspaceModal'),
+          $users = $modal.find('.user-list').find('tr:not(.header)');
+
+      console.log($users);
+    });
+
+    /* RESET EDIT WORKSPACE FORM ON MODAL HIDE */
+    $('#membersWorkspaceModal').on('hide.bs.modal', function(evt) {
+      $('#membersWorkspaceModal form').removeClass('was-validated');
+      $('#membersWorkspaceModal form')[0].reset();
     });
 
     /* SHOW EDIT WORKSPACE MODAL */
