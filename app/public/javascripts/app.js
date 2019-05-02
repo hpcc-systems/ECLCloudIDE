@@ -326,11 +326,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
       let results = wuResult.WUResultResponse.Result.Row;
       console.log(wuResult);
       $tableWrapper.html(
-        '<table class="table" style="width: 100%;">' +
+        '<table class="table data-table" style="width: 100%;">' +
         '<thead><tr></tr></thead><tbody></tbody>' +
         '<tfoot><tr></tr></tfoot></table>'
       );
-      $table = $tableWrapper.find('.table');
+      $table = $tableWrapper.find('.data-table');
       Object.keys(results[0]).forEach((key) => {
         $table.find('thead tr').append('<th scope="col">' + key + '</th>');
         $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
@@ -1205,8 +1205,8 @@ require([
       });
     });
 
-    if ($('.table').length > 0) {
-      $('.table').DataTable();
+    if ($('.data-table').length > 0) {
+      $('.data-table').DataTable();
     }
 
     /*==========================================================================*
