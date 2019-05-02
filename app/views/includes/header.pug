@@ -79,3 +79,49 @@ div.modal.fade(id="removeWorkspaceModal", role="dialog")
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-danger Delete
+
+div.modal.fade.workspaceUsersModal(id="membersWorkspaceModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Workspace Users
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group.d-flex
+            label.col-form-label(for="edit-workspace-name") Add User:
+            input.form-control.user-search.mx-3(id="edit-workspace-users", name="workspaceUsers", type="text", placeholder="Search by username...")
+            .invalid-feedback Please provide a username.
+        table.table.user-list
+          tr.header
+            th User
+            th Permission
+            th
+          tr
+            td Bob
+            td
+              select.form-control
+                option(value="read") Read
+                option(value="write") Write
+            td.d-flex.justify-content-center
+              button.btn.btn-danger Remove
+          tr
+            td Lindsey
+            td
+              select.form-control
+                option(value="read") Read
+                option(value="write") Write
+            td.d-flex.justify-content-center
+              button.btn.btn-danger Remove
+          tr
+            td Tom
+            td
+              select.form-control
+                option(value="read") Read
+                option(value="write") Write
+            td.d-flex.justify-content-center
+              button.btn.btn-danger Remove
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary Save
