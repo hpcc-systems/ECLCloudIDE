@@ -12,7 +12,11 @@
     "linenav:mkdir": "mkdir ./public/javascripts/line-navigator/",
     "linenav:copy": "cp ./node_modules/line-navigator/file-wrapper.min.js ./public/javascripts/line-navigator/ && cp ./node_modules/line-navigator/line-navigator.min.js ./public/javascripts/line-navigator/",
     "linenav": "npm run linenav:clean && npm run linenav:mkdir && npm run linenav:copy",
-    "clientdeps": "npm run codemirror && npm run linenav"
+    "lodash:clean": "rm -rf ./public/javascripts/lodash/",
+    "lodash:mkdir": "mkdir ./public/javascripts/lodash/",
+    "lodash:copy": "cp ./node_modules/lodash/* ./public/javascripts/lodash/",
+    "lodash": "npm run lodash:clean && npm run lodash:mkdir && npm run lodash:copy",
+    "clientdeps": "npm run codemirror && npm run linenav && npm run lodash"
   },
   "dependencies": {
     "bcrypt": "^3.0.3",
