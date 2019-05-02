@@ -357,6 +357,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
 require.config({
   paths: {
     'ln': '/javascripts/line-navigator',
+    '_': '/javascripts/lodash',
   },
   packages: [{
     name: 'codemirror',
@@ -366,10 +367,10 @@ require.config({
 });
 
 require([
-  'ln/line-navigator.min', 'codemirror',
+  'ln/line-navigator.min', 'codemirror', '_/lodash.min',
   'codemirror/mode/ecl/ecl',
   'codemirror/addon/selection/active-line'
-], function(LineNavigator, CodeMirror) {
+], function(LineNavigator, CodeMirror, _) {
   let editor = null, $draggedObject = null;
 
   if ($('#editor').length > 0) {
