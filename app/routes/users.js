@@ -27,4 +27,22 @@ router.get('/workspaces', (req, res, next) => {
   });
 });
 
+router.get('/search', (req, res, next) => {
+  User.findAll({
+    attributes: ['id', 'username'],
+    where: {
+      [db.Sequelize.Op.and]: {
+        id: { [db.Sequelize.Op.ne]: req.session.user.id },
+        username: { [db.Sequelize.Op.like]: '%' + req.query.username + '%' },
+        deletedAt: null
+      }
+    }
+  }).then((users) => {
+    res.json(users);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
 module.exports = router;
