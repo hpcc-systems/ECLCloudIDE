@@ -18,6 +18,7 @@ config.js
 #dist/public javascripts
 codemirror/
 line-navigator/
+lodash/
 
 #ecl workspaces
 workspaces
