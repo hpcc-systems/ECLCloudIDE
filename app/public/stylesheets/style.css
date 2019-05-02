@@ -116,11 +116,11 @@ a {
   border-radius: 4px;
 }
 
-#workspaceSelect .edit {
-  margin-top: 2px;
+#workspaceSelect .fa {
+  margin: 2px 6px 0 0;
 }
 
-#workspaceSelect:hover .edit {
+#workspaceSelect:hover .fa {
   display: inline !important;
 }
 
@@ -131,6 +131,20 @@ a {
 
 .workspaces .dropdown-item:active {
   background-color: #f8f9fa;
+}
+
+.workspaces .fork::before {
+  content: "\f126";
+  margin: 0 4px 0 -14px;
+  font-family: "FontAwesome";
+}
+
+.workspaceUsersModal .form-group input {
+  width: 78%;
+}
+
+.workspaceUsersModal .user-list td {
+  vertical-align: inherit;
 }
 
 .sidebar {
