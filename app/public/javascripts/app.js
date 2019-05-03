@@ -581,28 +581,17 @@ require([
     $modal.modal('show');
   });
 
-  /* FIND USERS TO ADD TO WORKSPACE */
-  $('#membersWorkspaceModal').on('keyup', '.user-search', _.debounce(function(evt) {
+  /* DELETE A WORKSPACE MEMBER */
+  $('#membersWorkspaceModal').on('click', '.btn-danger', function(evt) {
     let $this = $(this),
-        $workspace = $('.workspaces .active'),
-        username = $('#edit-workspace-users').val(),
-        $modal = $('#membersWorkspaceModal'),
-        url = new URL(hostname + '/users/search'),
-        params = { username: username };
+        $user = $this.parents('tr'),
+        $modal = $('#membersWorkspaceModal');
 
-    url.search = new URLSearchParams(params);
-
-    evt.preventDefault();
     evt.stopPropagation();
 
-    console.log(username);
-
-    fetch(url)
-      .then(response => response.json())
-      .then((users) => {
-        console.log(users);
-      });
-  }, 500));
+    //link.parentElement.removeChild(link);
+    $user.remove();
+  });
 
   /* SAVE WORKSPACE MEMBERS */
   $('#membersWorkspaceModal').on('click', '.btn-primary', function(evt) {
