@@ -616,8 +616,13 @@ require([
 
   /* RESET EDIT WORKSPACE FORM ON MODAL HIDE */
   $('#membersWorkspaceModal').on('hide.bs.modal', function(evt) {
-    $('#membersWorkspaceModal form').removeClass('was-validated');
-    $('#membersWorkspaceModal form')[0].reset();
+    let $modal = $('#membersWorkspaceModal'),
+        $userListTable = $modal.find('.user-list tbody'),
+        $form = $modal.find('form');
+
+    $userListTable.find('tr:not(.cloner)').remove();
+    $form.removeClass('was-validated');
+    $form[0].reset();
   });
 
   /* SHOW EDIT WORKSPACE MODAL */
