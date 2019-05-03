@@ -8,7 +8,11 @@ const WorkspaceUser = db.WorkspaceUser;
 
 /* GET users listing. */
 router.get('/account', (req, res, next) => {
-  res.render('users/account', { title: 'ECL IDE' });
+  let user = {
+    id: req.session.user.id,
+    username: req.session.user.username
+  };
+  res.render('users/account', { title: 'ECL IDE', user: user });
 });
 
 router.get('/workspaces', (req, res, next) => {
