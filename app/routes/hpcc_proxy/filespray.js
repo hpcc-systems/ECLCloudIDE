@@ -62,34 +62,39 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
 router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
   console.log('in /spray ', req.body, req.params, req.file);
 
-  request({
+  router.sprayFile(req.clusterAddr, req.body.filename, req.session.user.username, req.body.workspaceId)
+    .then((response) => {
+      console.log(response.body);
+      let json = JSON.parse(response.body);
+      res.json({ wuid: json.SprayResponse.wuid });
+    }).catch((err) => {
+      console.log(err);
+      res.json(err);
+    });
+});
+
+router.sprayFile = (clusterAddr, filename, username, workspaceId) => {
+  return request({
     method: 'POST',
-    uri: req.clusterAddr + '/FileSpray/SprayVariable.json',
+    uri: clusterAddr + '/FileSpray/SprayVariable.json',
     formData: {
       destGroup: 'mythor',
       DFUServerQueue: 'dfuserver_queue',
-      namePrefix: req.session.user.username + '::' + req.body.workspaceId,
-      targetName: req.body.filename,
+      namePrefix: username + '::' + workspaceId,
+      targetName: filename,
       sourceFormat: 1,
       sourceCsvSeparate: '\,',
       sourceCsvTerminate: '\n,\r\n',
       sourceCsvQuote: '"',
       overwrite: 'on',
       sourceIP: '10.173.147.1',
-      sourcePath: '/var/lib/HPCCSystems/mydropzone/' + req.body.filename,
-      destLogicalName: req.session.user.username + '::' + req.body.workspaceId + '::' + req.body.filename,
+      sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
+      destLogicalName: username + '::' + workspaceId + '::' + filename,
       rawxml_: 1
     },
     resolveWithFullResponse: true
-  }).then((response) => {
-    console.log(response.body);
-    let json = JSON.parse(response.body);
-    res.json({ wuid: json.SprayResponse.wuid });
-  }).catch((err) => {
-    console.log(err);
-    res.json(err);
   });
-});
+};
 
 router.post('/getDfuWorkunit', [upload.none(), buildClusterAddr], (req, res, next) => {
   request({
