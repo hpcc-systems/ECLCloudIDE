@@ -408,6 +408,63 @@ require([
     });
   }
 
+  let autocomplete = null, $workspaceMembersUserSearch = $('#search-for-users');
+
+  if ($workspaceMembersUserSearch.length > 0) {
+    let $workspace = $('.workspaces .active'),
+        $modal = $('#membersWorkspaceModal'),
+        $userListTable = $modal.find('.user-list tbody');
+
+    autocomplete = new autoComplete({
+      selector: '#search-for-users',
+      minChars: 3,
+      delay: 300,
+      source: function(term, suggest) {
+        let url = new URL(hostname + '/users/search'),
+            params = { username: term },
+            choices = [],
+            suggestions = [];
+
+        term = term.toLowerCase();
+        url.search = new URLSearchParams(params);
+
+        fetch(url)
+          .then(response => response.json())
+          .then((users) => {
+            users.forEach((user) => {
+              choices.push([ user.username, user.id ]);
+            });
+          })
+          .then(() => {
+            for (var i = 0; i < choices.length; i++) {
+              if (~choices[i][0].toLowerCase().indexOf(term)) suggestions.push(choices[i]);
+            }
+            suggest(suggestions);
+          });
+      },
+      renderItem: function(item, search) {
+        search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&amp;');
+        var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
+        return '<div class="autocomplete-suggestion" data-name="' + item[0] +
+          '" data-id="' + item[1] + '" data-val="' + search + '">' +
+          item[0].replace(re, "<b>$1</b>") + '</div>';
+      },
+      onSelect: function(e, term, item) {
+        let $newUserPermissionSet = $userListTable.find('.cloner').clone(),
+            $item = $(item),
+            $userName = $item.data('name'),
+            $userId = $item.data('id');
+
+        $newUserPermissionSet.removeClass('d-none cloner').find('.username').text($userName);
+        $newUserPermissionSet.data('id', $userId);
+        $newUserPermissionSet.data('name', $userName);
+        $userListTable.append($newUserPermissionSet);
+
+        $workspaceMembersUserSearch.val('');
+      }
+    });
+  }
+
   $('.js-collapser').on('click', function(evt) {
     let $this = $(this),
         $chevron = $this.find('.fa');
