@@ -11,7 +11,11 @@ const WorkspaceUser = db.WorkspaceUser;
 
 const Dataset = db.Dataset;
 const Script = db.Script;
+const ScriptRevision = db.ScriptRevision;
 const Workunit = db.Workunit;
+
+const hpccFilesprayRouter = require('./hpcc_proxy/filespray');
+const hpccWorkunitsRouter = require('./hpcc_proxy/workunits');
 
 /* Create workspace */
 router.post('/', (req, res, next) => {
@@ -81,6 +85,123 @@ router.delete('/', (req, res, next) => {
     });
   }).then(() => {
     res.json({ message: 'Workspace deleted' });
+  });
+});
+
+router.post('/share', (req, res, next) => {
+  console.log(req.body);
+
+  Workspace.findOne({
+    where: { id: req.body.workspaceId }
+  }).then((workspaceToClone) => {
+    req.body.users.forEach((user) => {
+      Workspace.create({
+        name: workspaceToClone.name,
+        cluster: workspaceToClone.cluster
+      }).then((newWorkspace) => {
+
+        let oldWorkspaceScope = req.session.user.username + '::' + workspaceToClone.name,
+            newWorkspaceScope = user.name + '::' + newWorkspace.name;
+
+        WorkspaceUser.create({
+          userId: user.id,
+          workspaceId: newWorkspace.id,
+          role: WorkspaceUser.roles.OWNER
+        });
+        console.log(workspaceToClone.name);
+        Script.findAll({
+          where: {
+            [db.Sequelize.Op.and]: {
+              workspaceId: workspaceToClone.id,
+              deletedAt: null
+            }
+          }
+        }).then((scripts) => {
+          scripts.forEach((scriptToClone) => {
+            ScriptRevision.findOne({
+              where: {
+                [db.Sequelize.Op.and]: {
+                  scriptId: scriptToClone.id,
+                  deletedAt: null
+                }
+              },
+              order: [ ['createdAt', 'DESC'] ]
+            }).then((revision) => {
+              console.log(revision.content);
+              Script.create({
+                name: scriptToClone.name,
+                workspaceId: newWorkspace.id
+              }).then((newScript) => {
+                ScriptRevision.create({
+                  content: revision.content.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
+                  scriptId: newScript.id
+                });
+              });
+            });
+          });
+        });
+
+        Dataset.findAll({
+          where: {
+            [db.Sequelize.Op.and]: {
+              workspaceId: workspaceToClone.id,
+              deletedAt: null
+            }
+          }
+        }).then((datasets) => {
+          datasets.forEach((datasetToClone) => {
+            let filename = datasetToClone.filename,
+                clusterAddr = 'http://' + newWorkspace.cluster,
+                wuid = null;
+
+            hpccFilesprayRouter.sprayFile(clusterAddr, filename, user.name, newWorkspace.name)
+              .then((response) => {
+                console.log(response.body);
+                let json = JSON.parse(response.body);
+                wuid = json.SprayResponse.wuid;
+
+                Dataset.create({
+                  name: datasetToClone.name,
+                  filename: datasetToClone.filename,
+                  logicalfile: newWorkspaceScope + '::' + datasetToClone.filename + '_thor',
+                  rowCount: datasetToClone.rowCount,
+                  columnCount: datasetToClone.columnCount,
+                  eclSchema: datasetToClone.eclSchema,
+                  eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
+                  workspaceId: newWorkspace.id
+                }).then((newDataset) => {
+                  Workunit.create({
+                    workunitId: wuid,
+                    objectId: newDataset.id
+                  }).then(() => {
+                    hpccWorkunitsRouter.createWorkunit(clusterAddr)
+                      .then((response) => {
+                        let json = JSON.parse(response.body),
+                            wuid = json.WUCreateResponse.Workunit.Wuid;
+
+                        Workunit.create({
+                          workunitId: wuid,
+                          objectId: newDataset.id
+                        });
+                        hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery)
+                          .then((response) => {
+                            hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
+                            return res.json({ success: true, message: 'Workspace shared' });
+                          });
+                      }).catch((err) => {
+                        console.log(err);
+                        res.json(err);
+                      });
+                  })
+                });
+              }).catch((err) => {
+                console.log(err);
+                res.json(err);
+              });
+          });
+        });
+      });
+    });
   });
 });
 
