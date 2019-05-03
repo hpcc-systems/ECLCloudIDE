@@ -1,15 +1,15 @@
-ECL IDE
-=======
+# ECL IDE
 
-A web based environment for starting out with ECL.
+    A web-based environment for starting out with ECL.
 
-GETTING STARTED
-===============
+
+### Running the Application
 
 This project is containerized via Docker, so `docker-compose up -d` should get you going.
 
-TODO
-====
+---
+
+### TODO
 
 * ~~imports / ecl modules~~
 
