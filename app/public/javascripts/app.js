@@ -558,8 +558,8 @@ require([
     $selected.text($this.text());
     $deleteWorkspace.removeClass('d-none');
     $selected.append(
-      '<i class="fa fa-pencil-square-o edit float-right d-none"></i>' +
-      '<i class="fa fa-users members float-right d-none"></i>'
+      '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
+      '<i class="fa fa-share-alt members float-right d-none" title="Share Workspace..."></i>'
     );
 
     $scriptPanelClose.trigger('click');
@@ -593,14 +593,34 @@ require([
     $user.remove();
   });
 
-  /* SAVE WORKSPACE MEMBERS */
+  /* SHARE WORKSPACE WITH MEMBERS */
   $('#membersWorkspaceModal').on('click', '.btn-primary', function(evt) {
     let $this = $(this),
         $workspace = $('.workspaces .active'),
         $modal = $('#membersWorkspaceModal'),
-        $users = $modal.find('.user-list').find('tr:not(.header)');
+        $users = $modal.find('.user-list').find('tr:not(.header):not(.cloner)'),
+        users = [];
 
-    console.log($users);
+    $users.each((idx, user) => {
+      users.push({ id: $(user).data('id'), name: $(user).data('name') });
+    });
+
+    fetch('/workspaces/share', {
+      method: 'POST',
+      body: JSON.stringify({
+        workspaceId: $workspace.data('id'),
+        users: users
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then((json) => {
+      if (json.success) {
+        $modal.modal('hide');
+      }
+    });
   });
 
   /* RESET EDIT WORKSPACE FORM ON MODAL HIDE */
