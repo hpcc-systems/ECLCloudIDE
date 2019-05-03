@@ -693,6 +693,7 @@ require([
   $('#removeWorkspaceModal').on('click', '.btn-danger', function(evt) {
     let $modal = $('#removeWorkspaceModal'),
         $workspaces = $('.workspaces'),
+        $selectedWorkspace = $workspaces.find('.active'),
         $scripts = $('.scripts .script:not(.cloner)'),
         $deleteWorkspace = $('.delete-workspace').parent(),
         $scriptPanelClose = $('.js-close'),
@@ -700,7 +701,7 @@ require([
 
     fetch('/workspaces/', {
       method: 'DELETE',
-      body: JSON.stringify({ workspaceName: $workspaceSelect.text() }),
+      body: JSON.stringify({ workspaceId: $selectedWorkspace.data('id') }),
       headers:{
         'Content-Type': 'application/json'
       }

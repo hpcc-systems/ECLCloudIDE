@@ -58,7 +58,7 @@ router.put('/', (req, res, next) => {
 /* Delete workspace */
 router.delete('/', (req, res, next) => {
   Workspace.findOne({
-    where: { name: req.body.workspaceName },
+    where: { id: req.body.workspaceId },
     through: {
       where: { role: WorkspaceUser.roles.OWNER }
     }
