@@ -34,3 +34,4 @@ RUN npm install sequelize-cli pm2 -g
 RUN npm run clientdeps
 
 COPY [".env", "/app/.env"]
+COPY ["/app/config/config.js.sample", "/app/config/config.js"]
