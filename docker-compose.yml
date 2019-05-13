@@ -27,7 +27,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
       MYSQL_USER: ${DB_USER}
-      MYSQL_PASS: ${DB_PASS}
+      MYSQL_PASSWORD: ${DB_PASS}
     networks:
       - ecl-ide-network
 
