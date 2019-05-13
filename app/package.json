@@ -5,17 +5,14 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "codemirror:clean": "rm -rf ./public/javascripts/codemirror/",
-    "codemirror:mkdir": "mkdir -p ./public/javascripts/codemirror/",
-    "codemirror:copy": "cp -r ./node_modules/codemirror/* ./public/javascripts/codemirror/",
-    "codemirror": "npm run codemirror:clean && npm run codemirror:mkdir && npm run codemirror:copy",
+    "codemirror:copy": "npx cpx './node_modules/codemirror/*' ./public/javascripts/codemirror/",
+    "codemirror": "npm run codemirror:clean && npm run codemirror:copy",
     "linenav:clean": "rm -rf ./public/javascripts/line-navigator/",
-    "linenav:mkdir": "mkdir ./public/javascripts/line-navigator/",
-    "linenav:copy": "cp ./node_modules/line-navigator/file-wrapper.min.js ./public/javascripts/line-navigator/ && cp ./node_modules/line-navigator/line-navigator.min.js ./public/javascripts/line-navigator/",
-    "linenav": "npm run linenav:clean && npm run linenav:mkdir && npm run linenav:copy",
+    "linenav:copy": "npx cpx './node_modules/line-navigator/{file-wrapper.min.js,line-navigator.min.js}' ./public/javascripts/line-navigator/",
+    "linenav": "npm run linenav:clean && npm run linenav:copy",
     "lodash:clean": "rm -rf ./public/javascripts/lodash/",
-    "lodash:mkdir": "mkdir ./public/javascripts/lodash/",
-    "lodash:copy": "cp ./node_modules/lodash/* ./public/javascripts/lodash/",
-    "lodash": "npm run lodash:clean && npm run lodash:mkdir && npm run lodash:copy",
+    "lodash:copy": "npx cpx './node_modules/lodash/*' ./public/javascripts/lodash/",
+    "lodash": "npm run lodash:clean && npm run lodash:copy",
     "clientdeps": "npm run codemirror && npm run linenav && npm run lodash"
   },
   "dependencies": {
@@ -42,5 +39,8 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "sequelize": "^4.42.0"
+  },
+  "devDependencies": {
+    "cpx": "^1.5.0"
   }
 }
