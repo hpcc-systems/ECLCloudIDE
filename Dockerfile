@@ -20,7 +20,7 @@ RUN echo "tzdata tzdata/Areas select America" > /tmp/preseed.txt; \
 RUN apt-get install -y openssh-client openssh-server \
     expect rsync libapr1 psmisc libaprutil1 libarchive13 libatlas3-base \
     libboost-regex1.65.1 libmemcached11 libmemcachedutil2 libnuma1 \
-    libpython2.7 libpython3.6 libxslt1.1
+    libpython2.7 libpython3.6 libxslt1.1 netcat
 
 ARG clientToolsUrl=https://edgecastcdn.net/00423A/releases/CE-Candidate-7.2.2/bin/clienttools/hpccsystems-clienttools-community_7.2.2-1bionic_amd64.deb
 

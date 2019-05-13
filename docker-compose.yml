@@ -2,7 +2,7 @@ version: "3"
 services:
   node_web:
     #restart: always
-    entrypoint: [/app/docker-entry.sh]
+    entrypoint: [/app/docker-entry.sh, "mysql_db", "${DB_PORT}"]
     build:
       context: .
       dockerfile: Dockerfile
