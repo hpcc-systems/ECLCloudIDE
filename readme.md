@@ -19,6 +19,10 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This is used by the
 
 * ~~imports / ecl modules~~
 
+* change datasets/scripts left nav to more closely resemble a file explorer in a texteditor / ide
+
+* import "public" datasets
+
 * user groups
   * invite to group
 
