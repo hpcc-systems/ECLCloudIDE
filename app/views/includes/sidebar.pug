@@ -45,6 +45,23 @@ div.context-menu(id="datasets-context-menu")
     li(data-action="create_folder") New Folder
     li(data-action="create_dataset") New Dataset
 
+div.modal.fade(id="newFolderModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title New Folder
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="new-folder-name") Name:
+            input.form-control(id="new-folder-name", name="folderName", type="text", required="required", placeholder="MyNewFolder...")
+            .invalid-feedback Please provide a name for the folder.
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary(type="submit") Save
+
 div.modal.fade(id="newScriptModal", role="dialog")
   div.modal-dialog
     div.modal-content
