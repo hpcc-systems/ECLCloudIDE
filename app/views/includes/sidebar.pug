@@ -1,40 +1,43 @@
 nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
   div.sidebar-sticky
-    h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-1.mb-1.text-light
-      a#dataset-collapser.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
-        span Datasets
-          i.fa.fa-chevron-right.ml-1
-      a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Dataset...", data-toggle="modal", data-target="#newDatasetModal") New
-        i.fa.fa-plus.ml-1.float-right
 
-    div.nav.flex-column.datasets.collapse(id="datasets")
-      a.text-muted.dataset.cloner.d-none(href='#')
-        div
-          i.float-right.fa.fa-close.delete.d-none(title="Delete dataset")
-          i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit dataset")
-          div.cardname-wrapper
-            b.datasetname Name
-              i.status.fa.fa-refresh
-          span.rows Rows: ?
-          br
-          span.cols Columns: ?
+    div(id="datasets-wrapper")
+      h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-1.mb-1.text-light
+        a#dataset-collapser.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
+          span Datasets
+            i.fa.fa-chevron-right.ml-1
+        a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Dataset...", data-toggle="modal", data-target="#newDatasetModal") New
+          i.fa.fa-plus.ml-1.float-right
 
-    h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-4.mb-1.text-light
-      a#script-collapser.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
-        span Scripts
-          i.fa.fa-chevron-right.ml-1
-      a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal") New
-        i.fa.fa-plus.ml-1.float-right
-
-    div.nav.flex-column.scripts.collapse(id="scripts")
-      a.text-muted.script.cloner.d-none(href='#')
-        span.scriptname script
-          i.status.fa.fa-refresh.d-none
-        i.float-right.fa.fa-close.delete.d-none(title="Delete script")
-        i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit script")
-      // li.nav-item: a.nav-link(href='#') Rate History
+      div.nav.flex-column.datasets.collapse(id="datasets")
+        a.text-muted.dataset.cloner.d-none(href='#')
+          div
+            i.float-right.fa.fa-close.delete.d-none(title="Delete dataset")
+            i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit dataset")
+            div.cardname-wrapper
+              b.datasetname Name
+                i.status.fa.fa-refresh
+            span.rows Rows: ?
+            br
+            span.cols Columns: ?
 
     a#new-folder.d-none(href='#', title="New Folder...", data-toggle="modal", data-target="#newFolderModal") New
+
+    div(id="scripts-wrapper")
+      h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-4.mb-1.text-light
+        a#script-collapser.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
+          span Scripts
+            i.fa.fa-chevron-right.ml-1
+        a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal") New
+          i.fa.fa-plus.ml-1.float-right
+
+      div.nav.flex-column.scripts.collapse(id="scripts")
+        a.text-muted.script.cloner.d-none(href='#')
+          span.scriptname script
+            i.status.fa.fa-refresh.d-none
+          i.float-right.fa.fa-close.delete.d-none(title="Delete script")
+          i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit script")
+
 div.context-menu(id="scripts-context-menu")
   ul.menu-items
     li(data-action="create_folder") New Folder
