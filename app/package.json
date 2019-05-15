@@ -5,13 +5,13 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "codemirror:clean": "rm -rf ./public/javascripts/codemirror/",
-    "codemirror:copy": "npx cpx './node_modules/codemirror/*' ./public/javascripts/codemirror/",
+    "codemirror:copy": "npx cpx './node_modules/codemirror/**/*' ./public/javascripts/codemirror/",
     "codemirror": "npm run codemirror:clean && npm run codemirror:copy",
     "linenav:clean": "rm -rf ./public/javascripts/line-navigator/",
     "linenav:copy": "npx cpx './node_modules/line-navigator/{file-wrapper.min.js,line-navigator.min.js}' ./public/javascripts/line-navigator/",
     "linenav": "npm run linenav:clean && npm run linenav:copy",
     "lodash:clean": "rm -rf ./public/javascripts/lodash/",
-    "lodash:copy": "npx cpx './node_modules/lodash/*' ./public/javascripts/lodash/",
+    "lodash:copy": "npx cpx './node_modules/lodash/**/*' ./public/javascripts/lodash/",
     "lodash": "npm run lodash:clean && npm run lodash:copy",
     "clientdeps": "npm run codemirror && npm run linenav && npm run lodash"
   },
