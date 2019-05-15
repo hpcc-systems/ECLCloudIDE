@@ -1557,6 +1557,77 @@ require([
     editor.refresh();
   });
 
+  $('#scripts-wrapper').on('mousedown', function(evt) {
+    if (evt.button == 2) {
+      evt.preventDefault();
+      console.log('x: ' + evt.pageX + ', y: ' + evt.pageY);
+      $('#scripts-context-menu').css({
+        'left': evt.pageX,
+        'top': evt.pageY
+      });
+      $('#scripts-context-menu').fadeIn(200);
+    }
+  });
+
+  $('#scripts-wrapper, #datasets-wrapper').on('contextmenu', function(evt) {
+    return false;
+  });
+
+  $('#datasets-wrapper').on('mousedown', function(evt) {
+    if (evt.button == 2) {
+      evt.preventDefault();
+      console.log('x: ' + evt.pageX + ', y: ' + evt.pageY);
+      $('#datasets-context-menu').css({
+        'left': evt.pageX,
+        'top': evt.pageY
+      });
+      $('#datasets-context-menu').fadeIn(200);
+    }
+  });
+
+  $('#datasets-context-menu, #scripts-context-menu').on('click', 'li', function(evt) {
+    let $this = $(this),
+        $newDataset = $('#new-dataset'),
+        $newScript = $('#new-script'),
+        $newFolder = $('#new-folder');;
+
+    switch ($this.data('action')) {
+      case 'create_dataset':
+        $newDataset.trigger('click');
+        break;
+      case 'create_script':
+        $newScript.trigger('click');
+        break;
+      case 'create_folder':
+        $newFolder.trigger('click');
+        break;
+      default:
+        break;
+    }
+    $('#datasets-context-menu').hide();
+  });
+
+  $(document).on('click', function(evt) {
+    let $target = $(evt.target),
+        $scriptsContextMenu = $('#scripts-context-menu'),
+        $datasetsContextMenu = $('#datasets-context-menu');
+    if (evt.button < 2) {
+      if ($scriptsContextMenu.css('display') == 'block') {
+        $scriptsContextMenu.hide();
+      }
+      if ($datasetsContextMenu.css('display') == 'block') {
+        $datasetsContextMenu.hide();
+      }
+    } else {
+      if (($target[0].id == 'scripts-wrapper' || $target.parents('#scripts-wrapper').length > 0) && $datasetsContextMenu.css('display') == 'block') {
+        $datasetsContextMenu.hide();
+      }
+      if (($target[0].id == 'datasets-wrapper' || $target.parents('#datasets-wrapper').length > 0) && $scriptsContextMenu.css('display') == 'block') {
+        $scriptsContextMenu.hide();
+      }
+    }
+  });
+
   editor.on('change', (instance, changeObj) => {
     let $saveButton = $('.save-script');
 

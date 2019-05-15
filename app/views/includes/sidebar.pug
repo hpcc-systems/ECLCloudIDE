@@ -34,6 +34,17 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
         i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit script")
       // li.nav-item: a.nav-link(href='#') Rate History
 
+    a#new-folder.d-none(href='#', title="New Folder...", data-toggle="modal", data-target="#newFolderModal") New
+div.context-menu(id="scripts-context-menu")
+  ul.menu-items
+    li(data-action="create_folder") New Folder
+    li(data-action="create_script") New Script
+
+div.context-menu(id="datasets-context-menu")
+  ul.menu-items
+    li(data-action="create_folder") New Folder
+    li(data-action="create_dataset") New Dataset
+
 div.modal.fade(id="newScriptModal", role="dialog")
   div.modal-dialog
     div.modal-content
