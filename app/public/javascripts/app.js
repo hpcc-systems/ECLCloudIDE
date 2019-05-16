@@ -709,6 +709,7 @@ require([
         $workspaces = $('.workspaces'),
         $selectedWorkspace = $workspaces.find('.active'),
         $scripts = $('.scripts .script:not(.cloner)'),
+        $datasets = $('.datasets .dataset:not(.cloner)'),
         $deleteWorkspace = $('.delete-workspace').parent(),
         $scriptPanelClose = $('.js-close'),
         $workspaceSelect = $('#workspaceSelect');
@@ -725,6 +726,7 @@ require([
       $modal.modal('hide');
       $workspaces.find('.active').remove();
       $scripts.remove();
+      $datasets.remove();
       $deleteWorkspace.addClass('d-none');
       $workspaceSelect.text(NO_WORKSPACE);
 
