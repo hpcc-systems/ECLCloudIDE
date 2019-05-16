@@ -1630,6 +1630,13 @@ require([
     }
   });
 
+  $('.sidebar-sticky').on('click', '.folder', function(evt) {
+    let $this = $(this),
+        $ul = $this.parents('li').children('ul').first();
+    if ($this.hasClass('open')) { $this.removeClass('open'); } else { $this.addClass('open'); }
+    if ($ul.hasClass('d-none')) { $ul.removeClass('d-none'); } else { $ul.addClass('d-none'); }
+  });
+
   editor.on('change', (instance, changeObj) => {
     let $saveButton = $('.save-script');
 
