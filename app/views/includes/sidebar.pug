@@ -1,8 +1,8 @@
 nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
   div.sidebar-sticky
 
-    div(id="datasets-wrapper")
-      h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-1.mb-1.text-light
+    div.px-3.pb-2(id="datasets-wrapper")
+      h6.sidebar-heading.justify-content-between.align-items-center.mt-1.mb-1.text-light
         a#dataset-collapser.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
           span Datasets
             i.fa.fa-chevron-right.ml-1
@@ -10,7 +10,7 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
           i.fa.fa-plus.ml-1.float-right
 
       div.nav.flex-column.datasets.collapse(id="datasets")
-        a.text-muted.dataset.cloner.d-none(href='#')
+        a.text-light.dataset.cloner.d-none(href='#')
           div
             i.float-right.fa.fa-close.delete.d-none(title="Delete dataset")
             i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit dataset")
@@ -23,8 +23,8 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
 
     a#new-folder.d-none(href='#', title="New Folder...", data-toggle="modal", data-target="#newFolderModal") New
 
-    div(id="scripts-wrapper")
-      h6.sidebar-heading.justify-content-between.align-items-center.px-3.mt-4.mb-1.text-light
+    div.px-3.pb-2(id="scripts-wrapper")
+      h6.sidebar-heading.justify-content-between.align-items-center.mt-4.mb-1.text-light
         a#script-collapser.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
           span Scripts
             i.fa.fa-chevron-right.ml-1
@@ -32,11 +32,12 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
           i.fa.fa-plus.ml-1.float-right
 
       div.nav.flex-column.scripts.collapse(id="scripts")
-        a.text-muted.script.cloner.d-none(href='#')
+        a.text-light.script.cloner.d-none(href='#')
           span.scriptname script
             i.status.fa.fa-refresh.d-none
           i.float-right.fa.fa-close.delete.d-none(title="Delete script")
           i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit script")
+        ul
 
 div.context-menu(id="scripts-context-menu")
   ul.menu-items
