@@ -1333,6 +1333,66 @@ require([
   }
 
   /*==========================================================================*
+   *  FOLDER / FILE CONTROLS                                                  *
+   *==========================================================================*/
+
+  /* CREATE NEW FOLDER */
+  $('#newFolderModal').on('click', '.btn-primary', function(evt) {
+    let $modal = $('#newFolderModal'),
+        $workspaces = $('.workspaces'),
+        $folderName = $modal.find('#folder-name'),
+        $form = $modal.find('form');
+
+    if ($form[0].checkValidity() === false) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      $form.addClass('was-validated');
+      return false;
+    }
+
+    console.log(JSON.stringify(getFormData($form)));
+    $modal.modal('hide');
+    return false;
+
+    fetch('/workspaces/', {
+      method: 'PUT',
+      body: JSON.stringify(getFormData($form)),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then((workspace) => {
+      $modal.modal('hide');
+
+      $form.removeClass('was-validated');
+
+      toggleNewScriptPopover();
+    });
+  });
+
+  $('.datasets, .scripts').on('click', '.folder .edit', function(evt) {
+    let $this = $(this),
+        $folder = $this.parents('.folder'),
+        $modal = $('#editFolderModal');
+
+    evt.stopPropagation();
+
+    //link.parentElement.removeChild(link);
+    $modal.find('#edit-folder-name').val($folder.find('.foldername').text());
+    $modal.modal('show');
+    console.log($folder.index());
+    $modal.find('.btn-primary').data('folder', $folder.index());
+    console.log($modal.find('.btn-primary').data('folder'));
+  });
+
+  /* RESET NEW WORKSPACE FORM ON MODAL HIDE */
+  $('#newFolderModal').on('hide.bs.modal', function(evt) {
+    $('#newFolderModal form').removeClass('was-validated');
+    $('#newFolderModal form')[0].reset();
+  });
+
+  /*==========================================================================*
    *  SCRIPT PANEL CONTROLS                                                   *
    *==========================================================================*/
 
