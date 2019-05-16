@@ -9,7 +9,12 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: false,
     },
     name: DataTypes.STRING,
-    cluster: DataTypes.STRING
+    cluster: DataTypes.STRING,
+    directoryTree: {
+      type: DataTypes.STRING(4098),
+      defaultValue: '{ "datasets": [], "scripts": [] }',
+      allowNull: false,
+    }
   }, {
     paranoid: true
   });
