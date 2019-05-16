@@ -223,12 +223,48 @@ a {
   margin-top: 0 !important;
 }
 
+.scripts ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.scripts ul li {
+  margin: 3px 0;
+}
+
+.scripts ul ul {
+  padding-left: 0.5rem;
+}
+
+.scripts .folder::before {
+  content: "\f07b";
+  font-family: 'FontAwesome';
+  margin-right: 0.33rem;
+}
+
+.scripts .folder ul {
+  display: none;
+}
+
+.scripts .folder.open::before {
+  content: "\f07c";
+}
+
 .dataset, .script {
-  padding: 10px;
-  width: 90%;
-  margin: 0 5% 10px 5%;
-  background-color: #dadada;
-  border-radius: 6px;
+  width: 100%;
+  display: inline-block;
+}
+
+.folder::hover,
+.script::hover {
+  cusor: pointer;
+}
+
+.script::before {
+  content: "\f016";
+  font-family: 'FontAwesome';
+  margin-right: 0.33rem;
 }
 
 .dataset .status,
@@ -241,11 +277,6 @@ a {
   background-color: #1f6192;
   color: #fff !important;
   border: 1px solid #dadada;
-}
-
-.dataset:first-child,
-.script:first-child {
-  margin-top: 10px;
 }
 
 .script .delete {
