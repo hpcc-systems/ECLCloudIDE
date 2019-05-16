@@ -1164,7 +1164,7 @@ require([
 
   $('.scripts').on('click', '.script', function(evt) {
     let $this = $(this);
-    $this.siblings().removeClass('active');
+    $('#scripts').find('.script').removeClass('active');
     $this.addClass('active');
 
     if ($this.data('content')) {
@@ -1559,6 +1559,10 @@ require([
     editor.refresh();
   });
 
+  /*==========================================================================*
+   *  CONTEXT MENU LEFT NAV                                                   *
+   *==========================================================================*/
+
   $('#scripts-wrapper').on('mousedown', function(evt) {
     if (evt.button == 2) {
       evt.preventDefault();
@@ -1576,6 +1580,7 @@ require([
   });
 
   $('#datasets-wrapper').on('mousedown', function(evt) {
+    let $target = $(evt.target);
     if (evt.button == 2) {
       evt.preventDefault();
       console.log('x: ' + evt.pageX + ', y: ' + evt.pageY);
@@ -1636,6 +1641,10 @@ require([
     if ($this.hasClass('open')) { $this.removeClass('open'); } else { $this.addClass('open'); }
     if ($ul.hasClass('d-none')) { $ul.removeClass('d-none'); } else { $ul.addClass('d-none'); }
   });
+
+  /*==========================================================================*
+   *  EDITOR EVENT HANDLERS                                                   *
+   *==========================================================================*/
 
   editor.on('change', (instance, changeObj) => {
     let $saveButton = $('.save-script');
