@@ -1592,6 +1592,26 @@ require([
     }
   });
 
+  let renderTree = (subtree) => {
+    let html = '';
+    subtree.forEach((_branch) => {
+      if (_branch.type == 'folder') {
+        html += '<li><a class="folder text-light"><span class="foldername">' +
+          _branch.name + '</span>' +
+          '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
+          '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit folder"></i>' +
+          '</a><ul class="d-none">' + renderTree(_branch.children) + '</ul></li>';
+      } else {
+        html += '<li><a class="script text-light"><span class="scriptname">' +
+          _branch.name + '</span>' +
+          '<i class="float-right fa fa-close delete d-none" title="Delete script"></i>' +
+          '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit script"></i>' +
+          '</a></li>';
+      }
+    });
+    return html;
+  };
+
   $('#datasets-context-menu, #scripts-context-menu').on('click', 'li', function(evt) {
     let $this = $(this),
         $newDataset = $('#new-dataset'),
