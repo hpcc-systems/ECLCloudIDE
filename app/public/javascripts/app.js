@@ -14,6 +14,37 @@ let cluster = {
   port: '8010'
 };
 
+let renderTree = (subtree, type = 'script') => {
+  let $ul = $('<ul class="d-none">');
+  subtree.forEach((_branch) => {
+    if (_branch[1].type == 'folder') {
+      let $li = $('<li>');
+      $li.data('name', _branch[1].name);
+      $li.data('id', _branch[1].id);
+      $li.append('<a class="folder text-light"><span class="foldername">' +
+        _branch[1].name + '</span>' +
+        '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
+        '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit folder"></i>' +
+        '</a>');
+      if (Object.entries(_branch[1].children).length > 0) {
+        $li.append(renderTree(Object.entries(_branch[1].children), type));
+      }
+      $ul.append($li);
+    } else {
+      if (type == 'script') {
+        $ul.append(addScript(_branch[1]));
+      } else {
+        $ul.append(addDataset(_branch[1]));
+      }
+    }
+  });
+  return $ul;
+};
+
+let addChildToTree = (tree, parentPath, child) => {
+
+};
+
 let populateWorkspaces = () => {
   fetch('/users/workspaces')
     .then(response => response.json())
@@ -30,11 +61,31 @@ let populateWorkspaces = () => {
           $newWorkspace.data('name', workspace.name);
           $newWorkspace.data('cluster', workspace.cluster);
           $newWorkspace.data('id', workspace.id);
+          $newWorkspace.data('directoryTree', workspace.directoryTree);
           $newWorkspace.text($newWorkspace.data('name'));
           $workspaces.append($newWorkspace);
         });
       }
     });
+};
+
+let populateWorkspaceDirectoryTree = (tree) => {
+  let datasets = tree.datasets,
+      scripts = tree.scripts,
+      $datasetsTreeRoot = $('.datasets'),
+      $scriptsTreeRoot = $('.scripts');
+
+  $datasetsTreeRoot.children('ul').remove();
+  $scriptsTreeRoot.children('ul').remove();
+
+  let $datasetsUl = renderTree(Object.entries(tree.datasets), 'dataset'),
+      $scriptsUl = renderTree(Object.entries(tree.scripts));
+
+  $datasetsUl.removeClass('d-none');
+  $scriptsUl.removeClass('d-none');
+
+  $datasetsTreeRoot.append($datasetsUl);
+  $scriptsTreeRoot.append($scriptsUl);
 };
 
 let populateDatasets = () => {
@@ -73,6 +124,7 @@ let populateDatasets = () => {
 
 let addDataset = (dataset) => {
   let $datasets = $('.datasets'),
+      $newLi = $('<li>'),
       $newDataset = $datasets.find('.cloner').clone();
 
   $newDataset.removeClass('d-none cloner');
@@ -83,7 +135,10 @@ let addDataset = (dataset) => {
   $newDataset.data('cols', dataset.columnCount);
   $newDataset.data('query', dataset.eclQuery);
   $newDataset.find('.datasetname').contents()[0].nodeValue = dataset.name;
-  $datasets.append($newDataset);
+
+  $newLi.append($newDataset);
+
+  return $newLi;
 };
 
 let showDatasets = () => {
@@ -121,6 +176,7 @@ let populateScripts = () => {
 
 let addScript = (script) => {
   let $scripts = $('.scripts'),
+      $newLi = $('<li>'),
       $newScript = $scripts.find('.cloner').clone();
 
   $newScript.removeClass('d-none cloner');
@@ -129,7 +185,10 @@ let addScript = (script) => {
   $newScript.data('revisionId', script.revisionId);
   $newScript.data('content', script.content);
   $newScript.find('.scriptname').contents()[0].nodeValue = script.name;
-  $scripts.append($newScript);
+
+  $newLi.append($newScript);
+
+  return $newLi;
 };
 
 let showScripts = () => {
@@ -564,8 +623,11 @@ require([
 
     $scriptPanelClose.trigger('click');
 
-    populateDatasets();
-    populateScripts();
+    //populateDatasets();
+    //populateScripts();
+
+    populateWorkspaceDirectoryTree(JSON.parse($this.data('directoryTree')));
+
     toggleNewScriptPopover();
   });
 
