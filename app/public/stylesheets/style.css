@@ -129,8 +129,9 @@ a {
   width: 200px;
 }
 
+.workspaces .dropdown-item.active,
 .workspaces .dropdown-item:active {
-  background-color: #f8f9fa;
+  background-color: #17a2b8;
 }
 
 .workspaces .fork::before {
@@ -198,7 +199,7 @@ a {
 }
 
 .context-menu li:hover {
-  background-color: #007bff;
+  background-color: #17a2b8;
   color: #fff;
   cursor: pointer;
 }
@@ -211,12 +212,10 @@ a {
 }
 
 #datasets-wrapper {
-  padding-bottom: 10px;
+  border-bottom: 1px solid #242a30;
 }
 
-#scripts-wrapper {
-  padding-bottom: 10px;
-}
+#scripts-wrapper { }
 
 #scripts-wrapper .sidebar-heading {
   margin-top: 0 !important;
