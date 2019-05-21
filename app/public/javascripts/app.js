@@ -1397,6 +1397,107 @@ require([
   }
 
   /*==========================================================================*
+   *  CONTEXT MENU LEFT NAV                                                   *
+   *==========================================================================*/
+
+  $('#datasets-wrapper, #scripts-wrapper').on('mousedown', function(evt) {
+    let $this = $(this),
+        $folder = $(evt.target).parents('li'),
+        parentPath = [],
+        $contextMenu = $('#scripts-context-menu'),
+        $datasetModal = $('#newDatasetModal'),
+        $scriptModal = $('#newScriptModal'),
+        $folderModal = $('#newFolderModal');
+
+    if ($this.attr('id') == 'datasets-wrapper') {
+      $contextMenu = $('#datasets-context-menu');
+    }
+
+    if (evt.button == 2) {
+      evt.preventDefault();
+      if ($folder.data('id')) {
+        parentPath.unshift($folder.data('id'));
+      }
+      let $parent = $folder.parents('li');
+      do {
+        if ($parent.data('id')) {
+          parentPath.unshift($parent.data('id'));
+        }
+        $parent = $parent.parents('li');
+      } while ($parent.length > 0);
+
+      $datasetModal.find('.btn-primary').data('parentPath', parentPath);
+      $scriptModal.find('.btn-primary').data('parentPath', parentPath);
+      $folderModal.find('btn-primary').data('parentPath', parentPath);
+
+      console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
+        'parentPath: ', parentPath, 'x: ' + evt.pageX + ', y: ' + evt.pageY);
+      $contextMenu.css({
+        'left': evt.pageX,
+        'top': evt.pageY
+      });
+      $contextMenu.fadeIn(200);
+    }
+  });
+
+  $('#datasets-wrapper, #scripts-wrapper').on('contextmenu', function(evt) {
+    return false;
+  });
+
+  $('#datasets-context-menu, #scripts-context-menu').on('click', 'li', function(evt) {
+    let $this = $(this),
+        $newDataset = $('#new-dataset'),
+        $newScript = $('#new-script'),
+        $newFolder = $('#new-folder'),
+        $datasetModal = $('#newDatasetModal'),
+        $scriptModal = $('#newScriptModal'),
+        $folderModal = $('#newFolderModal');
+
+    switch ($this.data('action')) {
+      case 'create_dataset':
+        $newDataset.trigger('click');
+        break;
+      case 'create_script':
+        $newScript.trigger('click');
+        break;
+      case 'create_folder':
+        $newFolder.trigger('click');
+        break;
+      default:
+        break;
+    }
+    $('#datasets-context-menu').hide();
+  });
+
+  $(document).on('click', function(evt) {
+    let $target = $(evt.target),
+        $scriptsContextMenu = $('#scripts-context-menu'),
+        $datasetsContextMenu = $('#datasets-context-menu');
+    if (evt.button < 2) {
+      if ($scriptsContextMenu.css('display') == 'block') {
+        $scriptsContextMenu.hide();
+      }
+      if ($datasetsContextMenu.css('display') == 'block') {
+        $datasetsContextMenu.hide();
+      }
+    } else {
+      if (($target[0].id == 'scripts-wrapper' || $target.parents('#scripts-wrapper').length > 0) && $datasetsContextMenu.css('display') == 'block') {
+        $datasetsContextMenu.hide();
+      }
+      if (($target[0].id == 'datasets-wrapper' || $target.parents('#datasets-wrapper').length > 0) && $scriptsContextMenu.css('display') == 'block') {
+        $scriptsContextMenu.hide();
+      }
+    }
+  });
+
+  $('.sidebar-sticky').on('click', '.folder', function(evt) {
+    let $this = $(this),
+        $ul = $this.parents('li').children('ul').first();
+    if ($this.hasClass('open')) { $this.removeClass('open'); } else { $this.addClass('open'); }
+    if ($ul.hasClass('d-none')) { $ul.removeClass('d-none'); } else { $ul.addClass('d-none'); }
+  });
+
+  /*==========================================================================*
    *  FOLDER / FILE CONTROLS                                                  *
    *==========================================================================*/
 
@@ -1681,109 +1782,6 @@ require([
     $('.save-script').removeClass('badge-info').addClass('badge-secondary');
     changeRunButtonState($('.run-script'), 'ready');
     editor.refresh();
-  });
-
-  /*==========================================================================*
-   *  CONTEXT MENU LEFT NAV                                                   *
-   *==========================================================================*/
-
-  $('#scripts-wrapper').on('mousedown', function(evt) {
-    if (evt.button == 2) {
-      evt.preventDefault();
-      console.log('x: ' + evt.pageX + ', y: ' + evt.pageY);
-      $('#scripts-context-menu').css({
-        'left': evt.pageX,
-        'top': evt.pageY
-      });
-      $('#scripts-context-menu').fadeIn(200);
-    }
-  });
-
-  $('#scripts-wrapper, #datasets-wrapper').on('contextmenu', function(evt) {
-    return false;
-  });
-
-  $('#datasets-wrapper').on('mousedown', function(evt) {
-    let $target = $(evt.target);
-    if (evt.button == 2) {
-      evt.preventDefault();
-      console.log('x: ' + evt.pageX + ', y: ' + evt.pageY);
-      $('#datasets-context-menu').css({
-        'left': evt.pageX,
-        'top': evt.pageY
-      });
-      $('#datasets-context-menu').fadeIn(200);
-    }
-  });
-
-  let renderTree = (subtree) => {
-    let html = '';
-    subtree.forEach((_branch) => {
-      if (_branch.type == 'folder') {
-        html += '<li><a class="folder text-light"><span class="foldername">' +
-          _branch.name + '</span>' +
-          '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
-          '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit folder"></i>' +
-          '</a><ul class="d-none">' + renderTree(_branch.children) + '</ul></li>';
-      } else {
-        html += '<li><a class="script text-light"><span class="scriptname">' +
-          _branch.name + '</span>' +
-          '<i class="float-right fa fa-close delete d-none" title="Delete script"></i>' +
-          '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit script"></i>' +
-          '</a></li>';
-      }
-    });
-    return html;
-  };
-
-  $('#datasets-context-menu, #scripts-context-menu').on('click', 'li', function(evt) {
-    let $this = $(this),
-        $newDataset = $('#new-dataset'),
-        $newScript = $('#new-script'),
-        $newFolder = $('#new-folder');;
-
-    switch ($this.data('action')) {
-      case 'create_dataset':
-        $newDataset.trigger('click');
-        break;
-      case 'create_script':
-        $newScript.trigger('click');
-        break;
-      case 'create_folder':
-        $newFolder.trigger('click');
-        break;
-      default:
-        break;
-    }
-    $('#datasets-context-menu').hide();
-  });
-
-  $(document).on('click', function(evt) {
-    let $target = $(evt.target),
-        $scriptsContextMenu = $('#scripts-context-menu'),
-        $datasetsContextMenu = $('#datasets-context-menu');
-    if (evt.button < 2) {
-      if ($scriptsContextMenu.css('display') == 'block') {
-        $scriptsContextMenu.hide();
-      }
-      if ($datasetsContextMenu.css('display') == 'block') {
-        $datasetsContextMenu.hide();
-      }
-    } else {
-      if (($target[0].id == 'scripts-wrapper' || $target.parents('#scripts-wrapper').length > 0) && $datasetsContextMenu.css('display') == 'block') {
-        $datasetsContextMenu.hide();
-      }
-      if (($target[0].id == 'datasets-wrapper' || $target.parents('#datasets-wrapper').length > 0) && $scriptsContextMenu.css('display') == 'block') {
-        $scriptsContextMenu.hide();
-      }
-    }
-  });
-
-  $('.sidebar-sticky').on('click', '.folder', function(evt) {
-    let $this = $(this),
-        $ul = $this.parents('li').children('ul').first();
-    if ($this.hasClass('open')) { $this.removeClass('open'); } else { $this.addClass('open'); }
-    if ($ul.hasClass('d-none')) { $ul.removeClass('d-none'); } else { $ul.addClass('d-none'); }
   });
 
   /*==========================================================================*
