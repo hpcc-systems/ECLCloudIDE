@@ -222,30 +222,36 @@ a {
   margin-top: 0 !important;
 }
 
+.datasets ul,
 .scripts ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
+.datasets ul li,
 .scripts ul li {
-  margin: 3px 0;
+
 }
 
+.datasets ul ul,
 .scripts ul ul {
   padding-left: 0.5rem;
 }
 
+.datasets .folder::before,
 .scripts .folder::before {
   content: "\f07b";
   font-family: 'FontAwesome';
   margin-right: 0.33rem;
 }
 
+.datasets .folder ul,
 .scripts .folder ul {
   display: none;
 }
 
+.datasets .folder.open::before,
 .scripts .folder.open::before {
   content: "\f07c";
 }
@@ -253,11 +259,26 @@ a {
 .dataset, .script, .folder {
   width: 100%;
   display: inline-block;
+  padding: 2px 6px;
 }
 
-.folder:hover,
-.script:hover {
+a.script.active,
+a.dataset.active {
+  color: #17a2b8 !important;
+}
+
+a.dataset:hover,
+a.folder:hover,
+a.script:hover {
   cursor: pointer;
+  background-color: #17a2b8;
+  color: #fff !important;
+}
+
+.dataset .datasetname::before {
+  content: "\f1b2";
+  font-family: 'FontAwesome';
+  margin-right: 0.33rem;
 }
 
 .script::before {
@@ -269,11 +290,6 @@ a {
 .dataset .status,
 .script .status {
   margin-left: 0.33em;
-}
-
-a.script.active,
-a.dataset.active {
-  color: #17a2b8 !important;
 }
 
 .script .delete {
