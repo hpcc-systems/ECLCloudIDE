@@ -1525,8 +1525,14 @@ require([
   $('#newFolderModal').on('click', '.btn-primary', function(evt) {
     let $modal = $('#newFolderModal'),
         $workspaces = $('.workspaces'),
-        $folderName = $modal.find('#folder-name'),
-        $form = $modal.find('form');
+        $activeWorkspace = $workspaces.find('.active'),
+        $folderName = $modal.find('#new-folder-name'),
+        $form = $modal.find('form'),
+        $saveBtn = $modal.find('.btn-primary'),
+        folderType = $saveBtn.data('folderType'),
+        parentPath = $saveBtn.data('parentPath'),
+        $parentEl = $saveBtn.data('parentToReceiveChild'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree'));
 
     if ($form[0].checkValidity() === false) {
       evt.preventDefault();
@@ -1535,13 +1541,52 @@ require([
       return false;
     }
 
-    console.log(JSON.stringify(getFormData($form)));
+    console.log(JSON.stringify(getFormData($form)), parentPath, directoryTree);
+
+    let rootId = null,
+        nextId = null,
+        element = directoryTree[folderType],
+        newFolder = null,
+        newUuid = generateUUIDv4();
+
+    if (parentPath.length > 0) {
+      rootId = parentPath.shift();
+      element = element[rootId];
+
+      while (parentPath.length > 0) {
+        nextId = parentPath.shift();
+        if (element.children[nextId]) {
+          element = element.children[nextId];
+        }
+      }
+
+      element.children[newUuid] = {
+        name: $folderName.val(),
+        id: newUuid,
+        children: {},
+        type: 'folder'
+      };
+      newFolder = element.children[newUuid];
+    } else {
+      element[newUuid] = {
+        name: $folderName.val(),
+        id: newUuid,
+        children: {},
+        type: 'folder'
+      }
+      newFolder = element[newUuid];
+    }
+
+    console.log(directoryTree);
+
     $modal.modal('hide');
-    return false;
 
     fetch('/workspaces/', {
       method: 'PUT',
-      body: JSON.stringify(getFormData($form)),
+      body: JSON.stringify({
+        id: $activeWorkspace.data('id'),
+        directoryTree: directoryTree
+      }),
       headers: {
         'Content-Type': 'application/json'
       }
@@ -1549,6 +1594,17 @@ require([
     .then(response => response.json())
     .then((workspace) => {
       $modal.modal('hide');
+
+      $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+
+      if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
+        $parentEl.append(addFolder(newFolder, folderType));
+      } else {
+        if ($parentEl.find('ul').first().length == 0) {
+          $parentEl.append('<ul>');
+        }
+        $parentEl.find('ul').first().append(addFolder(newFolder, folderType));
+      }
 
       $form.removeClass('was-validated');
 
