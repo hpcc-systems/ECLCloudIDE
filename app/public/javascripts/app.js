@@ -1633,6 +1633,102 @@ require([
     $('#newFolderModal form')[0].reset();
   });
 
+  /* SHOW DELETE FOLDER CONFIRMATION */
+  $('.scripts, .datasets').on('click', '.folder .delete', function(evt) {
+    let $this = $(this),
+        $folder = $this.parents('li').first(),
+        $wrapper = $this.parents('.nav'),
+        parentPath = [],
+        $modal = $('#removeFolderModal'),
+        $deleteBtn = $modal.find('.btn-danger');
+
+    evt.stopPropagation();
+
+    if ($folder.data('id')) {
+      parentPath.unshift($folder.data('id'));
+    }
+    let $parent = $folder.parents('li');
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+      }
+      $parent = $parent.parents('li');
+    } while ($parent.length > 0);
+
+    //link.parentElement.removeChild(link);
+    $modal.find('.foldername').text($folder.find('.foldername').first().text());
+    $modal.modal('show');
+    console.log(parentPath);
+    $deleteBtn.data('parentPath', parentPath);
+    if ($wrapper.attr('id') == 'datasets') {
+      $deleteBtn.data('folderType', 'datasets');
+    } else {
+      $deleteBtn.data('folderType', 'scripts');
+    }
+    $deleteBtn.data('elementToRemove', $folder);
+    console.log($deleteBtn.data('parentPath'));
+  });
+
+  /* DELETE SELECTED FOLDER */
+  $('#removeFolderModal').on('click', '.btn-danger', function(evt) {
+    let $this = $(this),
+        $modal = $('#removeFolderModal'),
+        $activeWorkspace = $('.workspaces .active'),
+        folderType = $this.data('folderType'),
+        parentPath = $this.data('parentPath'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
+        $elementToRemove = $this.data('elementToRemove'),
+        $scriptPanelClose = $('.js-close'),
+        $activeScript = $('.scripts').find('.active');
+
+    let targetId = parentPath.pop(),
+        rootId = null,
+        nextId = null,
+        element = directoryTree[folderType];
+
+    if (parentPath.length > 0) {
+      element = element[parentPath.shift()];
+
+      while (parentPath.length > 0) {
+        nextId = parentPath.shift();
+        if (element.children[nextId]) {
+          element = element.children[nextId];
+        }
+      }
+
+      delete element.children[targetId];
+    } else {
+      delete element[targetId];
+    }
+
+    fetch('/workspaces/', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: $activeWorkspace.data('id'),
+        directoryTree: directoryTree
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then((json) => {
+      if ($activeScript.hasClass('active')) {
+        $scriptPanelClose.trigger('click');
+      }
+
+      $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+      $elementToRemove.remove();
+
+      $activeScript.remove();
+      $modal.modal('hide');
+    });
+  });
+
+  if ($('.data-table').length > 0) {
+    $('.data-table').DataTable();
+  }
+
   /*==========================================================================*
    *  SCRIPT PANEL CONTROLS                                                   *
    *==========================================================================*/
