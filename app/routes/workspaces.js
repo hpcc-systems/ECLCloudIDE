@@ -48,6 +48,7 @@ router.put('/', (req, res, next) => {
   console.log('request body', req.body);
   let workspace = {};
   if (req.body.workspaceName) workspace.name = req.body.workspaceName;
+  if (req.body.directoryTree) workspace.directoryTree = JSON.stringify(req.body.directoryTree);
   if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
   Workspace.update(workspace, {
     where: {
