@@ -631,10 +631,9 @@ require([
 
     $scriptPanelClose.trigger('click');
 
-    //populateDatasets();
-    //populateScripts();
-
     populateWorkspaceDirectoryTree(JSON.parse($this.data('directoryTree')));
+    showDatasets();
+    showScripts();
 
     toggleNewScriptPopover();
   });
