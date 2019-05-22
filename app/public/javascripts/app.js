@@ -14,24 +14,13 @@ let cluster = {
   port: '8010'
 };
 
-let renderTree = (subtree, type = 'script') => {
+let renderTree = (subtree, type = 'scripts') => {
   let $ul = $('<ul class="d-none">');
   subtree.forEach((_branch) => {
     if (_branch[1].type == 'folder') {
-      let $li = $('<li>');
-      $li.data('name', _branch[1].name);
-      $li.data('id', _branch[1].id);
-      $li.append('<a class="folder text-light"><span class="foldername">' +
-        _branch[1].name + '</span>' +
-        '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
-        '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit folder"></i>' +
-        '</a>');
-      if (Object.entries(_branch[1].children).length > 0) {
-        $li.append(renderTree(Object.entries(_branch[1].children), type));
-      }
-      $ul.append($li);
+      $ul.append(addFolder(_branch[1], type));
     } else {
-      if (type == 'script') {
+      if (type == 'scripts') {
         $ul.append(addScript(_branch[1]));
       } else {
         $ul.append(addDataset(_branch[1]));
@@ -41,8 +30,19 @@ let renderTree = (subtree, type = 'script') => {
   return $ul;
 };
 
-let addChildToTree = (tree, parentPath, child) => {
-
+let addFolder = (branch, type) => {
+  let $li = $('<li>');
+  $li.data('name', branch.name);
+  $li.data('id', branch.id);
+  $li.append('<a class="folder text-light"><span class="foldername">' +
+    branch.name + '</span>' +
+    '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
+    '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit folder"></i>' +
+    '</a>');
+  if (Object.entries(branch.children).length > 0) {
+    $li.append(renderTree(Object.entries(branch.children), type));
+  }
+  return $li;
 };
 
 let populateWorkspaces = () => {
@@ -78,7 +78,7 @@ let populateWorkspaceDirectoryTree = (tree) => {
   $datasetsTreeRoot.children('ul').remove();
   $scriptsTreeRoot.children('ul').remove();
 
-  let $datasetsUl = renderTree(Object.entries(tree.datasets), 'dataset'),
+  let $datasetsUl = renderTree(Object.entries(tree.datasets), 'datasets'),
       $scriptsUl = renderTree(Object.entries(tree.scripts));
 
   $datasetsUl.removeClass('d-none');
