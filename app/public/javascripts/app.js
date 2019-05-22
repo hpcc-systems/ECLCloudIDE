@@ -1408,7 +1408,8 @@ require([
 
   $('#datasets-wrapper, #scripts-wrapper').on('mousedown', function(evt) {
     let $this = $(this),
-        $folder = $(evt.target).parents('li'),
+        $target = $(evt.target),
+        $folder = $target.parents('li').first(),
         parentPath = [],
         $contextMenu = $('#scripts-context-menu'),
         $datasetModal = $('#newDatasetModal'),
