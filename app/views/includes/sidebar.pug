@@ -87,6 +87,19 @@ div.modal.fade(id="editFolderModal", role="dialog")
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
 
+div.modal.fade(id="removeFolderModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Remove Folder
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        p Delete the folder "#[span.foldername folder]" (and all of its contents) from this workspace?
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-danger Delete
+
 div.modal.fade(id="newScriptModal", role="dialog")
   div.modal-dialog
     div.modal-content
