@@ -1435,7 +1435,21 @@ require([
 
       $datasetModal.find('.btn-primary').data('parentPath', parentPath);
       $scriptModal.find('.btn-primary').data('parentPath', parentPath);
-      $folderModal.find('btn-primary').data('parentPath', parentPath);
+      $folderModal.find('.btn-primary').data('parentPath', parentPath);
+
+      if ($this.attr('id') == 'datasets-wrapper') {
+        $folderModal.find('.btn-primary').data('folderType', 'datasets');
+        if ($folder.length == 0) {
+          $folder = $('.datasets').find('ul').first();
+        }
+      } else {
+        $folderModal.find('.btn-primary').data('folderType', 'scripts');
+        if ($folder.length == 0) {
+          $folder = $('.scripts').find('ul').first();
+        }
+      }
+
+      $folderModal.find('.btn-primary').data('parentToReceiveChild', $folder);
 
       console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
         'parentPath: ', parentPath, 'x: ' + evt.pageX + ', y: ' + evt.pageY);
