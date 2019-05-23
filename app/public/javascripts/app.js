@@ -1640,6 +1640,8 @@ require([
         }
       }
 
+      $datasetModal.find('.btn-primary').data('parentToReceiveChild', $folder);
+      $scriptModal.find('.btn-primary').data('parentToReceiveChild', $folder);
       $folderModal.find('.btn-primary').data('parentToReceiveChild', $folder);
 
       console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
