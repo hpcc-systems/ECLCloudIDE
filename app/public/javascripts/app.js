@@ -1196,7 +1196,7 @@ require([
     //link.parentElement.removeChild(link);
     $modal.find('.datasetname').text($dataset.find('.datasetname').text());
     $modal.modal('show');
-    console.log($dataset.index());
+    console.log($dataset.data());
     $modal.find('.btn-danger').data('dataset', $dataset.index());
     console.log($modal.find('.btn-danger').data('dataset'));
   });
@@ -1247,9 +1247,14 @@ require([
 
   /* CREATE NEW SCRIPT */
   $('#newScriptModal').on('click', '.btn-primary', function(evt) {
-    let $modal = $('#newScriptModal'),
+    let $this = $(this),
+        $modal = $('#newScriptModal'),
         $scripts = $('.scripts'),
-        $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
+        $activeWorkspace = $('.workspaces .active'),
+        workspaceId = $activeWorkspace.data('id'),
+        parentPath = $this.data('parentPath'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
+        $parentEl = $this.data('parentToReceiveChild'),
         $newScript = $scripts.find('.cloner').clone(),
         $form = $modal.find('form'),
         data = getFormData($form);
@@ -1262,7 +1267,7 @@ require([
     }
 
     console.log(data);
-    data.workspaceId = $workspaceId;
+    data.workspaceId = workspaceId;
     console.log(JSON.stringify(data));
 
     fetch('/scripts/', {
@@ -1274,12 +1279,78 @@ require([
     })
     .then(response => response.json())
     .then((script) => {
+
+      console.log(script, parentPath, directoryTree);
+
+      let rootId = null,
+          nextId = null,
+          element = directoryTree['scripts'],
+          newFile = null;
+
+      if (parentPath.length > 0) {
+        rootId = parentPath.shift();
+        element = element[rootId];
+
+        while (parentPath.length > 0) {
+          nextId = parentPath.shift();
+          if (element.children[nextId]) {
+            element = element.children[nextId];
+          }
+        }
+
+        element.children[script.data.id] = {
+          name: script.data.name,
+          id: script.data.id,
+          children: {},
+          type: 'file'
+        };
+        newFile = element.children[script.data.id];
+      } else {
+        element[script.data.id] = {
+          name: script.data.name,
+          id: script.data.id,
+          children: {},
+          type: 'file'
+        }
+        newFile = element[script.data.id];
+      }
+
+      console.log(directoryTree);
+
       $modal.modal('hide');
-      $newScript.removeClass('d-none cloner');
-      $newScript.data('id', script.data.id);
-      $newScript.data('name', script.data.name);
-      $newScript.find('.scriptname').text($newScript.data('name'));
-      $scripts.append($newScript);
+
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: $activeWorkspace.data('id'),
+          directoryTree: directoryTree
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((workspace) => {
+        $modal.modal('hide');
+
+        $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+
+        if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
+          $parentEl.append(addScript(newFile));
+        } else {
+          if ($parentEl.find('ul').first().length == 0) {
+            $parentEl.append('<ul>');
+          }
+          $parentEl.find('ul').first().append(addScript(newFile));
+        }
+
+        $form.removeClass('was-validated');
+
+        toggleNewScriptPopover();
+      });
+
+      $modal.modal('hide');
+
       $modal.find('#new-script-name').val('');
       $form.removeClass('was-validated');
 
