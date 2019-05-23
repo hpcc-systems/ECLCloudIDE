@@ -1493,15 +1493,31 @@ require([
   $('.scripts').on('click', '.script .delete', function(evt) {
     let $this = $(this),
         $script = $this.parents('.script'),
-        $modal = $('#removeScriptModal');
+        $folder = $this.parents('li').first(),
+        $modal = $('#removeScriptModal'),
+        $wrapper = $this.parents('.nav'),
+        parentPath = [],
+        $deleteBtn = $modal.find('.btn-danger');
 
     evt.stopPropagation();
 
-    //link.parentElement.removeChild(link);
+    if ($folder.data('id')) {
+      parentPath.unshift($folder.data('id'));
+    }
+    let $parent = $folder.parents('li');
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+      }
+      $parent = $parent.parents('li');
+    } while ($parent.length > 0);
+
     $modal.find('.scriptname').text($script.find('.scriptname').text());
     $modal.modal('show');
-    console.log($script.index());
-    $modal.find('.btn-danger').data('script', $script.index());
+    console.log($script.data('id'));
+    $deleteBtn.data('script', $script.data('id'));
+    $deleteBtn.data('parentPath', parentPath);
+    $deleteBtn.data('elementToRemove', $folder);
     console.log($modal.find('.btn-danger').data('script'));
   });
 
@@ -1509,25 +1525,67 @@ require([
   $('#removeScriptModal').on('click', '.btn-danger', function(evt) {
     let $this = $(this),
         $modal = $('#removeScriptModal'),
+        $activeWorkspace = $('.workspaces .active'),
+        parentPath = $this.data('parentPath'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
+        $elementToRemove = $this.data('elementToRemove'),
         $scriptPanelClose = $('.js-close'),
-        $scripts = $('.scripts'),
-        $activeScript = $scripts.children().eq($this.data('script'));
+        $targetScript = $elementToRemove.find('.script'),
+        targetId = $targetScript.data('id');
 
     fetch('/scripts/', {
       method: 'DELETE',
-      body: JSON.stringify({ scriptId: $activeScript.data('id') }),
+      body: JSON.stringify({ scriptId: targetId }),
       headers:{
         'Content-Type': 'application/json'
       }
     })
     .then(response => response.json())
     .then((json) => {
-      if ($activeScript.hasClass('active')) {
+      if ($targetScript.hasClass('active')) {
         $scriptPanelClose.trigger('click');
       }
 
-      $activeScript.remove();
-      $modal.modal('hide');
+      let rootId = null,
+          nextId = null,
+          element = directoryTree['scripts'];
+
+      if (parentPath.length > 0) {
+        element = element[parentPath.shift()];
+
+        while (parentPath.length > 0) {
+          nextId = parentPath.shift();
+          if (element.children[nextId]) {
+            element = element.children[nextId];
+          }
+        }
+
+        delete element.children[targetId];
+      } else {
+        delete element[targetId];
+      }
+
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: $activeWorkspace.data('id'),
+          directoryTree: directoryTree
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        if ($targetScript.hasClass('active')) {
+          $scriptPanelClose.trigger('click');
+        }
+
+        $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+        $elementToRemove.remove();
+
+        $modal.modal('hide');
+      });
     });
   });
 
