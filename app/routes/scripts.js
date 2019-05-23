@@ -138,6 +138,30 @@ router.delete('/', (req, res, next) => {
     return res.json({ success: false, message: 'Script could not be deleted' });
   });
 });
+
+/* Delete multiple scripts */
+router.delete('/batch', (req, res, next) => {
+  console.log('request body', req.body);
+  Script.findAll({
+    where: {
+      id: { [db.Sequelize.Op.in]: req.body.ids },
+    }
+  }).then((scripts) => {
+    scripts.forEach((script) => {
+      console.log(script.name, script.id);
+      let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
+      if (fs.existsSync(scriptFilePath)) {
+        fs.unlinkSync(scriptFilePath);
+      }
+      Script.destroy({
+        where: { id: script.id }
+      });
+    });
+  }).then(() => {
+    res.json({ success: true, message: 'Scripts deleted' });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Scripts could not be deleted' });
   });
 });
 
