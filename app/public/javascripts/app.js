@@ -1370,25 +1370,45 @@ require([
   $('.scripts').on('click', '.script .edit', function(evt) {
     let $this = $(this),
         $script = $this.parents('.script'),
-        $modal = $('#editScriptModal');
+        $folder = $script.parents('li').first(),
+        $modal = $('#editScriptModal'),
+        parentPath = [],
+        $saveBtn = $modal.find('.btn-primary');
 
     evt.stopPropagation();
+
+    if ($folder.data('id')) {
+      parentPath.unshift($folder.data('id'));
+    }
+    let $parent = $folder.parents('li').first();
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+      }
+      $parent = $parent.parents('li').first();
+    } while ($parent.length > 0);
 
     //link.parentElement.removeChild(link);
     $modal.find('#edit-script-name').val($script.find('.scriptname').text());
     $modal.modal('show');
-    console.log($script.index());
-    $modal.find('.btn-primary').data('script', $script.index());
+    $saveBtn.data('elementToUpdate', $script);
+    $saveBtn.data('parentPath', parentPath);
+    console.log($script.data('id'));
+    $saveBtn.data('script', $script.data('id'));
     console.log($modal.find('.btn-primary').data('script'));
   });
 
   /* EDIT SCRIPT */
   $('#editScriptModal').on('click', '.btn-primary', function(evt) {
-    let $modal = $('#editScriptModal'),
-        $scripts = $('.scripts'),
-        $script = $scripts.children().eq($(this).data('script')),
-        $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
+    let $this = $(this),
+        $modal = $('#editScriptModal'),
+        $script = $this.data('elementToUpdate'),
+        $activeWorkspace = $('.workspaces .active'),
+        workspaceId = $activeWorkspace.data('id'),
+        parentPath = $this.data('parentPath'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $form = $modal.find('form'),
+        scriptName = $form.find('#edit-script-name').val(),
         data = getFormData($form);
 
     if ($form[0].checkValidity() === false) {
@@ -1398,9 +1418,8 @@ require([
       return false;
     }
 
-    data.id = $script.data('id');
-    data.prevName = $script.data('name');
-    data.workspaceId = $workspaceId;
+    data.name = scriptName;
+    data.workspaceId = workspaceId;
     console.log('submitting PUT with: ', JSON.stringify(data));
 
     fetch('/scripts/', {
@@ -1412,11 +1431,55 @@ require([
     })
     .then(response => response.json())
     .then((script) => {
-      $modal.modal('hide');
-      $script.data('name', script.data.name);
-      $script.find('.scriptname').text($script.data('name'));
-      $modal.find('#edit-script-name').val('');
-      $form.removeClass('was-validated');
+
+      let rootId = null,
+          nextId = null,
+          element = directoryTree['scripts'];
+
+      if (parentPath.length > 0) {
+        rootId = parentPath.shift();
+        element = element[rootId];
+
+        while (parentPath.length > 0) {
+          nextId = parentPath.shift();
+          if (element.children[nextId]) {
+            element = element.children[nextId];
+          }
+        }
+
+        element.children[$script.data('id')] = {
+          name: script.data.name,
+          id: $script.data('id'),
+          children: {},
+          type: 'file'
+        };
+      } else {
+        element[$script.data('id')] = {
+          name: script.data.name,
+          id: $script.data('id'),
+          children: {},
+          type: 'file'
+        }
+      }
+
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: $activeWorkspace.data('id'),
+          directoryTree: directoryTree
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        $modal.modal('hide');
+        $script.data('name', script.data.name);
+        $script.find('.scriptname').text(script.data.name);
+        $modal.find('#edit-script-name').val('');
+        $form.removeClass('was-validated');
+      });
     });
   });
 
