@@ -15,7 +15,7 @@ let cluster = {
 };
 
 let renderTree = (subtree, type = 'scripts') => {
-  let $ul = $('<ul class="d-none">');
+  let $ul = $('<ul>');
   subtree.forEach((_branch) => {
     if (_branch[1].type == 'folder') {
       $ul.append(addFolder(_branch[1], type));
@@ -1514,7 +1514,6 @@ require([
     let $this = $(this),
         $ul = $this.parents('li').first().children('ul').first();
     if ($this.hasClass('open')) { $this.removeClass('open'); } else { $this.addClass('open'); }
-    if ($ul.hasClass('d-none')) { $ul.removeClass('d-none'); } else { $ul.addClass('d-none'); }
   });
 
   /*==========================================================================*

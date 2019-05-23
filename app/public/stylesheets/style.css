@@ -245,9 +245,12 @@ a {
   margin-right: 0.33rem;
 }
 
-.datasets .folder ul,
-.scripts .folder ul {
+.folder + ul {
   display: none;
+}
+
+.folder.open + ul {
+  display: block;
 }
 
 .datasets .folder.open::before,
