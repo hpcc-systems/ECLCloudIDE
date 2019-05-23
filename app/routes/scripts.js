@@ -72,7 +72,7 @@ router.post('/revision', (req, res, next) => {
       }
     }).then((script) => {
       console.log('update contents of script file');
-      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId,
+      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
           scriptFilePath = workspaceDirPath + '/' + script.name + '.ecl';
       if (!fs.existsSync(workspaceDirPath)) {
         fs.mkdirSync(workspaceDirPath);
@@ -103,8 +103,8 @@ router.put('/', (req, res, next) => {
         id: req.body.id
       }
     }).then((result) => {
-      let currentScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + req.body.prevName + '.ecl';
-      let newScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
+      let currentScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + req.body.prevName + '.ecl';
+      let newScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
       if (fs.existsSync(currentScriptFilePath)) {
         fs.rename(currentScriptFilePath, newScriptFilePath);
       }
@@ -124,7 +124,7 @@ router.delete('/', (req, res, next) => {
       id: req.body.scriptId,
     }
   }).then((script) => {
-    let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/' + script.name + '.ecl';
+    let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
     if (fs.existsSync(scriptFilePath)) {
       fs.unlinkSync(scriptFilePath);
     }
@@ -135,7 +135,9 @@ router.delete('/', (req, res, next) => {
     res.json({ success: true, message: 'Script deleted' });
   }).catch((err) => {
     console.log(err);
-    return res.json({ success: false, message: 'Script could not be saved' });
+    return res.json({ success: false, message: 'Script could not be deleted' });
+  });
+});
   });
 });
 
