@@ -19,7 +19,7 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This is used by the
 
 * ~~imports / ecl modules~~
 
-* change datasets/scripts left nav to more closely resemble a file explorer in a texteditor / ide
+* ~~change datasets/scripts left nav to more closely resemble a file explorer in a texteditor / ide~~
 
 * import "public" datasets
 
@@ -28,7 +28,7 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This is used by the
 
 * ~~sharing workspaces~~
 
-* docker for eclcc?
+* ~~docker for eclcc?~~ _not really necessary, eclcc is just installed in the web app server_
 
 * wizards for interacting with current output:
   * vertical slice (table)
