@@ -1245,7 +1245,8 @@ require([
     let $this = $(this),
         $main = $('.dataset-content').parents('main');
 
-    $this.addClass('active').siblings().removeClass('active');
+    $('#datasets').find('.dataset').removeClass('active');
+    $this.addClass('active');
     $main.removeClass('show-outputs');
 
     displayWorkunitResults($this.data('wuid'), $this.data('name'));
