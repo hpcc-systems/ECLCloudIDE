@@ -19,14 +19,17 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This is used by the
 
 * ~~imports / ecl modules~~
 
-* ~~change datasets/scripts left nav to more closely resemble a file explorer in a texteditor / ide~~
-
-* import "public" datasets
-
 * user groups
   * invite to group
 
-* ~~sharing workspaces~~
+* sharing workspaces
+  * ~~share with a user~~
+  * share with a group
+  * generate a url to share a workspace, rather than specifically assigning to users / groups
+
+* ~~change datasets/scripts left nav to more closely resemble a file explorer in a texteditor / ide~~
+
+* import "public" datasets
 
 * ~~docker for eclcc?~~ _not really necessary, eclcc is just installed in the web app server_
 
