@@ -3,6 +3,8 @@ const router = express.Router();
 
 const db = require('../models/index');
 
+const fs = require('fs-extra');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
@@ -125,6 +127,32 @@ router.delete('/', (req, res, next) => {
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Dataset could not be deleted' });
+  });
+});
+
+/* Delete multiple datasets */
+router.delete('/batch', (req, res, next) => {
+  console.log('request body', req.body);
+  Dataset.findAll({
+    where: {
+      id: { [db.Sequelize.Op.in]: req.body.ids },
+    }
+  }).then((datasets) => {
+    datasets.forEach((dataset) => {
+      console.log(dataset.name, dataset.id);
+      let datasetFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' + dataset.name + '.ecl';
+      if (fs.existsSync(datasetFilePath)) {
+        fs.unlinkSync(datasetFilePath);
+      }
+      Dataset.destroy({
+        where: { id: dataset.id }
+      });
+    });
+  }).then(() => {
+    res.json({ success: true, message: 'Datasets deleted' });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Datasets could not be deleted' });
   });
 });
 
