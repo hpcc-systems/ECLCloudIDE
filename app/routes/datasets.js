@@ -22,7 +22,11 @@ router.get('/', (req, res, next) => {
 
   db.sequelize.query(query, {
     type: db.sequelize.QueryTypes.SELECT
-  }).then((datasets) => {
+  }).then((_datasets) => {
+    let datasets = {};
+    _datasets.forEach((dataset) => {
+      datasets[dataset.id] = dataset
+    });
     res.json(datasets);
   }).catch((err) => {
     console.log(err);
