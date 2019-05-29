@@ -1993,30 +1993,35 @@ require([
     let $this = $(this),
         $modal = $('#removeFolderModal'),
         $activeWorkspace = $('.workspaces .active'),
+        $activeScript = $('.scripts').find('.active'),
+
         folderType = $this.data('folderType'),
         parentPath = $this.data('parentPath'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $elementToRemove = $this.data('elementToRemove'),
         $scriptPanelClose = $('.js-close'),
-        $activeScript = $('.scripts').find('.active');
 
-    let targetId = parentPath.pop(),
+        targetId = parentPath.pop(),
         rootId = null,
         nextId = null,
         element = directoryTree[folderType],
 
-        scriptsToDelete = [],
-        deleteChildScripts = (node) => {
+        deleteUri = ((folderType == 'datasets') ? '/datasets/' : '/scripts/') + 'batch/',
+
+        childrenToDelete = [],
+        deleteChildren = (node) => {
           if (node.type == 'file') {
             console.log(node);
-            scriptsToDelete.push(node.id);
+            childrenToDelete.push(node.id);
           } else {
             console.log(Object.entries(node.children));
             Object.entries(node.children).forEach((_node) => {
-              deleteChildScripts(_node[1]);
+              deleteChildren(_node[1]);
             });
           }
-        };
+        },
+
+        elementsToDelete = null;
 
     if (parentPath.length > 0) {
       element = element[parentPath.shift()];
@@ -2028,53 +2033,29 @@ require([
         }
       }
 
-      deleteChildScripts(element.children[targetId]);
-      console.log(scriptsToDelete);
-
-      fetch('/scripts/batch/', {
-        method: 'DELETE',
-        body: JSON.stringify({
-          ids: scriptsToDelete
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(response => response.json())
-      .then((json) => {
-        delete element.children[targetId];
-
-        fetch('/workspaces/', {
-          method: 'PUT',
-          body: JSON.stringify({
-            id: $activeWorkspace.data('id'),
-            directoryTree: directoryTree
-          }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        .then(response => response.json())
-        .then((json) => {
-          if ($activeScript.hasClass('active')) {
-            $scriptPanelClose.trigger('click');
-          }
-          console.log(JSON.stringify(directoryTree));
-          $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
-          $elementToRemove.remove();
-
-          $activeScript.remove();
-          $modal.modal('hide');
-        });
-      });
-
+      deleteChildren(element.children[targetId]);
+      delete element.children[targetId];
     } else {
-      deleteChildScripts(element[targetId]);
+      deleteChildren(element[targetId]);
+      delete element[targetId];
+    }
 
-      fetch('/scripts/batch/', {
-        method: 'DELETE',
+    fetch(deleteUri, {
+      method: 'DELETE',
+      body: JSON.stringify({
+        ids: childrenToDelete
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then((json) => {
+      fetch('/workspaces/', {
+        method: 'PUT',
         body: JSON.stringify({
-          ids: scriptsToDelete
+          id: $activeWorkspace.data('id'),
+          directoryTree: directoryTree
         }),
         headers: {
           'Content-Type': 'application/json'
@@ -2082,32 +2063,16 @@ require([
       })
       .then(response => response.json())
       .then((json) => {
-        delete element[targetId];
+        if ($activeScript.hasClass('active')) {
+          $scriptPanelClose.trigger('click');
+        }
+        console.log(JSON.stringify(directoryTree));
+        $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+        $elementToRemove.remove();
 
-        fetch('/workspaces/', {
-          method: 'PUT',
-          body: JSON.stringify({
-            id: $activeWorkspace.data('id'),
-            directoryTree: directoryTree
-          }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        .then(response => response.json())
-        .then((json) => {
-          if ($activeScript.hasClass('active')) {
-            $scriptPanelClose.trigger('click');
-          }
-          console.log(JSON.stringify(directoryTree));
-          $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
-          $elementToRemove.remove();
-
-          $activeScript.remove();
-          $modal.modal('hide');
-        });
+        $modal.modal('hide');
       });
-    }
+    });
   });
 
   if ($('.data-table').length > 0) {
