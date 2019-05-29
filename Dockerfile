@@ -1,7 +1,5 @@
 FROM ubuntu:bionic
 
-COPY ./app /app/
-
 WORKDIR /app
 
 RUN apt-get update -y && apt-get install -y build-essential curl
@@ -27,9 +25,13 @@ ARG clientToolsUrl=https://edgecastcdn.net/00423A/releases/CE-Candidate-7.2.2/bi
 RUN echo "get ${clientToolsUrl} with wget"
 RUN wget -O clienttools.deb $clientToolsUrl && dpkg -i clienttools.deb && rm clienttools.deb
 
+COPY ./app/package.json /app/
+
 RUN npm install -g node-gyp && npm install
 
 RUN npm install sequelize-cli pm2 -g
+
+COPY ./app /app/
 
 RUN npm run clientdeps
 
