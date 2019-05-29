@@ -815,11 +815,15 @@ require([
 
   /* CREATE NEW DATASET */
   $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
-    let $modal = $('#newDatasetModal'),
+    let $this = $(this),
+        $modal = $('#newDatasetModal'),
         $datasets = $('.datasets'),
         $activeWorkspace = $('.workspaces .dropdown-item.active'),
         $workspaceId = $activeWorkspace.data('id'),
         $workspaceName = $activeWorkspace.data('name'),
+        parentPath = $this.data('parentPath'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
+        $parentEl = $this.data('parentToReceiveChild'),
         $newDataset = null,
         $datasetStatus = null,
         $form = $modal.find('form'),
@@ -873,13 +877,6 @@ require([
             console.log('sprayed file', json.wuid);
             saveWorkunit(dataset.id, json.wuid);
           }).then(() => {
-            addDataset(dataset);
-            $newDataset = $datasets.children().last();
-            $datasetStatus = $newDataset.find('.status');
-            $datasetStatus.removeClass('d-none');
-
-            showDatasets();
-          }).then(() => {
             let _wuid = '';
 
             createWorkunit()
@@ -887,79 +884,148 @@ require([
             .then((json) => {
               _wuid = json.wuid;
               saveWorkunit(dataset.id, _wuid);
-              $newDataset.data('wuid', _wuid);
             }).then(() => {
-              let _query = dataset.name + ":=RECORD\n",
-                  _keys = Object.keys(currentDatasetFile),
-                  _avgs = Object.values(currentDatasetFile);
+              console.log(dataset, parentPath, directoryTree);
 
-              $fileDetails.find('.form-group').each((idx, group) => {
-                _query += "\tSTRING" + _avgs[idx] + " " + $(group).children('input:eq(0)').val() + ";\n";
-              });
+              let rootId = null,
+                  nextId = null,
+                  element = directoryTree['datasets'],
+                  newFile = null;
 
-              _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
-                dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
-                "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
-                ",CLUSTER('mythor'),OVERWRITE);";
+              if (parentPath.length > 0) {
+                rootId = parentPath.shift();
+                element = element[rootId];
 
-              console.log(_query);
-              updateWorkunit(_wuid, _query, null, null).then(() => {
-                submitWorkunit(_wuid).then(() => {
-                  console.log('check status of workunit');
+                while (parentPath.length > 0) {
+                  nextId = parentPath.shift();
+                  if (element.children[nextId]) {
+                    element = element.children[nextId];
+                  }
+                }
 
-                  $datasetStatus.addClass('fa-spin');
+                element.children[dataset.id] = {
+                  name: dataset.name,
+                  id: dataset.id,
+                  children: {},
+                  type: 'file'
+                };
+                newFile = element.children[dataset.id];
+              } else {
+                element[dataset.id] = {
+                  name: dataset.name,
+                  id: dataset.id,
+                  children: {},
+                  type: 'file'
+                }
+                newFile = element[dataset.id];
+              }
 
-                  let t = null;
+              console.log(directoryTree);
 
-                  let awaitWorkunitStatusComplete = () => {
-                    checkWorkunitStatus(_wuid)
-                    .then(response => response.json())
-                    .then((json) => {
-                      if (json.state == 'completed') {
+              fetch('/workspaces/', {
+                method: 'PUT',
+                body: JSON.stringify({
+                  id: $activeWorkspace.data('id'),
+                  directoryTree: directoryTree
+                }),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.json())
+              .then((workspace) => {
+                $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
 
-                        $datasetStatus.removeClass('fa-spin');
+                $newDataset = addDataset(newFile)
 
-                        dataset.eclQuery = json.query;
+                if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
+                  $parentEl.append($newDataset);
+                } else {
+                  if ($parentEl.find('ul').first().length == 0) {
+                    $parentEl.append('<ul>');
+                  }
+                  $parentEl.find('ul').first().append($newDataset);
+                }
 
-                        if (json.results[0].logicalFile) {
-                          dataset.logicalfile = json.results[0].logicalFile;
-                        }
+                $datasetStatus = $newDataset.find('.status');
 
-                        if (json.results[0].schema) {
-                          dataset.rowCount = json.results[0].rows;
-                          dataset.columnCount = json.results[0].columns;
-                          dataset.eclSchema = JSON.stringify(json.results[0].schema);
-                        }
+                showDatasets();
 
-                        fetch('/datasets/', {
-                          method: 'PUT',
-                          body: JSON.stringify(dataset),
-                          headers:{
-                            'Content-Type': 'application/json'
+                $newDataset.trigger('click');
+                let _query = dataset.name + ":=RECORD\n",
+                    _keys = Object.keys(currentDatasetFile),
+                    _avgs = Object.values(currentDatasetFile);
+
+                $fileDetails.find('.form-group').each((idx, group) => {
+                  _query += "\tSTRING" + _avgs[idx] + " " + $(group).children('input:eq(0)').val() + ";\n";
+                });
+
+                $modal.modal('hide');
+                $modal.find('#dataset-name').val('');
+                $form.removeClass('was-validated');
+
+                _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
+                  dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
+                  "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
+                  ",CLUSTER('mythor'),OVERWRITE);";
+
+                console.log(_query);
+                updateWorkunit(_wuid, _query, null, null).then(() => {
+                  submitWorkunit(_wuid).then(() => {
+                    dataset.wuid = _wuid;
+                    $newDataset.data('wuid', _wuid);
+                    console.log('check status of workunit');
+
+                    $datasetStatus.addClass('fa-spin');
+
+                    let t = null;
+
+                    let awaitWorkunitStatusComplete = () => {
+                      checkWorkunitStatus(_wuid)
+                      .then(response => response.json())
+                      .then((json) => {
+                        if (json.state == 'completed') {
+
+                          $datasetStatus.removeClass('fa-spin');
+
+                          dataset.eclQuery = json.query;
+
+                          if (json.results[0].logicalFile) {
+                            dataset.logicalfile = json.results[0].logicalFile;
                           }
-                        }).then(() => {
-                          let $dataset = $('.datasets').children().last();
-                          $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
-                          $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
-                          $dataset.data('eclSchema', dataset.eclSchema);
-                          $dataset.data('eclQuery', dataset.eclQuery);
+
+                          if (json.results[0].schema) {
+                            dataset.rowCount = json.results[0].rows;
+                            dataset.columnCount = json.results[0].columns;
+                            dataset.eclSchema = JSON.stringify(json.results[0].schema);
+                          }
+
+                          fetch('/datasets/', {
+                            method: 'PUT',
+                            body: JSON.stringify(dataset),
+                            headers:{
+                              'Content-Type': 'application/json'
+                            }
+                          }).then(() => {
+                            $newDataset.data('wuid', _wuid);
+                            $newDataset.find('.rows').text('Rows: ' + dataset.rowCount);
+                            $newDataset.find('.cols').text('Columns: ' + dataset.columnCount);
+                            $newDataset.data('eclSchema', dataset.eclSchema);
+                            $newDataset.data('query', dataset.eclQuery);
+                            window.clearTimeout(t);
+                          });
+                        } else {
                           window.clearTimeout(t);
-                        });
-                      } else {
-                        window.clearTimeout(t);
-                        t = window.setTimeout(function() {
-                          awaitWorkunitStatusComplete();
-                        }, 1500);
-                      }
-                    });
-                  };
-                  awaitWorkunitStatusComplete();
+                          t = window.setTimeout(function() {
+                            awaitWorkunitStatusComplete();
+                          }, 1500);
+                        }
+                      });
+                    };
+                    awaitWorkunitStatusComplete();
+                  });
                 });
               });
-
-              $modal.modal('hide');
-              $modal.find('#dataset-name').val('');
-              $form.removeClass('was-validated');
             });
           });
         });
