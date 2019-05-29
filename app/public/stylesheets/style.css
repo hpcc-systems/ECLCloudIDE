@@ -55,6 +55,18 @@ a {
   border-width: 3px;
 }
 
+.account-page [role="main"] {
+  margin-left: 0 !important;
+}
+
+.account-page .app-controls {
+  display: none;
+}
+
+.account-page .sidebar {
+  display: none !important;
+}
+
 [role="main"] {
   padding-top: 58px;
 }
