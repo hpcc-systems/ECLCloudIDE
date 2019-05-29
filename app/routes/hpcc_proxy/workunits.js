@@ -121,7 +121,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
   let _query = req.body.query,
       _filename = req.body.filename,
       _workspaceId = req.body.workspace,
-      filePath = process.cwd() + '/workspaces/' + _workspaceId + '/',
+      filePath = process.cwd() + '/workspaces/' + _workspaceId + '/scripts/',
       args = ['-E', filePath + _filename];
 
   if (_filename) {
