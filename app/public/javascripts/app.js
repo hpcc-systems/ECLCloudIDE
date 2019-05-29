@@ -37,7 +37,7 @@ let addFolder = (branch, type) => {
   $li.append('<a class="folder text-light"><span class="foldername">' +
     branch.name + '</span>' +
     '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
-    '<i class="float-right fa fa-pencil-square-o edit d-none mr-2" title="Edit folder"></i>' +
+    '<i class="float-right fa fa-pencil-square-o edit d-none mr-1" title="Edit folder"></i>' +
     '</a>');
   if (Object.entries(branch.children).length > 0) {
     $li.append(renderTree(Object.entries(branch.children), type));

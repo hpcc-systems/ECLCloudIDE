@@ -11,12 +11,12 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
 
       div.nav.flex-column.datasets.collapse(id="datasets")
         a.text-light.dataset.cloner.d-none(href='#')
-          div
-            i.float-right.fa.fa-close.delete.d-none(title="Delete dataset")
-            i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit dataset")
-            div.cardname-wrapper
+          div.d-flex
+            div.cardname-wrapper.flex-grow-1
               b.datasetname Name
                 i.status.fa.fa-refresh.d-none
+            i.fa.fa-pencil-square-o.edit.d-none.mr-1(title="Edit dataset")
+            i.fa.fa-close.delete.d-none(title="Delete dataset")
             span.rows.d-none Rows: ?
             span.cols.d-none Columns: ?
 
@@ -33,14 +33,14 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
           span.scriptname script
             i.status.fa.fa-refresh.d-none
           i.float-right.fa.fa-close.delete.d-none(title="Delete script")
-          i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit script")
+          i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-1(title="Edit script")
 
     a#new-folder.d-none(href='#', title="New Folder...", data-toggle="modal", data-target="#newFolderModal") New
     li.d-none
       a.folder.cloner.text-light
         span.foldername Name
         i.float-right.fa.fa-close.delete.d-none(title="Delete folder")
-        i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-2(title="Edit folder")
+        i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-1(title="Edit folder")
       ul.d-none
 
 div.context-menu(id="scripts-context-menu")
