@@ -92,29 +92,26 @@ let populateDatasets = () => {
   let url = new URL(hostname + '/datasets'),
       $activeWorkspace = $('.workspaces .active'),
       $datasets = $('.datasets'),
+      $datasetLis = $datasets.find('.dataset:not(.cloner)'),
       params = { workspaceId: $activeWorkspace.data('id') };
 
   url.search = new URLSearchParams(params);
-
-  $datasets.find('.dataset:not(.cloner)').remove();
 
   fetch(url)
     .then(response => response.json())
     .then((datasets) => {
       console.log('populateDatasets', datasets);
-      datasets.forEach((dataset) => {
-        addDataset(dataset);
-        let $dataset = $datasets.children().last();
-        if (!dataset.logicalfile) {
-          $dataset.find('.status').removeClass('d-none');
-        }
-        if (dataset.rowCount) {
-          $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
-        }
-        if (dataset.columnCount) {
-          $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
-        }
-      });
+
+      if (Object.entries(datasets).length > 0) {
+        $datasetLis.each((idx, el) => {
+          let $dataset = $(el),
+              _dataset = datasets[$dataset.data('id')];
+          $dataset.data('query', _dataset.eclQuery);
+          $dataset.data('wuid', _dataset.workunitId);
+          $dataset.data('rows', _dataset.rowCount);
+          $dataset.data('cols', _dataset.columnCount);
+        });
+      }
 
       if (datasets.length > 0) {
         showDatasets();
@@ -154,22 +151,23 @@ let populateScripts = () => {
   let url = new URL(hostname + '/scripts'),
       $activeWorkspace = $('.workspaces .active'),
       $scripts = $('.scripts'),
+      $scriptLis = $scripts.find('.script:not(.cloner)'),
       params = { workspaceId: $activeWorkspace.data('id') };
 
   url.search = new URLSearchParams(params);
-
-  $scripts.find('.script:not(.cloner)').remove();
 
   fetch(url)
     .then(response => response.json())
     .then((scripts) => {
       console.log(scripts);
-      scripts.forEach((script) => {
-        addScript(script);
-      });
 
-      if (scripts.length > 0) {
-        showScripts();
+      if (Object.entries(scripts).length > 0) {
+        $scriptLis.each((idx, el) => {
+          let $script = $(el),
+              _script = scripts[$script.data('id')];
+          $script.data('revisionId', _script.revisionId);
+          $script.data('content', _script.content);
+        });
       }
     });
 };
@@ -634,6 +632,8 @@ require([
     populateWorkspaceDirectoryTree(JSON.parse($this.data('directoryTree')));
     showDatasets();
     showScripts();
+    populateScripts();
+    populateDatasets();
 
     toggleNewScriptPopover();
   });
