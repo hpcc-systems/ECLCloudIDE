@@ -1255,15 +1255,32 @@ require([
   $('.datasets').on('click', '.dataset .delete', function(evt) {
     let $this = $(this),
         $dataset = $this.parents('.dataset'),
-        $modal = $('#removeDatasetModal');
+        $folder = $this.parents('li').first(),
+        $modal = $('#removeDatasetModal'),
+        $wrapper = $this.parents('.nav'),
+        parentPath = [],
+        $deleteBtn = $modal.find('.btn-danger');
 
     evt.stopPropagation();
+
+    if ($folder.data('id')) {
+      parentPath.unshift($folder.data('id'));
+    }
+    let $parent = $folder.parents('li');
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+      }
+      $parent = $parent.parents('li');
+    } while ($parent.length > 0);
 
     //link.parentElement.removeChild(link);
     $modal.find('.datasetname').text($dataset.find('.datasetname').text());
     $modal.modal('show');
     console.log($dataset.data());
-    $modal.find('.btn-danger').data('dataset', $dataset.index());
+    $deleteBtn.data('dataset', $dataset.data('id'));
+    $deleteBtn.data('parentPath', parentPath);
+    $deleteBtn.data('elementToRemove', $folder);
     console.log($modal.find('.btn-danger').data('dataset'));
   });
 
@@ -1272,24 +1289,65 @@ require([
     let $this = $(this),
         $modal = $('#removeDatasetModal'),
         $datasets = $('.datasets'),
+        $activeWorkspace = $('.workspaces .active'),
+        parentPath = $this.data('parentPath'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
+        $elementToRemove = $this.data('elementToRemove'),
         $datasetCollapser = $('#dataset-collapser'),
-        $activeDataset = $datasets.children().eq($this.data('dataset'));
+        $targetDataset = $elementToRemove.find('.dataset'),
+        targetId = $this.data('dataset');
 
     fetch('/datasets/', {
       method: 'DELETE',
-      body: JSON.stringify({ datasetId: $activeDataset.data('id') }),
+      body: JSON.stringify({ datasetId: targetId }),
       headers:{
         'Content-Type': 'application/json'
       }
     })
     .then(response => response.json())
     .then((json) => {
-      $activeDataset.remove();
-      $modal.modal('hide');
+      let rootId = null,
+          nextId = null,
+          element = directoryTree['datasets'];
 
-      if ($datasets.children(':not(.cloner)').length < 1) {
-        $datasetCollapser.trigger('click');
+      if (parentPath.length > 0) {
+        element = element[parentPath.shift()];
+
+        while (parentPath.length > 0) {
+          nextId = parentPath.shift();
+          if (element.children[nextId]) {
+            element = element.children[nextId];
+          }
+        }
+
+        delete element.children[targetId];
+      } else {
+        delete element[targetId];
       }
+
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: $activeWorkspace.data('id'),
+          directoryTree: directoryTree
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then((json) => {
+        $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+        $elementToRemove.remove();
+
+        $modal.modal('hide');
+
+        if ($datasets.children(':not(.cloner)').length < 1) {
+          $datasetCollapser.trigger('click');
+        }
+
+        $('.dataset-content').addClass('d-none');
+      });
     });
   });
 
