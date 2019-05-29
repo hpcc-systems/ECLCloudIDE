@@ -32,8 +32,12 @@ router.get('/', (req, res, next) => {
 
   db.sequelize.query(query, {
     type: db.sequelize.QueryTypes.SELECT
-  }).then((datasets) => {
-    res.json(datasets);
+  }).then((_scripts) => {
+    let scripts = {};
+    _scripts.forEach((script) => {
+      scripts[script.id] = script
+    });
+    res.json(scripts);
   }).catch((err) => {
     console.log(err);
     res.json(err);
