@@ -1543,6 +1543,7 @@ require([
     }
 
     data.name = scriptName;
+    data.prevName = $script.data('name');
     data.workspaceId = workspaceId;
     console.log('submitting PUT with: ', JSON.stringify(data));
 
