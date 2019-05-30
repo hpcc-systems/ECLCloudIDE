@@ -10,7 +10,11 @@ block content
         p.lead Create a user account
         p Or #[a(href='/auth/login') login] with an existing account.
       .form-group
-          input.form-control(type='text', name="username", placeholder='Enter Username')
+          if errors.error
+            div.alert.alert-danger.login-error !{errors.error[0]}
+          input.form-control(type='text', name="username", placeholder='Username')
+      .form-group
+          input.form-control(type='email', name="emailaddress", placeholder='Email Address')
       .form-group
         input.form-control(type='password', name="password", placeholder='Password')
       button.btn.btn-primary.mr-2(type='submit') Create Account

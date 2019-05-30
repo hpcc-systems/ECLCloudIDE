@@ -16,6 +16,7 @@ router.get('/register', (req, res, next) => {
     res.redirect('/');
   }
 
+  res.locals.errors = req.flash();
   res.render('auth/register', { title: 'ECL IDE' });
 });
 
@@ -23,15 +24,28 @@ router.post('/register', (req, res, next) => {
   if (req.user) {
     res.redirect('/');
   } else {
-    bcrypt.hash(req.body.password, parseInt(process.env.SALT_ROUNDS, 10)).then((hash) => {
-      User.create({ username: req.body.username, password: hash }).then((user) => {
-        req.session.user = user;
-        return res.redirect('/');
-      }).catch((err) => {
-        console.log(err);
-      });
-    }).catch((err) => {
-      console.log(err);
+    User.findOne({
+      where: {
+        emailAddress: req.body.emailaddress
+      }
+    }).then((user) => {
+      if (user == null) { // no user account exists using this email address
+        bcrypt.hash(req.body.password, parseInt(process.env.SALT_ROUNDS, 10)).then((hash) => {
+          User.create({ username: req.body.username, password: hash }).then((user) => {
+            req.session.user = user;
+            return res.redirect('/');
+          }).catch((err) => {
+            console.log(err);
+          });
+        }).catch((err) => {
+          console.log(err);
+        });
+      } else {
+        let msg = 'An account using this email address already exists. Perhaps try ' +
+          'using the <a href="/auth/forgot">forgot password</a> form.'
+        req.flash('error', msg);
+        res.redirect('/auth/register');
+      }
     });
   }
 });
