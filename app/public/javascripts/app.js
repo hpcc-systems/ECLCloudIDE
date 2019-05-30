@@ -528,6 +528,10 @@ require([
     });
   }
 
+  if ($('.workspaces').length > 0) {
+    populateWorkspaces();
+  }
+
   $('.js-collapser').on('click', function(evt) {
     let $this = $(this),
         $chevron = $this.find('.fa');
@@ -544,8 +548,6 @@ require([
   /*==========================================================================*
    *  WORKSPACES                                                              *
    *==========================================================================*/
-
-  populateWorkspaces();
 
   /* CREATE NEW WORKSPACE */
   $('#newWorkspaceModal').on('click', '.btn-primary', function(evt) {
