@@ -56,8 +56,9 @@ router.get('/login', (req, res, next) => {
     res.redirect('/');
   }
 
-  res.locals.errors = req.flash();
-  console.log('flash', req.flash());
+  res.locals.errors = req.flash('error');
+  res.locals.info = req.flash('info');
+  console.log('locals', res.locals);
   res.render('auth/login', { title: 'ECL IDE' });
 });
 
