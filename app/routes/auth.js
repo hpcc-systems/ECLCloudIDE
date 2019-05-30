@@ -74,6 +74,33 @@ router.post('/login', (req, res, next) => {
   })(req, res);
 });
 
+router.get('/forgot', (req, res, next) => {
+  if (req.session.user) {
+    res.redirect('/');
+  }
+
+  res.render('auth/forgot', { title: 'ECL IDE' });
+});
+
+router.post('/forgot', (req, res, next) => {
+  // res.redirect('/');
+  User.findOne({
+    where: {
+      emailAddress: req.body.emailaddress
+    }
+  }).then((user) => {
+    if (user != null) {
+      console.log(req.body.emailaddress);
+    }
+    let msg = 'If an account for the specified email address exists, a password ' +
+      'reset email has been sent.';
+    req.flash('info', msg);
+    res.redirect('/auth/login');
+  }).catch((err) => {
+    console.log(err);
+  });
+});
+
 router.get('/logout', (req, res, next) => {
   req.session.destroy();
   res.redirect('/');
