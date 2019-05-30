@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: false,
     },
     username: DataTypes.STRING,
+    emailAddress: DataTypes.STRING,
     password: DataTypes.STRING
   }, {
     paranoid: true
