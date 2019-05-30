@@ -21,7 +21,7 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This is used by the
 
 * user functions
   * change password
-  * forgot password
+  * ~~forgot password~~
 
 * user groups
   * invite to group
