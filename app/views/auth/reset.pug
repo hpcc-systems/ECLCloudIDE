@@ -5,9 +5,9 @@ block beforeBody
 
 block content
   main.container(role='main')
-    form.form-signin(role='form', action='/auth/forgot', method='post')
+    form.form-signin(role='form', action='/auth/reset/' + id, method='post')
       .form-group
-        p.lead Forgot password
+        p.lead Reset password
       .form-group
-        input.form-control(type='text', name="emailaddress", placeholder='Email Address')
+        input.form-control(type='password', name="password", placeholder='New Password')
       button.btn.btn-large.btn-primary.btn-block(type='submit') Reset

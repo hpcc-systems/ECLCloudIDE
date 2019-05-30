@@ -3,10 +3,13 @@ const passport = require('passport');
 
 const validator = require('express-validator');
 
+const nodemailer = require('nodemailer');
+
 const bcrypt = require('bcrypt');
 
 const db = require('../models/index');
 const User = db.User;
+const PasswordReset = db.PasswordReset;
 
 const router = express.Router();
 
@@ -85,13 +88,47 @@ router.get('/forgot', (req, res, next) => {
 
 router.post('/forgot', (req, res, next) => {
   // res.redirect('/');
+
+  let sendMail = async (recipients, subject = '', message = '') => {
+    let transporter = nodemailer.createTransport({
+      host: 'appmail.choicepoint.net',
+      port: 25,
+      secure: false, // true for 465, false for other ports
+      auth: {},
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+    let info = await transporter.sendMail({
+      from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@lexisnexisrisk.com>', // sender address
+      to: recipients.join(','), // list of receivers
+      subject: (subject != '') ? subject : 'Subject', // Subject line
+      html: (message != '') ? message : 'Message' // html body
+    });
+
+    console.log("Message sent: %s", info.messageId);
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  };
+
   User.findOne({
     where: {
       emailAddress: req.body.emailaddress
     }
   }).then((user) => {
     if (user != null) {
-      console.log(req.body.emailaddress);
+      let recipients = [ user.emailAddress ],
+          subject = 'Password Reset',
+          message = '';
+
+      PasswordReset.create({
+        userId: user.id
+      }).then((reset) => {
+        let url = req.protocol + '://' + req.get('host') + '/auth/reset/' + reset.id;
+        message += '<p>A password reset url has been requested for the ECL Cloud IDE account ' +
+          'associated with the email address "' + user.emailAddress + '" Click the link below ' +
+          'to complete this reset:</p><p><a href="' + url + '">' + url + '</a>';
+        sendMail(recipients, subject, message).catch(console.error);
+      });
     }
     let msg = 'If an account for the specified email address exists, a password ' +
       'reset email has been sent.';
@@ -99,6 +136,64 @@ router.post('/forgot', (req, res, next) => {
     res.redirect('/auth/login');
   }).catch((err) => {
     console.log(err);
+  });
+});
+
+router.get('/reset/:id', (req, res, next) => {
+  PasswordReset.findOne({
+    where: {
+      id: req.params.id,
+      deletedAt: null,
+    },
+    include: User,
+    order: [
+      [ 'createdAt', 'DESC' ]
+    ]
+  }).then((reset) => {
+    if (reset == null) {
+      let msg = 'This password reset url is no longer valid.';
+      req.flash('error', msg);
+      res.redirect('/auth/login');
+    } else {
+      res.render('auth/reset', { title: 'ECL IDE', id: req.params.id });
+    }
+  });
+});
+
+router.post('/reset/:id', (req, res, next) => {
+  PasswordReset.findOne({
+    where: {
+      id: req.params.id,
+      deletedAt: null,
+    },
+    include: User,
+    order: [
+      [ 'createdAt', 'DESC' ]
+    ]
+  }).then((reset) => {
+    console.log('resetting password for user ' + reset.User.id);
+    console.log('new password ' + req.body.password);
+
+    let userParams = reset.User.dataValues;
+    bcrypt.hash(req.body.password, parseInt(process.env.SALT_ROUNDS, 10)).then((hash) => {
+      userParams.password = hash;
+      User.update(userParams, {
+        where: {
+          id: reset.User.id
+        }
+      }).then((user) => {
+        PasswordReset.destroy({
+          where: { id: reset.id }
+        });
+        let msg = 'Your password has been reset.';
+        req.flash('info', msg);
+        res.redirect('/auth/login');
+      }).catch((err) => {
+        console.log(err);
+      });
+    }).catch((err) => {
+      console.log(err);
+    });
   });
 });
 
