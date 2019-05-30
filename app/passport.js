@@ -14,7 +14,10 @@ const bcrypt = require('bcrypt');
 passport.use(new LocalStrategy((username, password, next) => {
   return User.findOne({
     where: {
-      username: username
+      [db.Sequelize.Op.or]: {
+        username: username,
+        emailAddress: username
+      }
     }
   }).then(user => {
     if (!user || !bcrypt.compareSync(password, user.password)) {
