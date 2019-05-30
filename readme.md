@@ -19,6 +19,10 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This is used by the
 
 * ~~imports / ecl modules~~
 
+* user functions
+  * change password
+  * forgot password
+
 * user groups
   * invite to group
 
