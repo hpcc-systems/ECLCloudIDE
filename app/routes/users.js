@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+const bcrypt = require('bcrypt');
+
 const db = require('../models/index');
 const User = db.User;
 const Workspace = db.Workspace;
@@ -46,6 +48,38 @@ router.get('/search', (req, res, next) => {
   }).catch((err) => {
     console.log(err);
     res.json(err);
+  });
+});
+
+router.get('/password/change', (req, res, next) => {
+  res.locals.errors = req.flash('error');
+  res.locals.info = req.flash('info');
+  console.log('locals', res.locals);
+  res.render('users/change_password', { title: 'ECL IDE' });
+});
+
+router.post('/password/change', (req, res, next) => {
+  User.findByPk(req.session.user.id, {
+  }).then((user) => {
+    let userParams = user.dataValues;
+    console.log(userParams);
+    bcrypt.hash(req.body.password, parseInt(process.env.SALT_ROUNDS, 10)).then((hash) => {
+      console.log(hash);
+      userParams.password = hash;
+      console.log(userParams);
+      User.update(userParams, {
+        where: {
+          id: user.id
+        }
+      }).then((result) => {
+        let msg = 'Your password has been changed.';
+        req.flash('info', msg);
+        res.redirect('/users/password/change');
+      }).catch((err) => {
+        console.log(err);
+        return res.json({ success: false, message: 'The Dataset could not be saved' });
+      });
+    });
   });
 });
 

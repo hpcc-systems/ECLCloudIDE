@@ -8,7 +8,9 @@ block content
 
   div.container-fluid.dashboard
     div.row
-      include ../includes/sidebar
+      // include ../includes/sidebar
 
       main.col-md-9.ml-sm-auto.col-lg-10.px-4(role='main')
         p Hello, #{user.username}
+
+        p #[a(href="/users/password/change") Change password]
