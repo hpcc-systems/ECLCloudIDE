@@ -528,7 +528,8 @@ require([
     });
   }
 
-  if ($('.workspaces').length > 0) {
+  if ($('.workspaces').length > 0 &&
+      ($('.datasets').length > 0 && $('.scripts').length > 0)) {
     populateWorkspaces();
   }
 
