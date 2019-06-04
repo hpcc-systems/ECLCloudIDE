@@ -20,11 +20,12 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
 * ~~imports / ecl modules~~
 
 * user functions
-  * change password
+  * ~~change password~~
   * ~~forgot password~~
 
 * user groups
-  * invite to group
+  * create a group
+  * invite a user to a group
   * list groups user belongs to
   * leave group
   * remove from group
