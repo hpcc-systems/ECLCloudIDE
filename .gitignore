@@ -25,3 +25,6 @@ workspaces
 
 #mysql data for docker container
 mysql-data/
+
+#datasets uploaded to cluster
+landing_zone/
