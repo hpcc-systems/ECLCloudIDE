@@ -638,6 +638,14 @@ require([
     populateScripts();
     populateDatasets();
 
+    if ($this.data('cluster').lastIndexOf(':') > 4) {
+      cluster.host = $this.data('cluster').substring(0, $this.data('cluster').lastIndexOf(':'));
+      cluster.port = $this.data('cluster').substring($this.data('cluster').lastIndexOf(':') + 1);
+    } else {
+      cluster.host = $this.data('cluster');
+      cluster.port = null;
+    }
+
     toggleNewScriptPopover();
   });
 
