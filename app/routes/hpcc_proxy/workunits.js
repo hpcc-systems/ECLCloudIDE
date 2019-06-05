@@ -3,12 +3,33 @@ const router = express.Router();
 
 const cp = require('child_process');
 
+const dns = require('dns');
+
+const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}';
+const ipRegex = new RegExp(`(?:^${ipv4}$)`);
+
 let request = require('request-promise');
 
 let buildClusterAddr = (req, res, next) => {
-  if (req.body.clusterAddr && req.body.clusterPort) {
-    req.clusterAddr = req.body.clusterAddr + ':' + req.body.clusterPort;
-    next();
+  if (req.body.clusterAddr) {
+    req.clusterAddr = req.body.clusterAddr;
+    req.clusterAddrAndPort = req.clusterAddr;
+    if (req.clusterAddrAndPort.substring(0, 3) != 'http') {
+      req.clusterAddrAndPort = 'http://' + req.clusterAddrAndPort;
+    }
+    if (req.body.clusterPort) {
+      req.clusterPort = req.body.clusterPort;
+      req.clusterAddrAndPort += ':' + req.clusterPort;
+    }
+    if (ipRegex.test(req.clusterAddr)) {
+      req.clusterIp = req.clusterAddr;
+      next();
+    } else {
+      dns.lookup(req.clusterAddr, {}, (err, address, family) => {
+        req.clusterIp = address;
+        next();
+      });
+    }
   }
 }
 

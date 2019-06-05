@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
+const dns = require('dns');
+
+const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}';
+const ipRegex = new RegExp(`(?:^${ipv4}$)`);
+
 const multer = require('multer');
 const _destPath = './landing_zone';
 const _storage = multer.diskStorage({
@@ -13,17 +18,50 @@ const _storage = multer.diskStorage({
 });
 const upload = multer({ storage: _storage });
 
-let buildClusterAddr = (req, res, next) => {
-  console.log('in buildClusterAddr middleware ', req.body, req.params, req.file);
-  if (req.body.clusterAddr && req.body.clusterPort) {
-    req.clusterAddr = req.body.clusterAddr + ':' + req.body.clusterPort;
-  }
-  next();
-}
-
 const fs = require('fs');
 
 let request = require('request-promise');
+
+let buildClusterAddr = (req, res, next) => {
+  console.log('in buildClusterAddr middleware ', req.body, req.params, req.file);
+  if (req.body.clusterAddr) {
+    router.clusterAddr = req.body.clusterAddr;
+    if (router.clusterAddr.substring(0, 3) != 'http') {
+      router.clusterAddrAndPort = 'http://' + router.clusterAddr;
+    } else {
+      router.clusterAddrAndPort = router.clusterAddr;
+    }
+    if (req.body.clusterPort) {
+      router.clusterPort = req.body.clusterPort;
+      router.clusterAddrAndPort += ':' + router.clusterPort;
+    }
+
+    request({
+      uri: router.clusterAddrAndPort + '/WsTopology/TpDropZoneQuery.json',
+      json: true
+    })
+    .then((json) => {
+      let dropzone = json.TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
+
+      router.dropzoneIp = dropzone.TpMachines.TpMachine[0].Netaddress;
+
+      if (ipRegex.test(router.clusterAddr)) {
+        console.log('clusterAddr is an IP');
+        router.clusterIp = router.clusterAddr;
+        next();
+      } else {
+        dns.lookup(router.clusterAddr, {}, (err, address, family) => {
+          console.log('dns lookup for ' + router.clusterAddr + ': ' + address);
+          router.clusterIp = address;
+          next();
+        });
+      }
+    }).catch((err) => {
+      console.log(err);
+      res.json(err);
+    });
+  }
+}
 
 router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, next) => {
   console.log('in /upload ', req.body, req.params, req.file);
