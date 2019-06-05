@@ -73,8 +73,9 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
 
   request({
     method: 'POST',
-    uri: req.clusterAddr + '/Filespray/UploadFile.json?upload_' +
-      '&NetAddress=10.173.147.1&rawxml_=1&OS=2&Path=/var/lib/HPCCSystems/mydropzone/',
+    uri: router.clusterAddrAndPort + '/Filespray/UploadFile.json?upload_' +
+      '&NetAddress=' + router.dropzoneIp + '&rawxml_=1&OS=2&' +
+      'Path=/var/lib/HPCCSystems/mydropzone/',
     formData: {
       'UploadedFiles[]': {
         value: _fileStream,
@@ -100,7 +101,7 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
 router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
   console.log('in /spray ', req.body, req.params, req.file);
 
-  router.sprayFile(req.clusterAddr, req.body.filename, req.session.user.username, req.body.workspaceId)
+  router.sprayFile(router.clusterAddrAndPort, req.body.filename, req.session.user.username, req.body.workspaceId)
     .then((response) => {
       console.log(response.body);
       let json = JSON.parse(response.body);
@@ -125,7 +126,7 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId) => {
       sourceCsvTerminate: '\n,\r\n',
       sourceCsvQuote: '"',
       overwrite: 'on',
-      sourceIP: '10.173.147.1',
+      sourceIP: router.dropzoneIp,
       sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
       destLogicalName: username + '::' + workspaceId + '::' + filename,
       rawxml_: 1
@@ -137,7 +138,7 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId) => {
 router.post('/getDfuWorkunit', [upload.none(), buildClusterAddr], (req, res, next) => {
   request({
     method: 'POST',
-    uri: req.clusterAddr + '/FileSpray/GetDFUWorkunit.json',
+    uri: router.clusterAddrAndPort + '/FileSpray/GetDFUWorkunit.json',
     formData: {
       wuid: req.body.wuid,
       rawxml_: 1
@@ -159,7 +160,7 @@ router.post('/getDfuWorkunit', [upload.none(), buildClusterAddr], (req, res, nex
 router.post('/DfuQuery', (req, res, next) => {
   request({
     method: 'POST',
-    uri: req.clusterAddr + '/WsDfu/DFUQuery.json',
+    uri: router.clusterAddrAndPort + '/WsDfu/DFUQuery.json',
     formData: {
       wuid: '',
       rawxml_: 1

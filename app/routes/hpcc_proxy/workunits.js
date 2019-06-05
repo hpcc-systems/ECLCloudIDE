@@ -54,10 +54,14 @@ let createEclArchive = (args, cwd) => {
 }
 
 router.get('/', (req, res, next) => {
+  let clusterAddr = req.query.clusterAddr;
+  if (clusterAddr.substring(0, 3) != 'http') {
+    clusterAddr = 'http://' + clusterAddr;
+  }
   console.log('workunit status', req.query);
   request({
     method: 'POST',
-    uri: req.query.clusterAddr + '/WsWorkunits/WUInfo.json',
+    uri: clusterAddr + '/WsWorkunits/WUInfo.json',
     form: { rawxml_: true, Wuid: req.query.wuid },
     resolveWithFullResponse: true
   }).then((response) => {
@@ -73,7 +77,7 @@ router.get('/', (req, res, next) => {
     if (json.WUInfoResponse.Workunit.Archived) {
       request({
         method: 'POST',
-        uri: req.query.clusterAddr + '/WsWorkunits/WUAction.json',
+        uri: clusterAddr + '/WsWorkunits/WUAction.json',
         form: { rawxml_: true, Wuids_i0: req.query.wuid, WUActionType: 'Restore' },
         resolveWithFullResponse: true
       }).then((response) => {
@@ -82,7 +86,7 @@ router.get('/', (req, res, next) => {
       }).then(() => {
         request({
           method: 'POST',
-          uri: req.query.clusterAddr + '/WsWorkunits/WUInfo.json',
+          uri: clusterAddr + '/WsWorkunits/WUInfo.json',
           form: { rawxml_: true, Wuid: req.query.wuid },
           resolveWithFullResponse: true
         }).then((response) => {
@@ -119,7 +123,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', buildClusterAddr, (req, res, next) => {
-  router.createWorkunit(req.clusterAddr)
+  router.createWorkunit(req.clusterAddrAndPort)
     .then((response) => {
       let json = JSON.parse(response.body);
       res.json({ wuid: json.WUCreateResponse.Workunit.Wuid });
@@ -151,7 +155,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
       console.log(response);
       console.log('ecl archive: ' + _query);
 
-      router.updateWorkunit(req.clusterAddr, req.body.wuid, _query)
+      router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query)
         .then((response) => {
           console.log('response to WUUpdate', response.body);
           let json = JSON.parse(response.body);
@@ -165,7 +169,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
     _query = _query.replace(/\#USERNAME\#/g, req.session.user.username)
     console.log('replaced #USERNAME#', _query);
 
-    router.updateWorkunit(req.clusterAddr, req.body.wuid, _query)
+    router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query)
       .then((response) => {
         console.log('response to WUUpdate', response.body);
         let json = JSON.parse(response.body);
@@ -188,7 +192,7 @@ router.updateWorkunit = (clusterAddr, wuid, query) => {
 };
 
 router.post('/submit', buildClusterAddr, (req, res, next) => {
-  router.submitWorkunit(req.clusterAddr, req.body.wuid)
+  router.submitWorkunit(req.clusterAddrAndPort, req.body.wuid)
     .then((response) => {
       console.log('response to WUSubmit', response.body);
       let json = JSON.parse(response.body);
@@ -212,7 +216,7 @@ router.post('/results', buildClusterAddr, (req, res, next) => {
   console.log('requesting /WsWorkunits/WUResult.json');
   request({
     method: 'POST',
-    uri: req.clusterAddr + '/WsWorkunits/WUResult.json',
+    uri: req.clusterAddrAndPort + '/WsWorkunits/WUResult.json',
     form: { Wuid: req.body.wuid, Count: req.body.count, Sequence: req.body.sequence },
     resolveWithFullResponse: true
   }).then((response) => {
