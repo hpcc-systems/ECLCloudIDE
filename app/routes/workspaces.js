@@ -100,7 +100,8 @@ router.post('/share', (req, res, next) => {
     req.body.users.forEach((user) => {
       Workspace.create({
         name: workspaceToClone.name,
-        cluster: workspaceToClone.cluster
+        cluster: workspaceToClone.cluster,
+        directoryTree: workspaceToClone.directoryTree
       }).then((newWorkspace) => {
 
         let oldWorkspaceScope = req.session.user.username + '::' + workspaceToClone.name,
