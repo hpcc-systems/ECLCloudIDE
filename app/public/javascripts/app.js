@@ -1887,6 +1887,10 @@ require([
       rootId = parentPath.shift();
       element = element[rootId];
 
+      if (!element.children) {
+        element.children = {};
+      }
+
       while (parentPath.length > 0) {
         nextId = parentPath.shift();
         if (element.children[nextId]) {
@@ -1938,6 +1942,11 @@ require([
           $parentEl.append('<ul>');
         }
         $parentEl.find('ul').first().append(addFolder(newFolder, folderType));
+      }
+
+      let $folder = $parentEl.find('.folder').first();
+      if (!$folder.hasClass('open')) {
+        $folder.trigger('click');
       }
 
       $form.removeClass('was-validated');
