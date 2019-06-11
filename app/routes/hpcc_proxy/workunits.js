@@ -14,7 +14,7 @@ let buildClusterAddr = (req, res, next) => {
   if (req.body.clusterAddr) {
     req.clusterAddr = req.body.clusterAddr;
     req.clusterAddrAndPort = req.clusterAddr;
-    if (req.clusterAddrAndPort.substring(0, 3) != 'http') {
+    if (req.clusterAddrAndPort.substring(0, 4) != 'http') {
       req.clusterAddrAndPort = 'http://' + req.clusterAddrAndPort;
     }
     if (req.body.clusterPort) {
@@ -55,7 +55,7 @@ let createEclArchive = (args, cwd) => {
 
 router.get('/', (req, res, next) => {
   let clusterAddr = req.query.clusterAddr;
-  if (clusterAddr.substring(0, 3) != 'http') {
+  if (clusterAddr.substring(0, 4) != 'http') {
     clusterAddr = 'http://' + clusterAddr;
   }
   console.log('workunit status', req.query);
