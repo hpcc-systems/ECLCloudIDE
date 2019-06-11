@@ -839,6 +839,7 @@ require([
         parentPath = $this.data('parentPath'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $parentEl = $this.data('parentToReceiveChild'),
+        $newDatasetLi = null,
         $newDataset = null,
         $datasetStatus = null,
         $form = $modal.find('form'),
@@ -852,6 +853,8 @@ require([
           name: $datasetName,
           workspaceId: $workspaceId
         };
+
+    if (!$parentEl) $parentEl = $('.datasets ul').first();
 
     if (file === undefined) {
       $file.addClass('is-invalid');
@@ -882,12 +885,12 @@ require([
       } else {
         dataset.id = json.data.id;
         sendFileToLandingZone(file)
-        .then(response => response.json())
+        .then(response => response.json(), (err) => { console.log(err) })
         .then(json => {
           console.log(json);
           dataset.file = json.file;
           sprayFile(json.file, $workspaceName)
-          .then(response => response.json())
+          .then(response => response.json(), (err) => { console.log(err) })
           .then((json) => {
             console.log('sprayed file', json.wuid);
             saveWorkunit(dataset.id, json.wuid);
@@ -907,7 +910,7 @@ require([
                   element = directoryTree['datasets'],
                   newFile = null;
 
-              if (parentPath.length > 0) {
+              if (parentPath && parentPath.length > 0) {
                 rootId = parentPath.shift();
                 element = element[rootId];
 
@@ -916,6 +919,10 @@ require([
                   if (element.children[nextId]) {
                     element = element.children[nextId];
                   }
+                }
+
+                if (!element.children) {
+                  element.children = {};
                 }
 
                 element.children[dataset.id] = {
@@ -951,22 +958,26 @@ require([
               .then((workspace) => {
                 $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
 
-                $newDataset = addDataset(newFile)
+                $newDatasetLi = addDataset(newFile);
+                $newDataset = $newDatasetLi.find('.dataset');
+                console.log($newDataset.data());
+                $newDataset.data('wuid', _wuid);
+                console.log($newDataset.data());
 
                 if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
-                  $parentEl.append($newDataset);
+                  $parentEl.append($newDatasetLi);
                 } else {
                   if ($parentEl.find('ul').first().length == 0) {
                     $parentEl.append('<ul>');
                   }
-                  $parentEl.find('ul').first().append($newDataset);
+                  $parentEl.find('ul').first().append($newDatasetLi);
                 }
 
                 $datasetStatus = $newDataset.find('.status');
+                $newDataset.data('wuid', _wuid);
 
                 showDatasets();
-
-                $newDataset.trigger('click');
+                //$newDataset.trigger('click');
                 let _query = dataset.name + ":=RECORD\n",
                     _keys = Object.keys(currentDatasetFile),
                     _avgs = Object.values(currentDatasetFile);
@@ -988,7 +999,7 @@ require([
                 updateWorkunit(_wuid, _query, null, null).then(() => {
                   submitWorkunit(_wuid).then(() => {
                     dataset.wuid = _wuid;
-                    $newDataset.data('wuid', _wuid);
+
                     console.log('check status of workunit');
 
                     $datasetStatus.addClass('fa-spin');
