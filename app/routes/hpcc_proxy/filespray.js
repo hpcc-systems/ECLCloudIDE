@@ -26,7 +26,8 @@ let buildClusterAddr = (req, res, next) => {
   console.log('in buildClusterAddr middleware ', req.body, req.params, req.file);
   if (req.body.clusterAddr) {
     router.clusterAddr = req.body.clusterAddr;
-    if (router.clusterAddr.substring(0, 3) != 'http') {
+    console.log('router.clusterAddr: ' + router.clusterAddr, 'first 4: ' + router.clusterAddr.substring(0, 4));
+    if (router.clusterAddr.substring(0, 4) != 'http') {
       router.clusterAddrAndPort = 'http://' + router.clusterAddr;
     } else {
       router.clusterAddrAndPort = router.clusterAddr;
@@ -112,7 +113,10 @@ router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
     });
 });
 
-router.sprayFile = (clusterAddr, filename, username, workspaceId) => {
+router.sprayFile = (clusterAddr, filename, username, workspaceId, dropzoneIp = '') => {
+  if (dropzoneIp == '' && router && router.dropzoneIp) {
+    dropzoneIp = router.dropzoneIp;
+  }
   return request({
     method: 'POST',
     uri: clusterAddr + '/FileSpray/SprayVariable.json',
@@ -126,7 +130,7 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId) => {
       sourceCsvTerminate: '\n,\r\n',
       sourceCsvQuote: '"',
       overwrite: 'on',
-      sourceIP: router.dropzoneIp,
+      sourceIP: dropzoneIp,
       sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
       destLogicalName: username + '::' + workspaceId + '::' + filename,
       rawxml_: 1
