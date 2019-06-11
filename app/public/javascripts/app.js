@@ -1392,9 +1392,9 @@ require([
         $scripts = $('.scripts'),
         $activeWorkspace = $('.workspaces .active'),
         workspaceId = $activeWorkspace.data('id'),
-        parentPath = $this.data('parentPath'),
+        parentPath = $this.data('parentPath') || [],
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
-        $parentEl = $this.data('parentToReceiveChild'),
+        $parentEl = $this.data('parentToReceiveChild') || $('.scripts').children('ul').first(),
         $newScript = $scripts.find('.cloner').clone(),
         $form = $modal.find('form'),
         data = getFormData($form);
