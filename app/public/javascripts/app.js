@@ -1124,7 +1124,7 @@ require([
       return false;
     }
 
-    file.name.substr(0, file.name.lastIndexOf('.')).replace(/-_\s/g, '_').split('_').map((word) => {
+    file.name.substr(0, file.name.lastIndexOf('.')).replace(/-|_|\s/g, '_').split('_').map((word) => {
       fileName += word.substr(0, 1).toUpperCase() + word.substr(1).toLowerCase();
     });
     fileName.trim();
