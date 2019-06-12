@@ -1159,7 +1159,7 @@ require([
           $fileDetails.append('<hr />');
         }
 
-        $newFormRow.append('<input type="text" class="form-control" value="' + label + '" />');
+        $newFormRow.append('<input type="text" class="form-control" value="' + label.replace(/ /g, '') + '" />');
         $newFormRow.append('<input type="text" class="form-control" value="' + values[idx] + '" />');
 
         $fileDetails.append($newFormRow);
