@@ -34,7 +34,11 @@ router.post('/register', (req, res, next) => {
     }).then((user) => {
       if (user == null) { // no user account exists using this email address
         bcrypt.hash(req.body.password, parseInt(process.env.SALT_ROUNDS, 10)).then((hash) => {
-          User.create({ username: req.body.username, password: hash }).then((user) => {
+          User.create({
+            username: req.body.username,
+            emailAddress: req.body.emailaddress,
+            password: hash
+          }).then((user) => {
             req.session.user = user;
             return res.redirect('/');
           }).catch((err) => {
