@@ -386,6 +386,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
     getWorkunitResults(wuid, 1000, sequence)
     .then(response => response.json())
     .then((wuResult) => {
+      if (!wuResult.WUResultResponse) {
+        throw 'No Workunit Response available for ' + wuid;
+      }
       let results = wuResult.WUResultResponse.Result.Row;
       console.log(wuResult);
       $tableWrapper.html(
@@ -412,6 +415,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
       });
       $loader.addClass('d-none');
       $datasetContent.removeClass('d-none');
+    })
+    .catch((err) => {
+      $loader.addClass('d-none');
+      alert(err);
     });
 
   });
