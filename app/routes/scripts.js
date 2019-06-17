@@ -27,6 +27,7 @@ router.get('/', (req, res, next) => {
     LEFT JOIN Workunits AS w ON sr.id = w.objectId \
     WHERE s.workspaceId = "${req.query.workspaceId}" \
     AND (w.workunitId LIKE "W%" OR w.workunitId IS NULL) \
+    AND sr.id IS NOT NULL
     AND s.deletedAt IS NULL \
     ORDER BY sr.updatedAt desc`;
 
