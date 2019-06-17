@@ -9,7 +9,7 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
         a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Dataset...", data-toggle="modal", data-target="#newDatasetModal") New
           i.fa.fa-plus.ml-1.float-right
 
-      div.flex-column.datasets.collapse(id="datasets")
+      div.flex-column.datasets.collapse.folder-root(id="datasets")
         a.text-light.dataset.cloner.d-none(href='#')
           div.d-flex
             div.cardname-wrapper.flex-grow-1
@@ -28,7 +28,7 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
         a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal") New
           i.fa.fa-plus.ml-1.float-right
 
-      div.flex-column.scripts.collapse(id="scripts")
+      div.flex-column.scripts.collapse.folder-root(id="scripts")
         a.text-light.script.cloner.d-none(href='#')
           span.scriptname script
             i.status.fa.fa-refresh.d-none

@@ -1991,7 +1991,7 @@ require([
   $('.scripts, .datasets').on('click', '.folder .delete', function(evt) {
     let $this = $(this),
         $folder = $this.parents('li').first(),
-        $wrapper = $this.parents('.nav'),
+        $wrapper = $this.parents('.folder-root'),
         parentPath = [],
         $modal = $('#removeFolderModal'),
         $deleteBtn = $modal.find('.btn-danger');
