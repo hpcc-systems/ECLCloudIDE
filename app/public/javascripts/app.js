@@ -475,7 +475,7 @@ require([
 
   if ($workspaceMembersUserSearch.length > 0) {
     let $workspace = $('.workspaces .active'),
-        $modal = $('#membersWorkspaceModal'),
+        $modal = $('#shareWorkspaceModal'),
         $userListTable = $modal.find('.user-list tbody');
 
     autocomplete = new autoComplete({
@@ -653,7 +653,7 @@ require([
   $('#workspaceSelect').on('click', '.members', function(evt) {
     let $this = $(this),
         $workspace = $('.workspaces .active'),
-        $modal = $('#membersWorkspaceModal');
+        $modal = $('#shareWorkspaceModal');
 
     evt.stopPropagation();
 
@@ -662,10 +662,10 @@ require([
   });
 
   /* DELETE A WORKSPACE MEMBER */
-  $('#membersWorkspaceModal').on('click', '.btn-danger', function(evt) {
+  $('#shareWorkspaceModal').on('click', '.btn-danger', function(evt) {
     let $this = $(this),
         $user = $this.parents('tr'),
-        $modal = $('#membersWorkspaceModal');
+        $modal = $('#shareWorkspaceModal');
 
     evt.stopPropagation();
 
@@ -674,10 +674,10 @@ require([
   });
 
   /* SHARE WORKSPACE WITH MEMBERS */
-  $('#membersWorkspaceModal').on('click', '.btn-primary', function(evt) {
+  $('#shareWorkspaceModal').on('click', '.btn-primary', function(evt) {
     let $this = $(this),
         $workspace = $('.workspaces .active'),
-        $modal = $('#membersWorkspaceModal'),
+        $modal = $('#shareWorkspaceModal'),
         $users = $modal.find('.user-list').find('tr:not(.header):not(.cloner)'),
         users = [];
 
@@ -704,8 +704,8 @@ require([
   });
 
   /* RESET EDIT WORKSPACE FORM ON MODAL HIDE */
-  $('#membersWorkspaceModal').on('hide.bs.modal', function(evt) {
-    let $modal = $('#membersWorkspaceModal'),
+  $('#shareWorkspaceModal').on('hide.bs.modal', function(evt) {
+    let $modal = $('#shareWorkspaceModal'),
         $userListTable = $modal.find('.user-list tbody'),
         $form = $modal.find('form');
 
