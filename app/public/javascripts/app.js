@@ -2164,6 +2164,8 @@ require([
 
     $(this).blur();
     evt.preventDefault();
+
+    $scriptControls.find('.save-script').trigger('click');
     changeRunButtonState($runButton, 'running');
 
     fetch('/scripts/revision/', {
