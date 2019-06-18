@@ -96,15 +96,22 @@ router.delete('/', (req, res, next) => {
 router.post('/share', (req, res, next) => {
   console.log(req.body);
 
+  let _directoryTree = null,
+      newWorkspaceId = null;
+
   Workspace.findOne({
     where: { id: req.body.workspaceId }
   }).then((workspaceToClone) => {
+    _directoryTree = workspaceToClone.directoryTree;
+
     req.body.users.forEach((user) => {
       Workspace.create({
         name: workspaceToClone.name,
         cluster: workspaceToClone.cluster,
         directoryTree: workspaceToClone.directoryTree
       }).then((newWorkspace) => {
+
+        newWorkspaceId = newWorkspace.id;
 
         let oldWorkspaceScope = req.session.user.username + '::' + workspaceToClone.name,
             newWorkspaceScope = user.name + '::' + newWorkspace.name;
@@ -124,6 +131,7 @@ router.post('/share', (req, res, next) => {
           }
         }).then((scripts) => {
           scripts.forEach((scriptToClone) => {
+            console.log(scriptToClone);
             ScriptRevision.findOne({
               where: {
                 [db.Sequelize.Op.and]: {
@@ -133,15 +141,22 @@ router.post('/share', (req, res, next) => {
               },
               order: [ ['createdAt', 'DESC'] ]
             }).then((revision) => {
-              console.log(revision.content);
+              let _content = '';
+              if (revision && revision.content) {
+                console.log(revision.content);
+                _content = revision.content.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope);
+              }
               Script.create({
                 name: scriptToClone.name,
                 workspaceId: newWorkspace.id
               }).then((newScript) => {
                 ScriptRevision.create({
-                  content: revision.content.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
+                  content: _content,
                   scriptId: newScript.id
                 });
+                let _regex = new RegExp(scriptToClone.id, 'g');
+                _directoryTree = _directoryTree.replace(_regex, newScript.id);
+                console.log(_regex.toString(), newScript.id, _directoryTree);
               });
             });
           });
@@ -191,6 +206,10 @@ router.post('/share', (req, res, next) => {
                     eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
                     workspaceId: newWorkspace.id
                   }).then((newDataset) => {
+                    let _regex = new RegExp(datasetToClone.id, 'g');
+                    _directoryTree = _directoryTree.replace(_regex, newDataset.id);
+                    console.log(_regex.toString(), newDataset.id, _directoryTree);
+
                     Workunit.create({
                       workunitId: wuid,
                       objectId: newDataset.id
@@ -207,6 +226,14 @@ router.post('/share', (req, res, next) => {
                           hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery)
                             .then((response) => {
                               hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
+                              let _workspace = {
+                                directoryTree: _directoryTree
+                              };
+                              Workspace.update(_workspace, {
+                                where: {
+                                  id: newWorkspaceId
+                                }
+                              });
                               return res.json({ success: true, message: 'Workspace shared' });
                             });
                         }).catch((err) => {
