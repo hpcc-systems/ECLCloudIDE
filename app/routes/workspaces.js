@@ -17,6 +17,8 @@ const Workunit = db.Workunit;
 const hpccFilesprayRouter = require('./hpcc_proxy/filespray');
 const hpccWorkunitsRouter = require('./hpcc_proxy/workunits');
 
+let request = require('request-promise');
+
 /* Create workspace */
 router.post('/', (req, res, next) => {
   console.log('request body', req.body);
@@ -155,53 +157,69 @@ router.post('/share', (req, res, next) => {
         }).then((datasets) => {
           datasets.forEach((datasetToClone) => {
             let filename = datasetToClone.filename,
-                clusterAddr = 'http://' + newWorkspace.cluster,
+                clusterAddr = newWorkspace.cluster,
+                clusterPort = null,
                 wuid = null;
 
-            hpccFilesprayRouter.sprayFile(clusterAddr, filename, user.name, newWorkspace.name)
-              .then((response) => {
-                console.log(response.body);
-                let json = JSON.parse(response.body);
-                wuid = json.SprayResponse.wuid;
+            if (clusterAddr.substring(0, 4) != 'http') {
+              clusterAddr = 'http://' + clusterAddr;
+            }
 
-                Dataset.create({
-                  name: datasetToClone.name,
-                  filename: datasetToClone.filename,
-                  logicalfile: newWorkspaceScope + '::' + datasetToClone.filename + '_thor',
-                  rowCount: datasetToClone.rowCount,
-                  columnCount: datasetToClone.columnCount,
-                  eclSchema: datasetToClone.eclSchema,
-                  eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
-                  workspaceId: newWorkspace.id
-                }).then((newDataset) => {
-                  Workunit.create({
-                    workunitId: wuid,
-                    objectId: newDataset.id
-                  }).then(() => {
-                    hpccWorkunitsRouter.createWorkunit(clusterAddr)
-                      .then((response) => {
-                        let json = JSON.parse(response.body),
-                            wuid = json.WUCreateResponse.Workunit.Wuid;
+            request({
+              uri: clusterAddr + '/WsTopology/TpDropZoneQuery.json',
+              json: true
+            })
+            .then((json) => {
+              let dropzone = json.TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
 
-                        Workunit.create({
-                          workunitId: wuid,
-                          objectId: newDataset.id
-                        });
-                        hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery)
-                          .then((response) => {
-                            hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
-                            return res.json({ success: true, message: 'Workspace shared' });
+              return dropzone.TpMachines.TpMachine[0].Netaddress;
+            }).then((dropzoneIp) => {
+              console.log(dropzoneIp);
+              hpccFilesprayRouter.sprayFile(clusterAddr, filename, user.name, newWorkspace.name, dropzoneIp)
+                .then((response) => {
+                  console.log(response.body);
+                  let json = JSON.parse(response.body);
+                  wuid = json.SprayResponse.wuid;
+
+                  Dataset.create({
+                    name: datasetToClone.name,
+                    filename: datasetToClone.filename,
+                    logicalfile: newWorkspaceScope + '::' + datasetToClone.filename + '_thor',
+                    rowCount: datasetToClone.rowCount,
+                    columnCount: datasetToClone.columnCount,
+                    eclSchema: datasetToClone.eclSchema,
+                    eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
+                    workspaceId: newWorkspace.id
+                  }).then((newDataset) => {
+                    Workunit.create({
+                      workunitId: wuid,
+                      objectId: newDataset.id
+                    }).then(() => {
+                      hpccWorkunitsRouter.createWorkunit(clusterAddr)
+                        .then((response) => {
+                          let json = JSON.parse(response.body),
+                              wuid = json.WUCreateResponse.Workunit.Wuid;
+
+                          Workunit.create({
+                            workunitId: wuid,
+                            objectId: newDataset.id
                           });
-                      }).catch((err) => {
-                        console.log(err);
-                        res.json(err);
-                      });
-                  })
+                          hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery)
+                            .then((response) => {
+                              hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
+                              return res.json({ success: true, message: 'Workspace shared' });
+                            });
+                        }).catch((err) => {
+                          console.log(err);
+                          res.json(err);
+                        });
+                    })
+                  });
+                }).catch((err) => {
+                  console.log(err);
+                  res.json(err);
                 });
-              }).catch((err) => {
-                console.log(err);
-                res.json(err);
-              });
+            });
           });
         });
       });
