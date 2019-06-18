@@ -390,6 +390,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
         throw 'No Workunit Response available for ' + wuid;
       }
       let results = wuResult.WUResultResponse.Result.Row;
+      if (results.length < 1) {
+        throw 'No results for Workunit ' + wuid;
+      }
       console.log(wuResult);
       $tableWrapper.html(
         '<table class="table data-table" style="width: 100%;">' +
