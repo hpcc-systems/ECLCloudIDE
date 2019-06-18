@@ -2278,26 +2278,23 @@ require([
     $saveButton.contents()[0].nodeValue = 'SAVING';
     $saveButton.removeClass('badge-info').addClass('badge-secondary');
 
-    let t = window.setTimeout(function() {
-      fetch('/scripts/revision/', {
-        method: 'POST',
-        body: JSON.stringify({
-          scriptId: $script.data('id'),
-          content: editor.getValue()
-        }),
-        headers:{
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(response => response.json())
-      .then((json) => {
-        $saveButton.contents()[0].nodeValue = 'SAVED';
-        $script.data('revisionId', json.data.id);
-        $script.data('content', json.data.content);
-        $saveButton.attr('title', 'No Changes');
-        window.clearTimeout(t);
-      });
-    }, 1000);
+    fetch('/scripts/revision/', {
+      method: 'POST',
+      body: JSON.stringify({
+        scriptId: $script.data('id'),
+        content: editor.getValue()
+      }),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then((json) => {
+      $saveButton.contents()[0].nodeValue = 'SAVED';
+      $script.data('revisionId', json.data.id);
+      $script.data('content', json.data.content);
+      $saveButton.attr('title', 'No Changes');
+    });
   });
 
   $outputsList.on('click', '.output', function(evt) {
