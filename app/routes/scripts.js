@@ -52,7 +52,17 @@ router.post('/', (req, res, next) => {
     name: req.body.scriptName,
     workspaceId: req.body.workspaceId
   }).then((script) => {
-    let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
+    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
+        scriptDirPath = workspaceDirPath + '/' + script.id,
+        scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
+
+    if (!fs.existsSync(scriptDirPath)) {
+      fs.mkdirSync(scriptDirPath, { resursive: true }, (err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    }
     if (!fs.existsSync(scriptFilePath)) {
       fs.closeSync(fs.openSync(scriptFilePath, 'w'));
     }
@@ -78,7 +88,7 @@ router.post('/revision', (req, res, next) => {
     }).then((script) => {
       console.log('update contents of script file');
       let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-          scriptFilePath = workspaceDirPath + '/' + script.name + '.ecl';
+          scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
       if (!fs.existsSync(workspaceDirPath)) {
         fs.mkdirSync(workspaceDirPath);
       }
@@ -108,8 +118,10 @@ router.put('/', (req, res, next) => {
         id: req.body.id
       }
     }).then((result) => {
-      let currentScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + req.body.prevName + '.ecl';
-      let newScriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
+      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
+          currentScriptFilePath = workspaceDirPath + '/' + req.body.prevId + '/' + req.body.prevName + '.ecl',
+          newScriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
+
       if (fs.existsSync(currentScriptFilePath)) {
         fs.rename(currentScriptFilePath, newScriptFilePath);
       }
@@ -129,7 +141,8 @@ router.delete('/', (req, res, next) => {
       id: req.body.scriptId,
     }
   }).then((script) => {
-    let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
+    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
+        scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
     if (fs.existsSync(scriptFilePath)) {
       fs.unlinkSync(scriptFilePath);
     }
@@ -154,7 +167,8 @@ router.delete('/batch', (req, res, next) => {
   }).then((scripts) => {
     scripts.forEach((script) => {
       console.log(script.name, script.id);
-      let scriptFilePath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/' + script.name + '.ecl';
+      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
+          scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
       if (fs.existsSync(scriptFilePath)) {
         fs.unlinkSync(scriptFilePath);
       }

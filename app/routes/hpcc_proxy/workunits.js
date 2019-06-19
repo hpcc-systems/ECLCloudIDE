@@ -145,8 +145,9 @@ router.createWorkunit = (clusterAddr) => {
 router.put('/', buildClusterAddr, (req, res, next) => {
   let _query = req.body.query,
       _filename = req.body.filename,
+      _scriptId = req.body.scriptId,
       _workspaceId = req.body.workspace,
-      filePath = process.cwd() + '/workspaces/' + _workspaceId + '/scripts/',
+      filePath = process.cwd() + '/workspaces/' + _workspaceId + '/scripts/' + _scriptId + '/',
       args = ['-E', filePath + _filename];
 
   if (_filename) {
