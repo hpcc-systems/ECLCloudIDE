@@ -26,7 +26,17 @@ RUN echo "get ${clientToolsUrl} with wget"
 RUN wget -O clienttools.deb $clientToolsUrl && dpkg -i clienttools.deb && rm clienttools.deb
 
 RUN echo "install ecl bundles"
-RUN ecl bundle install https://github.com/hpcc-systems/DataPatterns.git
+RUN ecl bundle install https://github.com/hpcc-systems/ML_Core.git \
+    && ecl bundle install https://github.com/hpcc-systems/PBblas.git \
+    && ecl bundle install https://github.com/hpcc-systems/GLM.git \
+    && ecl bundle install https://github.com/hpcc-systems/LearningTrees.git \
+    && ecl bundle install https://github.com/hpcc-systems/LinearRegression.git \
+    && ecl bundle install https://github.com/hpcc-systems/LogisticRegression.git \
+    && ecl bundle install https://github.com/hpcc-systems/SupportVectorMachines.git \
+    && ecl bundle install https://github.com/hpcc-systems/LinearRegression.git \
+    && ecl bundle install https://github.com/hpcc-systems/DataPatterns.git \
+    && ecl bundle install https://github.com/hpcc-systems/PerformanceTesting.git \
+    && ecl bundle install https://github.com/hpcc-systems/Visualizer.git
 
 COPY ./app/package.json /app/
 
