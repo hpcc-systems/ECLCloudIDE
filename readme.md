@@ -30,6 +30,10 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
   * leave group
   * remove from group
 
+* install supported ECL bundles (should occur during container creation)
+
+* DataPatterns (custom WU "Resources" tab content from ECLWatch?)
+
 * sharing workspaces
   * ~~share with a user~~
   * share with a group
