@@ -428,6 +428,24 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
   });
 };
 
+let isDataPatternProfile = (schema) => {
+  let matchThreshold = 4,
+      matches = 0,
+      knownProfileField = (column) => {
+        return ([
+          'attribute', 'given_attribute_type', 'best_attribute_type',
+          'rec_count', 'fill_count', 'fill_rate', 'cardinality',
+          'cardinality_breakdown', 'modes', 'min_length', 'max_length',
+          'ave_length', 'popular_patterns', 'rare_patterns', 'is_numeric',
+          'numeric_min', 'numeric_max', 'numeric_mean', 'numeric_std_dev',
+          'numeric_lower_quartile', 'numeric_median', 'numeric_upper_quartile',
+          'numeric_correlations'
+        ].indexOf(column.ColumnName) > -1);
+      };
+
+  return (schema.filter(knownProfileField).length > matchThreshold);
+};
+
 require.config({
   paths: {
     'ln': '/javascripts/line-navigator',
@@ -2216,11 +2234,19 @@ require([
                   $main.addClass('show-outputs');
                   $outputsList.html('');
                   json.results.forEach((result, idx) => {
-                    let classList = ['output', 'text-light', 'badge', 'ml-2'];
+                    let classList = ['output', 'text-light', 'badge', 'ml-2'],
+                        outputLabel = result.name;
+
                     if (idx == 0) classList.push('badge-primary');
                     else classList.push('badge-secondary');
 
-                    $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + result.name + '</a>');
+                    if (isDataPatternProfile(result.schema)) {
+                      if ($outputsList.find('.data-pattern').length > 0) return;
+                      classList.push('data-pattern');
+                      outputLabel = 'Data Patterns';
+                    }
+
+                    $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
                   });
                   $outputsList.children().eq(0).trigger('click');
                 } else if (json.state == 'failed') {
@@ -2300,11 +2326,23 @@ require([
 
   $outputsList.on('click', '.output', function(evt) {
     let $output = $(this),
-        $script = $('.scripts .active');
+        $script = $('.scripts .active'),
+        $datasetContent = $('.dataset-content'),
+        $tableWrapper = $datasetContent.find('.table-wrapper');
 
     $output.addClass('badge-primary').removeClass('badge-secondary')
       .siblings().addClass('badge-secondary').removeClass('badge-primary');
-    displayWorkunitResults($script.data('wuid'), $output.text(), $output.index());
+
+    if ($output.hasClass('data-pattern')) {
+      let dataPatternsReportUrl = ((cluster.host.indexOf('http') < 0) ? 'http://' : '') +
+        cluster.host + ':' + cluster.port + '/WsWorkunits/res/' + $script.data('wuid') +
+        '/report/res/index.html';
+      $tableWrapper.html('<iframe src="' + dataPatternsReportUrl + '" />');
+      $tableWrapper.css({ height: '770px' });
+    } else {
+      displayWorkunitResults($script.data('wuid'), $output.text(), $output.index());
+      $tableWrapper.css({ height: '' });
+    }
   });
 
   $scriptPanelControls.on('click', '.js-close', function() {
