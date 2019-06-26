@@ -159,7 +159,7 @@ let populateScripts = () => {
   fetch(url)
     .then(response => response.json())
     .then((scripts) => {
-      console.log(scripts);
+      console.log('populateScripts', scripts);
 
       if (Object.entries(scripts).length > 0) {
         $scriptLis.each((idx, el) => {
@@ -643,6 +643,7 @@ require([
         $scriptPanelClose = $('.js-close'),
         $deleteWorkspace = $('.delete-workspace').parent(),
         $datasetContent = $('.dataset-content'),
+        $main = $datasetContent.parents('main'),
         $tableWrapper = $datasetContent.find('.table-wrapper');
 
     evt.preventDefault();
@@ -652,6 +653,7 @@ require([
 
     $options.removeClass('active');
     $this.addClass('active');
+    $main.removeClass('show-outputs');
     $selected.text($this.text());
     $deleteWorkspace.removeClass('d-none');
     $selected.append(
