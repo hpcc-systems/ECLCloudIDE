@@ -93,18 +93,23 @@ router.delete('/', (req, res, next) => {
   });
 });
 
-router.post('/share', (req, res, next) => {
-  console.log(req.body);
-
+let shareWorkspace = async (workspaceId, users) => {
   let _directoryTree = null,
       newWorkspaceId = null;
 
   Workspace.findOne({
-    where: { id: req.body.workspaceId }
+    where: { id: workspaceId },
+    include: {
+      model: User,
+      through: {
+        where: { role: WorkspaceUser.roles.OWNER }
+      }
+    }
   }).then((workspaceToClone) => {
+    console.log(workspaceToClone.Users[0].username);
     _directoryTree = workspaceToClone.directoryTree;
 
-    req.body.users.forEach((user) => {
+    users.forEach((user) => {
       Workspace.create({
         name: workspaceToClone.name,
         cluster: workspaceToClone.cluster,
@@ -113,7 +118,7 @@ router.post('/share', (req, res, next) => {
 
         newWorkspaceId = newWorkspace.id;
 
-        let oldWorkspaceScope = req.session.user.username + '::' + workspaceToClone.name,
+        let oldWorkspaceScope = workspaceToClone.Users[0].username + '::' + workspaceToClone.name,
             newWorkspaceScope = user.name + '::' + newWorkspace.name;
 
         WorkspaceUser.create({
@@ -234,17 +239,17 @@ router.post('/share', (req, res, next) => {
                                   id: newWorkspaceId
                                 }
                               });
-                              return res.json({ success: true, message: 'Workspace shared' });
+                              return { success: true, message: 'Workspace shared' };
                             });
                         }).catch((err) => {
                           console.log(err);
-                          res.json(err);
+                          return err;
                         });
                     })
                   });
                 }).catch((err) => {
                   console.log(err);
-                  res.json(err);
+                  return err;
                 });
             });
           });
@@ -252,6 +257,18 @@ router.post('/share', (req, res, next) => {
       });
     });
   });
+};
+
+router.post('/share', (req, res, next) => {
+  console.log(req.body);
+  return res.json(shareWorkspace(req.body.workspaceId, req.body.users));
+});
+
+router.get('/share/:id', (req, res, next) => {
+  let workspaceId = req.params.id,
+      users = [{ id: req.session.user.id, name: req.session.user.name }];
+  console.log(workspaceId);
+  return res.json(shareWorkspace(workspaceId, users));
 });
 
 module.exports = router;
