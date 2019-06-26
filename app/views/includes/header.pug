@@ -80,7 +80,7 @@ div.modal.fade(id="removeWorkspaceModal", role="dialog")
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-danger Delete
 
-div.modal.fade.workspaceUsersModal(id="shareWorkspaceModal", role="dialog")
+div.modal.fade.workspaceShareModal(id="shareWorkspaceModal", role="dialog")
   div.modal-dialog
     div.modal-content
       div.modal-header
@@ -88,26 +88,43 @@ div.modal.fade.workspaceUsersModal(id="shareWorkspaceModal", role="dialog")
         button.close(data-dismiss="modal", aria-label="Close")
           span(aria-hidden="true") &times;
       div.modal-body
-        form
-          div.form-group.d-flex
-            label.col-form-label(for="search-for-users") Search:
-            input.form-control.user-search.mx-3(id="search-for-users", name="workspaceUsers", type="text", placeholder="by username...")
-            .invalid-feedback Please provide a username.
-        table.table.user-list
-          thead
-            tr.header
-              th User
-              //- th Permission
-              th
-          tbody
-            tr.cloner.d-none
-              td.username Name
-              //- td.permission
-                select.form-control
-                  option(value="read") Read
-                  option(value="write") Write
-              td.d-flex.justify-content-center
-                button.btn.btn-danger Remove
+        nav
+        div.nav.nav-tabs(id="share-workspace-nav-tab", role="tablist")
+          //- a.nav-item.nav-link.active.show(id="nav-share-users-tab", data-toggle="tab", href="#nav-share-users", role="tab", aria-controls="nav-share-users", aria-selected="true") with Users
+          a.nav-item.nav-link.active.show(id="nav-share-url-tab", data-toggle="tab", href="#nav-share-url", role="tab", aria-controls="nav-share-url", aria-selected="false") via Url
+        div.tab-content.pt-3(id="nav-share-workspace-tabContent")
+          //- div.tab-pane.fade(id="nav-share-users", role="tabpanel", aria-labelledby="nav-share-users-tab")
+            form
+              div.form-group.d-flex
+                label.col-form-label(for="search-for-users") Search:
+                input.form-control.user-search.mx-3(id="search-for-users", name="workspaceUsers", type="text", placeholder="by username...")
+                .invalid-feedback Please provide a username.
+            table.table.user-list
+              thead
+                tr.header
+                  th User
+                  //- th Permission
+                  th
+              tbody
+                tr.cloner.d-none
+                  td.username Name
+                  //- td.permission
+                    select.form-control
+                      option(value="read") Read
+                      option(value="write") Write
+                  td.d-flex.justify-content-center
+                    button.btn.btn-danger Remove
+          div.tab-pane.fade.active.show(id="nav-share-url", role="tabpanel", aria-labelledby="nav-share-url-tab")
+            form
+              //- div.custom-control.custom-switch
+              //-   input.custom-control-input(type="checkbox", id="shareViaUrl")
+              //-   label.custom-control-label(for="shareViaUrl") Share via a url
+              p Copy the url below to share this workspace with any users.
+              div.form-group.d-flex
+                //- label.col-form-label(for="shareUrl") Url:
+                input.form-control.mr-3(id="shareUrl", name="shareUrl", type="text", disabled)
+                button.btn.btn-outline-info(id="copyUrl", name="copyUrl", title="Copy url")
+                  i.fa.fa-clipboard
       div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-primary Share
+        button.btn.btn-secondary(data-dismiss="modal") Close
+        //- button.btn.btn-primary Share
