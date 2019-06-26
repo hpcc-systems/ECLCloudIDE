@@ -684,11 +684,15 @@ require([
   $('#workspaceSelect').on('click', '.share', function(evt) {
     let $this = $(this),
         $workspace = $('.workspaces .active'),
+        $shareUrl = $('#shareUrl'),
         $modal = $('#shareWorkspaceModal');
 
     evt.stopPropagation();
 
     //link.parentElement.removeChild(link);
+
+    $shareUrl.val(hostname + '/workspaces/share/' + $workspace.data('id'));
+
     $modal.modal('show');
   });
 
@@ -702,6 +706,31 @@ require([
 
     //link.parentElement.removeChild(link);
     $user.remove();
+  });
+
+  $('#shareWorkspaceModal').on('click', '.share-url-btn', function(evt) {
+    let $this = $(this),
+        $shareUrl = $('#shareUrl');
+
+    evt.preventDefault();
+    try {
+      $shareUrl.select();
+      document.execCommand('copy');
+      $shareUrl.blur();
+      $this.attr('title', 'Copied');
+      $this.tooltip('enable');
+      $this.tooltip('show', {
+        placement: 'top'
+      });
+
+      let t = window.setTimeout(function() {
+        $this.tooltip('disable');
+        $this.attr('title', 'Copy Url');
+        window.clearTimeout(t);
+      }, 500);
+    } catch(err) {
+      alert('This browser doesn\'t support programmatic copy/paste. Please select the url and copy manually.');
+    }
   });
 
   /* SHARE WORKSPACE WITH MEMBERS */

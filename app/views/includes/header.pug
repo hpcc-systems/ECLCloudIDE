@@ -122,8 +122,8 @@ div.modal.fade.workspaceShareModal(id="shareWorkspaceModal", role="dialog")
               p Copy the url below to share this workspace with any users.
               div.form-group.d-flex
                 //- label.col-form-label(for="shareUrl") Url:
-                input.form-control.mr-3(id="shareUrl", name="shareUrl", type="text", disabled)
-                button.btn.btn-outline-info(id="copyUrl", name="copyUrl", title="Copy url")
+                input.form-control.mr-3(id="shareUrl", name="shareUrl", type="text", readonly)
+                button.btn.btn-outline-info.share-url-btn(id="copyUrl", title="Copy Url")
                   i.fa.fa-clipboard
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Close
