@@ -136,7 +136,7 @@ let shareWorkspace = async (workspaceId, users) => {
           }
         }).then((scripts) => {
           scripts.forEach((scriptToClone) => {
-            console.log(scriptToClone);
+            console.log('scriptToClone', scriptToClone);
             ScriptRevision.findOne({
               where: {
                 [db.Sequelize.Op.and]: {
@@ -261,14 +261,18 @@ let shareWorkspace = async (workspaceId, users) => {
 
 router.post('/share', (req, res, next) => {
   console.log(req.body);
-  return res.json(shareWorkspace(req.body.workspaceId, req.body.users));
+  let result = shareWorkspace(req.body.workspaceId, req.body.users);
+  console.log(result);
+  return res.redirect('/');
 });
 
 router.get('/share/:id', (req, res, next) => {
   let workspaceId = req.params.id,
       users = [{ id: req.session.user.id, name: req.session.user.name }];
   console.log(workspaceId);
-  return res.json(shareWorkspace(workspaceId, users));
+  let result = shareWorkspace(workspaceId, users);
+  console.log(result);
+  return res.redirect('/');
 });
 
 module.exports = router;
