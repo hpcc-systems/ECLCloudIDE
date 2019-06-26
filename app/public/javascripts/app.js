@@ -658,7 +658,7 @@ require([
     $deleteWorkspace.removeClass('d-none');
     $selected.append(
       '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
-      '<i class="fa fa-share-alt members float-right d-none" title="Share Workspace..."></i>'
+      '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
     );
 
     $scriptPanelClose.trigger('click');
@@ -681,7 +681,7 @@ require([
   });
 
   /* SHOW WORKSPACE MEMBERS MODAL */
-  $('#workspaceSelect').on('click', '.members', function(evt) {
+  $('#workspaceSelect').on('click', '.share', function(evt) {
     let $this = $(this),
         $workspace = $('.workspaces .active'),
         $modal = $('#shareWorkspaceModal');
