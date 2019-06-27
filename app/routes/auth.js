@@ -40,7 +40,14 @@ router.post('/register', (req, res, next) => {
             password: hash
           }).then((user) => {
             req.session.user = user;
-            return res.redirect('/');
+            if (req.session.goToUrl) {
+              let url = req.session.goToUrl;
+              delete req.session.goToUrl;
+              console.log(url, req.session.goToUrl);
+              res.redirect(url);
+            } else {
+              res.redirect('/');
+            }
           }).catch((err) => {
             console.log(err);
           });
