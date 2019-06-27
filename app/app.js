@@ -57,6 +57,8 @@ app.use((req, res, next) => {
   if (req.session.user) {
     next();
   } else {
+    req.session.goToUrl = req.url;
+    console.log('NEED TO GO TO: ' + req.session.goToUrl);
     res.redirect('/auth/login');
   }
 });

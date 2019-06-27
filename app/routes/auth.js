@@ -78,7 +78,14 @@ router.post('/login', (req, res, next) => {
 
     console.log('set session user & go to index');
     req.session.user = user;
-    res.redirect('/');
+    if (req.session.goToUrl) {
+      let url = req.session.goToUrl;
+      delete req.session.goToUrl;
+      console.log(url, req.session.goToUrl);
+      res.redirect(url);
+    } else {
+      res.redirect('/');
+    }
   })(req, res);
 });
 
