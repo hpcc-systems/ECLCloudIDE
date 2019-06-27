@@ -268,8 +268,8 @@ router.post('/share', (req, res, next) => {
 
 router.get('/share/:id', (req, res, next) => {
   let workspaceId = req.params.id,
-      users = [{ id: req.session.user.id, name: req.session.user.name }];
-  console.log(workspaceId);
+      users = [{ id: req.session.user.id, name: req.session.user.username }];
+  console.log(workspaceId, users);
   let result = shareWorkspace(workspaceId, users);
   console.log(result);
   return res.redirect('/');
