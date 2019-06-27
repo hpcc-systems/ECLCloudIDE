@@ -56,6 +56,11 @@ router.post('/', (req, res, next) => {
         scriptDirPath = workspaceDirPath + '/' + script.id,
         scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
 
+    if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
+      fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId);
+      fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
+    }
+
     if (!fs.existsSync(scriptDirPath)) {
       fs.mkdirSync(scriptDirPath, { resursive: true }, (err) => {
         if (err) {
@@ -89,9 +94,20 @@ router.post('/revision', (req, res, next) => {
       console.log('update contents of script file');
       let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
           scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
+
+      if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
+        fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId);
+        fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
+      }
+
       if (!fs.existsSync(workspaceDirPath)) {
         fs.mkdirSync(workspaceDirPath);
       }
+
+      if (!fs.existsSync(workspaceDirPath + '/' + script.id)) {
+        fs.mkdirSync(workspaceDirPath + '/' + script.id);
+      }
+
       fs.writeFileSync(scriptFilePath, revision.content);
     }).then(() => {
       return res.json({ success: true, data: revision });
