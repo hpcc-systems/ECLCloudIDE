@@ -33,7 +33,6 @@ RUN ecl bundle install https://github.com/hpcc-systems/ML_Core.git \
     && ecl bundle install https://github.com/hpcc-systems/LinearRegression.git \
     && ecl bundle install https://github.com/hpcc-systems/LogisticRegression.git \
     && ecl bundle install https://github.com/hpcc-systems/SupportVectorMachines.git \
-    && ecl bundle install https://github.com/hpcc-systems/LinearRegression.git \
     && ecl bundle install https://github.com/hpcc-systems/DataPatterns.git \
     && ecl bundle install https://github.com/hpcc-systems/PerformanceTesting.git \
     && ecl bundle install https://github.com/hpcc-systems/Visualizer.git
