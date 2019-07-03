@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
+    "start": "nodemon ./bin/www --ignore ./landing_zone/ --ignore ./workspaces/",
     "codemirror:clean": "rm -rf ./public/javascripts/codemirror/",
     "codemirror:copy": "npx cpx './node_modules/codemirror/**/*' ./public/javascripts/codemirror/",
     "codemirror": "npm run codemirror:clean && npm run codemirror:copy",
