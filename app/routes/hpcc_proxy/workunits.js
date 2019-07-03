@@ -3,6 +3,8 @@ const router = express.Router();
 
 const cp = require('child_process');
 
+const fs = require('fs-extra');
+
 const dns = require('dns');
 
 const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}';
@@ -34,6 +36,7 @@ let buildClusterAddr = (req, res, next) => {
 }
 
 let createEclArchive = (args, cwd) => {
+  console.log('createEclArchive', cwd, args);
   return new Promise((resolve, _reject) => {
     console.log('eclcc ' + args.join(' '));
     const child = cp.spawn('eclcc', args, { cwd: cwd });
@@ -147,11 +150,26 @@ router.put('/', buildClusterAddr, (req, res, next) => {
       _filename = req.body.filename,
       _scriptId = req.body.scriptId,
       _workspaceId = req.body.workspace,
-      filePath = process.cwd() + '/workspaces/' + _workspaceId + '/scripts/' + _scriptId + '/',
-      args = ['-E', filePath + _filename];
+      workspacePath = process.cwd() + '/workspaces/' + _workspaceId;
+      scriptPath = process.cwd() + '/workspaces/' + _workspaceId + '/scripts/' + _scriptId + '/',
+      args = ['-E', scriptPath + _filename];
 
   if (_filename) {
-    createEclArchive(args, filePath).then((response) => {
+    try {
+      let _files = fs.readdirSync(workspacePath + '/scripts/', { withFileTypes: true });
+      _files.forEach((file) => {
+        console.log(file);
+        if (file.isDirectory() && file.name.indexOf('.') == -1) {
+          args.push('-I');
+          args.push(workspacePath + '/scripts/' + file.name + '/');
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      return;
+    }
+
+    createEclArchive(args, scriptPath).then((response) => {
       _query = response.stdout;
       console.log(response);
       console.log('ecl archive: ' + _query);
