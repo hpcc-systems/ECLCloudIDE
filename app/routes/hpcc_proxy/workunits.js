@@ -174,7 +174,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
       console.log(response);
       console.log('ecl archive: ' + _query);
 
-      router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query)
+      router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query, _filename)
         .then((response) => {
           console.log('response to WUUpdate', response.body);
           let json = JSON.parse(response.body);
@@ -188,7 +188,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
     _query = _query.replace(/\#USERNAME\#/g, req.session.user.username)
     console.log('replaced #USERNAME#', _query);
 
-    router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query)
+    router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query, _filename)
       .then((response) => {
         console.log('response to WUUpdate', response.body);
         let json = JSON.parse(response.body);
@@ -201,11 +201,11 @@ router.put('/', buildClusterAddr, (req, res, next) => {
   }
 });
 
-router.updateWorkunit = (clusterAddr, wuid, query) => {
+router.updateWorkunit = (clusterAddr, wuid, query, filename="") => {
   return request({
     method: 'POST',
     uri: clusterAddr + '/WsWorkunits/WUUpdate.json',
-    form: { Wuid: wuid, QueryText: query },
+    form: { Wuid: wuid, QueryText: query, Jobname: filename },
     resolveWithFullResponse: true
   });
 };
