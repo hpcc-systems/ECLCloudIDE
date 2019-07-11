@@ -126,7 +126,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', buildClusterAddr, (req, res, next) => {
-  router.createWorkunit(req.clusterAddrAndPort)
+  router.createWorkunit(req.clusterAddrAndPort, req.session.user.username)
     .then((response) => {
       let json = JSON.parse(response.body);
       res.json({ wuid: json.WUCreateResponse.Workunit.Wuid });
@@ -136,10 +136,13 @@ router.post('/', buildClusterAddr, (req, res, next) => {
     });
 });
 
-router.createWorkunit = (clusterAddr) => {
+router.createWorkunit = (clusterAddr, clusterUser, clusterPwd="") => {
   return request({
     method: 'POST',
     uri: clusterAddr + '/WsWorkunits/WUCreate.json',
+    headers: {
+      Authorization: 'Basic ' + Buffer.from(clusterUser + ':' + clusterPwd).toString('base64')
+    },
     form: { rawxml_: true },
     resolveWithFullResponse: true
   });
