@@ -255,6 +255,7 @@ a {
   content: "\f07b";
   font-family: 'FontAwesome';
   margin-right: 0.33rem;
+  position: absolute;
 }
 
 .folder + ul {
@@ -289,16 +290,25 @@ a.script:hover {
   color: #fff !important;
 }
 
-.dataset .datasetname::before {
+.dataset::before {
   content: "\f1b2";
   font-family: 'FontAwesome';
   margin-right: 0.33rem;
+  position: absolute;
 }
 
 .script::before {
   content: "\f15b";
   font-family: 'FontAwesome';
   margin-right: 0.33rem;
+  position: absolute;
+}
+
+.foldername, .scriptname, .datasetname {
+  width: 65%;
+  display: inline-block;
+  word-wrap: anywhere;
+  margin-left: 20px;
 }
 
 .dataset .status,
@@ -377,7 +387,7 @@ main .loader p {
 .script-panel-controls-wrapper {
   position: absolute;
   height: 38px;
-  width: 82.5%;
+  width: 98%;
   right: 0;
   display: flex;
   justify-content: space-between;
@@ -399,10 +409,8 @@ main .loader p {
 }
 
 .script-panel #editor {
-  width: 81.5%;
   height: 90%;
   margin-top: 38px;
-  margin-left: 17.5%;
 }
 
 #editor .CodeMirror {
@@ -469,4 +477,20 @@ main .loader p {
 
 .file-details .form-group .form-control:first-of-type {
   margin-right: 0.5em;
+}
+
+@media (min-width: 576px) {
+  .foldername,
+  .scriptname,
+  .datasetname {
+    width: 55%;
+  }
+}
+
+@media (min-width: 768px) {
+  .foldername,
+  .scriptname,
+  .datasetname {
+    width: 65%;
+  }
 }

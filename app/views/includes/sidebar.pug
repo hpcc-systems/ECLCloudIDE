@@ -1,4 +1,4 @@
-nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
+nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
   div.sidebar-sticky
 
     div.px-3.py-3(id="datasets-wrapper")
@@ -11,14 +11,14 @@ nav.col-sm-3.col-md-3.col-lg-2.d-none.d-sm-block.bg-dark.sidebar
 
       div.flex-column.datasets.collapse.folder-root(id="datasets")
         a.text-light.dataset.cloner.d-none(href='#')
-          div.d-flex
-            div.cardname-wrapper.flex-grow-1
-              b.datasetname Name
-                i.status.fa.fa-refresh.d-none
-            i.fa.fa-pencil-square-o.edit.d-none.mr-1(title="Edit dataset")
-            i.fa.fa-close.delete.d-none(title="Delete dataset")
-            span.rows.d-none Rows: ?
-            span.cols.d-none Columns: ?
+          //- div.d-flex
+            //- div.cardname-wrapper.flex-grow-1
+          span.datasetname Name
+            i.status.fa.fa-refresh.d-none
+          i.fa.fa-close.delete.float-right.d-none(title="Delete dataset")
+          i.fa.fa-pencil-square-o.edit.float-right.d-none.mr-1(title="Edit dataset")
+          span.rows.d-none Rows: ?
+          span.cols.d-none Columns: ?
 
     div.px-3.py-3(id="scripts-wrapper")
       h6.sidebar-heading.justify-content-between.align-items-center.mt-4.mb-1.text-light
