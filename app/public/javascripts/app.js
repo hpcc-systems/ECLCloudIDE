@@ -34,6 +34,7 @@ let addFolder = (branch, type) => {
   let $li = $('<li>');
   $li.data('name', branch.name);
   $li.data('id', branch.id);
+  $li.data('type', type);
   $li.append('<a class="folder text-light"><span class="foldername">' +
     branch.name + '</span>' +
     '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
@@ -92,6 +93,7 @@ let populateDatasets = () => {
   let url = new URL(hostname + '/datasets'),
       $activeWorkspace = $('.workspaces .active'),
       $datasets = $('.datasets'),
+      $folders = $datasets.find('.folder'),
       $datasetLis = $datasets.find('.dataset:not(.cloner)'),
       params = { workspaceId: $activeWorkspace.data('id') };
 
@@ -151,6 +153,7 @@ let populateScripts = () => {
   let url = new URL(hostname + '/scripts'),
       $activeWorkspace = $('.workspaces .active'),
       $scripts = $('.scripts'),
+      $folders = $scripts.find('.folder'),
       $scriptLis = $scripts.find('.script:not(.cloner)'),
       params = { workspaceId: $activeWorkspace.data('id') };
 
