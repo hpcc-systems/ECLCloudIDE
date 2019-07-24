@@ -1365,7 +1365,7 @@ require([
     } while ($parent.length > 0);
 
     //link.parentElement.removeChild(link);
-    $modal.find('.datasetname').text($dataset.find('.datasetname').text());
+    $modal.find('.dataset-name').text($dataset.find('.datasetname').text());
     $modal.modal('show');
     console.log($dataset.data());
     $deleteBtn.data('dataset', $dataset.data('id'));
@@ -1727,7 +1727,7 @@ require([
       $parent = $parent.parents('li');
     } while ($parent.length > 0);
 
-    $modal.find('.scriptname').text($script.find('.scriptname').text());
+    $modal.find('.script-name').text($script.find('.scriptname').text());
     $modal.modal('show');
     console.log($script.data('id'));
     $deleteBtn.data('script', $script.data('id'));
