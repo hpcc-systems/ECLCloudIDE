@@ -57,6 +57,25 @@ router.post('/', (req, res, next) => {
         filename: req.body.filename,
         workspaceId: req.body.workspaceId
       }).then((dataset) => {
+        let profileFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' +
+              dataset.id + '/',
+            _filePath = "~" + req.session.user.username + "::" + req.body.workspaceName + "::" + dataset.filename,
+            _dpEcl = "IMPORT STD.DataPatterns;\nfilePath := '" + _filePath +
+              "';\nds := DATASET(filePath, RECORDOF(filePath, LOOKUP), csv);\n" +
+              "profileResults := DataPatterns.Profile(ds);\n" +
+              "OUTPUT(profileResults, ALL, NAMED('profileResults'));";
+
+        if (!fs.existsSync(profileFilePath)) {
+          fs.mkdirSync(profileFilePath, { resursive: true }, (err) => {
+            if (err) {
+              throw err;
+            }
+          });
+        }
+
+        fs.closeSync(fs.openSync(profileFilePath + dataset.name + '-profile.ecl', 'w'));
+        fs.writeFileSync(profileFilePath + dataset.name + '-profile.ecl', _dpEcl);
+
         return res.json({ success: true, data: dataset });
       }).catch((err) => {
 
