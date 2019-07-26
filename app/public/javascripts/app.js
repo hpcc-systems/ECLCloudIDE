@@ -895,6 +895,8 @@ require([
   /* CREATE NEW DATASET */
   $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
     let $this = $(this),
+        $saveBtn = $this,
+        $saveBtnStatus = $this.find('.fa-pulse'),
         $modal = $('#newDatasetModal'),
         $datasets = $('.datasets'),
         $activeWorkspace = $('.workspaces .dropdown-item.active'),
@@ -915,10 +917,14 @@ require([
         data = getFormData($form),
         dataset = {
           name: $datasetName,
-          workspaceId: $workspaceId
+          workspaceId: $workspaceId,
+          workspaceName: $workspaceName
         };
 
     if (!$parentEl) $parentEl = $('.datasets ul').first();
+
+    $saveBtnStatus.removeClass('d-none');
+    $saveBtn.attr('disabled', 'disabled').addClass('disabled');
 
     if (file === undefined) {
       $file.addClass('is-invalid');
@@ -1097,6 +1103,8 @@ require([
                           });
 
                           $modal.modal('hide');
+                          $saveBtnStatus.addClass('d-none');
+                          $saveBtn.removeAttr('disabled').removeClass('disabled');
 
                           $modal.find('#dataset-name').val('');
                           $form.removeClass('was-validated');
