@@ -122,6 +122,12 @@ router.delete('/', (req, res, next) => {
     Workunit.destroy({
       where: { objectId: dataset.id }
     });
+    let datasetFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' + dataset.id
+    console.log('if path exists - ' + datasetFilePath);
+    if (fs.existsSync(datasetFilePath)) {
+      console.log('removeSync - ' + datasetFilePath);
+      fs.removeSync(datasetFilePath);
+    }
   }).then(() => {
     return res.json({ success: true, message: 'Dataset deleted' });
   }).catch((err) => {
@@ -140,7 +146,8 @@ router.delete('/batch', (req, res, next) => {
   }).then((datasets) => {
     datasets.forEach((dataset) => {
       console.log(dataset.name, dataset.id);
-      let datasetFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' + dataset.name + '.ecl';
+      let datasetFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId +
+        '/datasets/' + dataset.id + '/' + dataset.name + '.ecl';
       if (fs.existsSync(datasetFilePath)) {
         fs.unlinkSync(datasetFilePath);
       }
