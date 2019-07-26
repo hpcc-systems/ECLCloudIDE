@@ -108,7 +108,7 @@ router.post('/revision', (req, res, next) => {
         fs.mkdirSync(workspaceDirPath + '/' + script.id);
       }
 
-      fs.writeFileSync(scriptFilePath, revision.content);
+      fs.writeFileSync(scriptFilePath, revision.content.replace(/IMPORT\s+(.*\.)(.*);/g, "IMPORT $2;"));
     }).then(() => {
       return res.json({ success: true, data: revision });
     });
