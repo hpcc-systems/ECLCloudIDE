@@ -151,20 +151,35 @@ router.createWorkunit = (clusterAddr, clusterUser, clusterPwd="") => {
 router.put('/', buildClusterAddr, (req, res, next) => {
   let _query = req.body.query,
       _filename = req.body.filename,
-      _scriptId = req.body.scriptId,
+      _scriptId = req.body.scriptId || null,
+      _datasetId = req.body.datasetId || null,
       _workspaceId = req.body.workspace,
-      workspacePath = process.cwd() + '/workspaces/' + _workspaceId;
-      scriptPath = process.cwd() + '/workspaces/' + _workspaceId + '/scripts/' + _scriptId + '/',
-      args = ['-E', scriptPath + _filename];
+      workspacePath = process.cwd() + '/workspaces/' + _workspaceId,
+      scriptPath = process.cwd() + '/workspaces/' + _workspaceId;
+
+  if (_datasetId) {
+    scriptPath += '/datasets/' + _datasetId + '/';
+  } else {
+    scriptPath += '/scripts/' + _scriptId + '/';
+  }
+
+  let args = ['-E', scriptPath + _filename];
 
   if (_filename) {
     try {
       let _files = fs.readdirSync(workspacePath + '/scripts/', { withFileTypes: true });
+      if (_datasetId) {
+        _files = fs.readdirSync(workspacePath + '/datasets/', { withFileTypes: true });
+      }
       _files.forEach((file) => {
         console.log(file);
         if (file.isDirectory() && file.name.indexOf('.') == -1) {
           args.push('-I');
-          args.push(workspacePath + '/scripts/' + file.name + '/');
+          if (_datasetId) {
+            args.push(workspacePath + '/datasets/' + file.name + '/');
+          } else {
+            args.push(workspacePath + '/scripts/' + file.name + '/');
+          }
         }
       });
     } catch (err) {
