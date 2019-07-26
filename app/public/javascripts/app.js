@@ -1042,79 +1042,115 @@ require([
 
                 showDatasets();
                 //$newDataset.trigger('click');
-                let _query = dataset.name + ":=RECORD\n",
-                    _keys = Object.keys(currentDatasetFile),
-                    _avgs = Object.values(currentDatasetFile);
 
-                $fileDetails.find('.form-group').each((idx, group) => {
-                  _query += "\tSTRING" + _avgs[idx] + " " + $(group).children('input:eq(0)').val() + ";\n";
-                });
-
-                $modal.modal('hide');
-                $modal.find('#dataset-name').val('');
-                $form.removeClass('was-validated');
-
-                _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
-                  dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
-                  "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
-                  ",CLUSTER('mythor'),OVERWRITE);";
-
-                console.log(_query);
-                updateWorkunit(_wuid, _query, null, null, null).then(() => {
-                  submitWorkunit(_wuid).then(() => {
-                    dataset.wuid = _wuid;
-
-                    console.log('check status of workunit');
-
-                    $datasetStatus.addClass('fa-spin');
-
-                    let t = null;
-
-                    let awaitWorkunitStatusComplete = () => {
-                      checkWorkunitStatus(_wuid)
-                      .then(response => response.json())
-                      .then((json) => {
-                        if (json.state == 'completed') {
-
-                          $datasetStatus.removeClass('fa-spin');
-
-                          dataset.eclQuery = json.query;
-
-                          if (json.results[0].logicalFile) {
-                            dataset.logicalfile = json.results[0].logicalFile;
-                          }
-
-                          if (json.results[0].schema) {
-                            dataset.rowCount = json.results[0].rows;
-                            dataset.columnCount = json.results[0].columns;
-                            dataset.eclSchema = JSON.stringify(json.results[0].schema);
-                          }
-
-                          fetch('/datasets/', {
-                            method: 'PUT',
-                            body: JSON.stringify(dataset),
-                            headers:{
-                              'Content-Type': 'application/json'
-                            }
-                          }).then(() => {
-                            $newDataset.data('wuid', _wuid);
-                            $newDataset.find('.rows').text('Rows: ' + dataset.rowCount);
-                            $newDataset.find('.cols').text('Columns: ' + dataset.columnCount);
-                            $newDataset.data('eclSchema', dataset.eclSchema);
-                            $newDataset.data('query', dataset.eclQuery);
-                            window.clearTimeout(t);
-                          });
-                        } else {
-                          window.clearTimeout(t);
-                          t = window.setTimeout(function() {
-                            awaitWorkunitStatusComplete();
-                          }, 1500);
-                        }
-                      });
-                    };
-                    awaitWorkunitStatusComplete();
+                let t = null;
+                let awaitWorkunitStatusComplete = (wuid, callback) => {
+                  checkWorkunitStatus(wuid)
+                  .then(response => response.json())
+                  .then((json) => {
+                    if (json.state == 'completed') {
+                      if (typeof callback === 'function') {
+                        callback(json);
+                      }
+                    } else {
+                      window.clearTimeout(t);
+                      t = window.setTimeout(function() {
+                        awaitWorkunitStatusComplete(wuid, callback);
+                      }, 1500);
+                    }
                   });
-                });
+                };
+
+                (async () => {
+                  let response = await createWorkunit();
+                  let dpJson = await response.json();
+                  let dpWuid = dpJson.wuid;
+
+                  updateWorkunit(dpWuid, null, dataset.name + '-profile.ecl', null, dataset.id, $workspaceId).then(() => {
+                    submitWorkunit(dpWuid).then(() => {
+                      console.log('check status of DataPatterns workunit');
+                      $datasetStatus.addClass('fa-spin');
+                      awaitWorkunitStatusComplete(dpWuid, function(json) {
+                        getWorkunitResults(dpWuid)
+                        .then(response => response.json())
+                        .then((wuResult) => {
+                          if (!wuResult.WUResultResponse) {
+                            throw 'No Workunit Response available for ' + wuid;
+                          }
+                          let dpResults = wuResult.WUResultResponse.Result.Row;
+                          if (dpResults.length < 1) {
+                            throw 'No results for Workunit ' + wuid;
+                          }
+                          console.log(dpResults);
+
+                          let _query = dataset.name + ":=RECORD\n",
+                              _keys = Object.keys(currentDatasetFile),
+                              _avgs = Object.values(currentDatasetFile),
+                              _type =
+
+                          $fileDetails.find('.form-group').each((idx, group) => {
+                            let _type = "STRING" + _avgs[idx];
+                            if (dpResults[idx].best_attribute_type) {
+                              _type = dpResults[idx].best_attribute_type;
+                            }
+                            _query += "\t" + _type + " " + $(group).children('input:eq(0)').val() + ";\n";
+                          });
+
+                          $modal.modal('hide');
+
+                          $modal.find('#dataset-name').val('');
+                          $form.removeClass('was-validated');
+
+                          _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
+                            dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
+                            "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
+                            ",CLUSTER('mythor'),OVERWRITE);";
+
+                          console.log(_query);
+
+                          updateWorkunit(_wuid, _query, null, null, null, null).then(() => {
+                            submitWorkunit(_wuid).then(() => {
+                              dataset.wuid = _wuid;
+                              console.log('check status of workunit');
+                              $datasetStatus.addClass('fa-spin');
+                              awaitWorkunitStatusComplete(_wuid, function(json) {
+                                $datasetStatus.removeClass('fa-spin');
+
+                                dataset.eclQuery = json.query;
+
+                                if (json.results[0].logicalFile) {
+                                  dataset.logicalfile = json.results[0].logicalFile;
+                                }
+
+                                if (json.results[0].schema) {
+                                  dataset.rowCount = json.results[0].rows;
+                                  dataset.columnCount = json.results[0].columns;
+                                  dataset.eclSchema = JSON.stringify(json.results[0].schema);
+                                }
+
+                                fetch('/datasets/', {
+                                  method: 'PUT',
+                                  body: JSON.stringify(dataset),
+                                  headers: {
+                                    'Content-Type': 'application/json'
+                                  }
+                                }).then(() => {
+                                  $newDataset.data('wuid', _wuid);
+                                  $newDataset.find('.rows').text('Rows: ' + dataset.rowCount);
+                                  $newDataset.find('.cols').text('Columns: ' + dataset.columnCount);
+                                  $newDataset.data('eclSchema', dataset.eclSchema);
+                                  $newDataset.data('query', dataset.eclQuery);
+                                  window.clearTimeout(t);
+                                });
+                              });
+                            });
+                          });
+                        });
+                      });
+                    });
+                  });
+
+                })(); //end async IFFE
               });
             });
           });
