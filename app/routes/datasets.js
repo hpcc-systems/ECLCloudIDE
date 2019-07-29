@@ -62,7 +62,7 @@ router.post('/', (req, res, next) => {
             _filePath = "~" + req.session.user.username + "::" + req.body.workspaceName + "::" + dataset.filename,
             _dpEcl = "IMPORT STD.DataPatterns;\nfilePath := '" + _filePath +
               "';\nds := DATASET(filePath, RECORDOF(filePath, LOOKUP), csv);\n" +
-              "profileResults := DataPatterns.Profile(ds);\n" +
+              "profileResults := DataPatterns.Profile(ds,,,,'best_ecl_types',5);\n" +
               "OUTPUT(profileResults, ALL, NAMED('profileResults'));";
 
         if (!fs.existsSync(profileFilePath)) {
