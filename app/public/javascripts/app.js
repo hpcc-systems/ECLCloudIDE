@@ -264,7 +264,7 @@ let createWorkunit = () => {
   });
 };
 
-let updateWorkunit = (wuid, query, scriptName, scriptId = null, datasetId = null, workspaceId) => {
+let updateWorkunit = (wuid, query, scriptName, scriptPath = null, datasetId = null, workspaceId) => {
   return fetch('/hpcc/workunits', {
     method: 'PUT',
     body: JSON.stringify({
@@ -273,7 +273,7 @@ let updateWorkunit = (wuid, query, scriptName, scriptId = null, datasetId = null
       wuid: wuid,
       query: query,
       filename: scriptName,
-      scriptId: scriptId,
+      scriptPath: scriptPath,
       datasetId: datasetId,
       workspace: workspaceId
     }),
@@ -2303,7 +2303,7 @@ require([
       })
       .then(() => {
         console.log(_filename);
-        updateWorkunit(_wuid, null, _filename, $script.data('id'), null, $activeWorkspace.data('id')).then(() => {
+        updateWorkunit(_wuid, null, _filename, $script.data('parentPathNames'), null, $activeWorkspace.data('id')).then(() => {
           submitWorkunit(_wuid).then(() => {
             console.log('check status of workunit');
 
