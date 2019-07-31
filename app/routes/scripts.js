@@ -53,7 +53,7 @@ router.post('/', (req, res, next) => {
     workspaceId: req.body.workspaceId
   }).then((script) => {
     let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-        scriptDirPath = workspaceDirPath + '/' + script.id,
+        scriptDirPath = workspaceDirPath + '/' + req.body.parentPathNames,
         scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
 
     if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
