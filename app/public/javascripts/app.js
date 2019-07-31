@@ -451,6 +451,10 @@ let isDataPatternProfile = (schema) => {
   return (schema.filter(knownProfileField).length > matchThreshold);
 };
 
+let isVisualization = (name) => {
+  return name.indexOf('__hpcc_visualization') > -1;
+}
+
 require.config({
   paths: {
     'ln': '/javascripts/line-navigator',
@@ -2332,6 +2336,10 @@ require([
                       if ($outputsList.find('.data-pattern').length > 0) return;
                       classList.push('data-pattern');
                       outputLabel = 'Data Patterns';
+                    } else if (isVisualization(result.name)) {
+                      if ($outputsList.find('.visualization').length > 0) return;
+                      classList.push('visualization');
+                      outputLabel = 'Visualizations';
                     }
 
                     $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
@@ -2427,6 +2435,12 @@ require([
         cluster.host + ':' + cluster.port + '/WsWorkunits/res/' + $script.data('wuid') +
         '/report/res/index.html';
       $tableWrapper.html('<iframe src="' + dataPatternsReportUrl + '" />');
+      $tableWrapper.css({ height: '770px' });
+    } else if ( $output.hasClass('visualization')) {
+      let visualizationUrl = ((cluster.host.indexOf('http') < 0) ? 'http://' : '') +
+        cluster.host + ':' + cluster.port + '/WsWorkunits/res/' + $script.data('wuid') +
+        '/res/index.html';
+      $tableWrapper.html('<iframe src="' + visualizationUrl + '" />');
       $tableWrapper.css({ height: '770px' });
     } else {
       displayWorkunitResults($script.data('wuid'), $output.text(), $output.index());
