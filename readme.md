@@ -19,7 +19,7 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
 
 * ~~imports / ecl modules~~
 
-* user functions
+* ~~user functions~~
   * ~~change password~~
   * ~~forgot password~~
 
@@ -34,10 +34,12 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
 
 * ~~rendering DataPatterns report (custom WU "Resources" tab content from ECLWatch?)~~
 
-* sharing workspaces
-  * ~~share with a user~~
-  * share with a group
-  * generate a url to share a workspace, rather than specifically assigning to users / groups
+* ~~use DataPatterns (best_attribute_type) to determine THOR schema~~
+
+* ~~sharing workspaces~~
+  * ~~share with a user~~ _both of these methods (user & group) replaced by url_
+  * ~~share with a group~~
+  * ~~generate a url to share a workspace, rather than specifically assigning to users / groups~~
 
 * ~~change datasets/scripts left nav to more closely resemble a file explorer in a text-editor / ide~~
 
