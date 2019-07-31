@@ -201,6 +201,9 @@ router.put('/', buildClusterAddr, (req, res, next) => {
           console.log(err);
           res.json(err);
         });
+    }).catch((err) => {
+      console.log(err);
+      res.json(err);
     });
   } else {
     _query = _query.replace(/\#USERNAME\#/g, req.session.user.username)
