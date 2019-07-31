@@ -151,7 +151,7 @@ router.createWorkunit = (clusterAddr, clusterUser, clusterPwd="") => {
 router.put('/', buildClusterAddr, (req, res, next) => {
   let _query = req.body.query,
       _filename = req.body.filename,
-      _scriptId = req.body.scriptId || null,
+      _scriptPath = req.body.scriptPath || null,
       _datasetId = req.body.datasetId || null,
       _workspaceId = req.body.workspace,
       workspacePath = process.cwd() + '/workspaces/' + _workspaceId,
@@ -160,7 +160,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
   if (_datasetId) {
     scriptPath += '/datasets/' + _datasetId + '/';
   } else {
-    scriptPath += '/scripts/' + _scriptId + '/';
+    scriptPath += '/scripts/' + (_scriptPath ? _scriptPath : '');
   }
 
   let args = ['-E', scriptPath + _filename];
