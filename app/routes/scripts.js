@@ -62,7 +62,7 @@ router.post('/', (req, res, next) => {
     }
 
     if (!fs.existsSync(scriptDirPath)) {
-      fs.mkdirSync(scriptDirPath, { resursive: true }, (err) => {
+      fs.mkdirSync(scriptDirPath, { recursive: true }, (err) => {
         if (err) {
           throw err;
         }
