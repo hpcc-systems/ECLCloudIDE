@@ -2282,6 +2282,7 @@ require([
       body: JSON.stringify({
         scriptId: $script.data('id'),
         name: $script.data('name'),
+        path: $script.data('parentPathNames'),
         content: editor.getValue()
       }),
       headers:{
@@ -2396,6 +2397,7 @@ require([
       method: 'POST',
       body: JSON.stringify({
         scriptId: $script.data('id'),
+        path: $script.data('parentPathNames'),
         content: editor.getValue()
       }),
       headers:{
