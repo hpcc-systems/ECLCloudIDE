@@ -135,13 +135,13 @@ router.put('/', (req, res, next) => {
         id: req.body.id
       }
     }).then((result) => {
-      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-          currentScriptFilePath = workspaceDirPath + '/' + req.body.prevId + '/' + req.body.prevName + '.ecl',
-          newScriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
+      // let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
+      //     currentScriptFilePath = workspaceDirPath + '/' + req.body.prevId + '/' + req.body.prevName + '.ecl',
+      //     newScriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
 
-      if (fs.existsSync(currentScriptFilePath)) {
-        fs.rename(currentScriptFilePath, newScriptFilePath);
-      }
+      // if (fs.existsSync(currentScriptFilePath)) {
+      //   fs.rename(currentScriptFilePath, newScriptFilePath);
+      // }
       return res.json({ success: true, data: script });
     }).catch((err) => {
       console.log(err);
