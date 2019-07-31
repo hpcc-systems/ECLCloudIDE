@@ -81,6 +81,7 @@ router.post('/', (req, res, next) => {
 /* Create script revision */
 router.post('/revision', (req, res, next) => {
   console.log('request body', req.body);
+  let path = req.body.path || '';
   ScriptRevision.create({
     scriptId: req.body.scriptId,
     content: req.body.content
@@ -93,7 +94,7 @@ router.post('/revision', (req, res, next) => {
     }).then((script) => {
       console.log('update contents of script file');
       let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-          scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
+          scriptFilePath = workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ) + script.name + '.ecl';
 
       if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
         fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId);
@@ -104,11 +105,11 @@ router.post('/revision', (req, res, next) => {
         fs.mkdirSync(workspaceDirPath);
       }
 
-      if (!fs.existsSync(workspaceDirPath + '/' + script.id)) {
-        fs.mkdirSync(workspaceDirPath + '/' + script.id);
+      if (!fs.existsSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ))) {
+        fs.mkdirSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ));
       }
 
-      fs.writeFileSync(scriptFilePath, revision.content.replace(/IMPORT\s+(.*\.)(.*);/g, "IMPORT $2;"));
+      fs.writeFileSync(scriptFilePath, revision.content);
     }).then(() => {
       return res.json({ success: true, data: revision });
     });
