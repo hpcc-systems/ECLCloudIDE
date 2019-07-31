@@ -80,7 +80,7 @@ router.post('/', (req, res, next) => {
 
 /* Create script revision */
 router.post('/revision', (req, res, next) => {
-  console.log('request body', req.body);
+  // console.log('request body', req.body);
   let path = req.body.path || '';
   ScriptRevision.create({
     scriptId: req.body.scriptId,
@@ -108,10 +108,12 @@ router.post('/revision', (req, res, next) => {
       if (!fs.existsSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ))) {
         fs.mkdirSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ));
       }
-
+      console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
       fs.writeFileSync(scriptFilePath, revision.content);
     }).then(() => {
       return res.json({ success: true, data: revision });
+    }).catch((err) => {
+      console.log(err);
     });
   }).catch((err) => {
     console.log(err);
