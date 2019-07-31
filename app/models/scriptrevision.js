@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    content: DataTypes.STRING
+    content: DataTypes.TEXT
   }, {
     paranoid: true
   });
