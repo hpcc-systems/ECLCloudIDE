@@ -185,6 +185,7 @@ let addScript = (script) => {
   $newScript.data('name', script.name);
   $newScript.data('revisionId', script.revisionId);
   $newScript.data('content', script.content);
+  $newScript.data('parentPathNames', script.parentPathNames);
   $newScript.find('.scriptname').contents()[0].nodeValue = script.name;
 
   $newLi.append($newScript);
@@ -1512,6 +1513,7 @@ require([
         $activeWorkspace = $('.workspaces .active'),
         workspaceId = $activeWorkspace.data('id'),
         parentPath = $this.data('parentPath') || [],
+        parentPathNames = $this.data('parentPathNames') || [],
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $parentEl = $this.data('parentToReceiveChild') || $('.scripts').children('ul').first(),
         $newScript = $scripts.find('.cloner').clone(),
@@ -1527,6 +1529,7 @@ require([
 
     console.log(data);
     data.workspaceId = workspaceId;
+    data.parentPathNames = parentPathNames.join('/');
     console.log(JSON.stringify(data));
 
     fetch('/scripts/', {
@@ -1590,6 +1593,7 @@ require([
       })
       .then(response => response.json())
       .then((workspace) => {
+        newFile.parentPathNames = data.parentPathNames;
         $modal.modal('hide');
 
         $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
@@ -1862,6 +1866,7 @@ require([
         $target = $(evt.target),
         $folder = $target.parents('li').first(),
         parentPath = [],
+        parentPathNames = [],
         $contextMenu = $('#scripts-context-menu'),
         $datasetModal = $('#newDatasetModal'),
         $scriptModal = $('#newScriptModal'),
@@ -1875,17 +1880,20 @@ require([
       evt.preventDefault();
       if ($folder.data('id')) {
         parentPath.unshift($folder.data('id'));
+        parentPathNames.unshift($folder.data('name'));
       }
       let $parent = $folder.parents('li');
       do {
         if ($parent.data('id')) {
           parentPath.unshift($parent.data('id'));
+          parentPathNames.unshift($parent.data('name'));
         }
         $parent = $parent.parents('li');
       } while ($parent.length > 0);
 
       $datasetModal.find('.btn-primary').data('parentPath', parentPath);
       $scriptModal.find('.btn-primary').data('parentPath', parentPath);
+      $scriptModal.find('.btn-primary').data('parentPathNames', parentPathNames);
       $folderModal.find('.btn-primary').data('parentPath', parentPath);
 
       if ($this.attr('id') == 'datasets-wrapper') {
