@@ -170,6 +170,7 @@ let populateScripts = () => {
               _script = scripts[$script.data('id')];
           $script.data('revisionId', _script.revisionId);
           $script.data('content', _script.content);
+          $script.data('parentPathNames', _script.parentPathNames);
         });
       }
     });
@@ -1923,6 +1924,29 @@ require([
         'top': evt.pageY
       });
       $contextMenu.fadeIn(200);
+    } else {
+      if ($target.hasClass('scriptname')) {
+        $target = $target.parents('.script');
+
+        if (!$target.data('parentPathNames')) {
+          if ($folder.data('id')) {
+            parentPath.unshift($folder.data('id'));
+            parentPathNames.unshift($folder.data('name'));
+          }
+          let $parent = $folder.parents('li');
+          do {
+            if ($parent.data('id')) {
+              parentPath.unshift($parent.data('id'));
+              parentPathNames.unshift($parent.data('name'));
+            }
+            $parent = $parent.parents('li');
+          } while ($parent.length > 0);
+
+          $target.data('parentPathNames', parentPathNames);
+        }
+
+        console.log($target);
+      }
     }
   });
 
