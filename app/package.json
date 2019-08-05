@@ -39,7 +39,7 @@
     "pug": "2.0.3",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "sequelize": "^5.8.0"
+    "sequelize": "^5.12.3"
   },
   "devDependencies": {
     "cpx": "^1.5.0"
