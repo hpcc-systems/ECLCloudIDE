@@ -16,6 +16,7 @@
     "clientdeps": "npm run codemirror && npm run linenav && npm run lodash"
   },
   "dependencies": {
+    "aws-sdk": "^2.504.0",
     "bcrypt": "^3.0.3",
     "codemirror": "^5.44.0",
     "connect-flash": "^0.1.1",
