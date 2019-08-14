@@ -10,6 +10,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     username: DataTypes.STRING,
     emailAddress: DataTypes.STRING,
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
     password: DataTypes.STRING
   }, {
     paranoid: true
