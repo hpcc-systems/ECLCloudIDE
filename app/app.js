@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const compression = require('compression');
 
 require('dotenv').load();
 
@@ -29,6 +30,8 @@ const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+
+app.use(compression());
 
 app.use(logger('dev'));
 app.use(express.json({ limit: '8mb' }));

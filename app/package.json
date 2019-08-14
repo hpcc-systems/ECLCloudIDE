@@ -19,6 +19,7 @@
     "aws-sdk": "^2.504.0",
     "bcrypt": "^3.0.3",
     "codemirror": "^5.44.0",
+    "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
     "cookie-parser": "~1.4.3",
     "debug": "~4.1.1",
