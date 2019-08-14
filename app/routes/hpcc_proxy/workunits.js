@@ -163,7 +163,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
     scriptPath += '/scripts/' + (_scriptPath ? _scriptPath : '');
   }
 
-  let args = ['-E', scriptPath + _filename];
+  let args = ['-E', scriptPath + '/' + _filename];
 
   if (_filename) {
     try {
