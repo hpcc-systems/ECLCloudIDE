@@ -479,6 +479,22 @@ main .loader p {
   margin-right: 0.5em;
 }
 
+.tippy-tooltip {
+  max-width: initial !important;
+}
+
+.shepherd-modal-overlay-container {
+  opacity: 0.7 !important;
+}
+
+.shepherd-button {
+  color: #fff !important;
+}
+
+.shepherd-button-secondary {
+  color: #666 !important;
+}
+
 @media (min-width: 576px) {
   .foldername,
   .scriptname,

@@ -475,6 +475,63 @@ require([
 ], function(LineNavigator, CodeMirror, _) {
   let editor = null, $draggedObject = null;
 
+  let tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      classes: 'shadow-md bg-purple-dark',
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      showCancelLink: true,
+      shepherdElementMaxWidth: '500px'
+    },
+    useModalOverlay: true,
+    steps: [{
+      id: 'workspace-step',
+      title: 'Create a Workspace',
+      text: `
+        First, create a new workspace to contain your<br />uploaded data files and ECL scripts.<br /></br />
+        <img src="/images/create-workspace.gif" alt="Animation of the creation of a workspace" width="600" />
+      `,
+      attachTo: {
+        element: '.navbar-nav',
+      },
+      buttons: [
+        { text: 'Exit', secondary: true, action: function() { return this.cancel(); } },
+        { text: 'Next', secondary: false, action: function() { return this.next(); } }
+      ]
+    }, {
+      id: 'datasets-step',
+      title: 'Upload a CSV',
+      text: `
+        Then upload a CSV file containing some data. The first<br />row of the file should contain column headings.<br /><br />
+        <img src="/images/add-dataset.gif" alt="Animation of uploading a CSV dataset" width="600" />
+      `,
+      attachTo: {
+        element: '#datasets-wrapper'
+      },
+      buttons: [
+        { text: 'Back', secondary: true, action: function() { return this.back(); } },
+        { text: 'Next', secondary: false, action: function() { return this.next(); } }
+      ]
+    }, {
+      id: 'scripts-step',
+      title: 'Create an ECL Script',
+      text: `
+        Create a new script, add some ECL, and run that code<br />on the Workspace's cluster.<br /><br />
+        <img src="/images/add-script.gif" alt="Animation of creating and executing an ECL script" width="600" />
+      `,
+      attachTo: {
+        element: '#scripts-wrapper'
+      },
+      buttons: [
+        { text: 'Back', secondary: true, action: function() { return this.back(); } },
+        { text: 'Done', secondary: false, action: function() { return this.next(); } }
+      ]
+    }]
+  });
+
+  $('#tour-link').on('click', function() {
+    tour.start();
+  });
+
   if ($('#editor').length > 0) {
     editor = CodeMirror($('#editor')[0], {
       mode: "ecl",
