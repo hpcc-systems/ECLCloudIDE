@@ -1686,6 +1686,7 @@ require([
       return false;
     }
 
+    data.id = $script.data('id');
     data.name = scriptName;
     data.prevName = $script.data('name');
     data.workspaceId = workspaceId;
