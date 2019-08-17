@@ -5,6 +5,7 @@ const validator = require('express-validator');
 
 const nodemailer = require('nodemailer');
 
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
 const db = require('../models/index');
@@ -40,6 +41,7 @@ router.post('/register', (req, res, next) => {
             password: hash
           }).then((user) => {
             req.session.user = user;
+            router.sendVerifyEmail(req, user.emailAddress);
             if (req.session.goToUrl) {
               let url = req.session.goToUrl;
               delete req.session.goToUrl;
@@ -213,6 +215,86 @@ router.post('/reset/:id', (req, res, next) => {
       console.log(err);
     });
   });
+});
+
+router.get('/email/verify', (req, res, next) => {
+  User.findByPk(req.session.user.id, {
+  }).then((user) => {
+    console.log(user.dataValues.emailAddress);
+
+    router.sendVerifyEmail(user.dataValues.emailAddress);
+
+    let msg = 'A verification email has been sent to your registered address.';
+    req.flash('info', msg);
+    return res.redirect('/users/account');
+  });
+});
+
+router.sendVerifyEmail = (req, emailAddress) => {
+  let iv = crypto.randomBytes(16),
+      key = crypto.createHash('sha256').update(process.env.SECRET).digest(),
+      cipher = crypto.createCipheriv('aes256', key, iv),
+      hash = '',
+      url = '',
+      emailMsg = '';
+
+  let sendMail = async (recipients, subject = '', message = '') => {
+    let transporter = nodemailer.createTransport({
+      host: 'appmail.choicepoint.net',
+      port: 25,
+      secure: false, // true for 465, false for other ports
+      auth: {},
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+    let info = await transporter.sendMail({
+      from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+      to: recipients.join(','), // list of receivers
+      subject: (subject != '') ? subject : 'Subject', // Subject line
+      html: (message != '') ? message : 'Message' // html body
+    });
+
+    console.log("Message sent: %s", info.messageId);
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  };
+
+  hash = cipher.update(emailAddress, 'binary', 'hex') + cipher.final('hex');
+  url = req.protocol + '://' + req.get('host') + '/auth/email/verify/' + iv.toString('hex') + '/' + hash;
+
+  emailMsg = `This email address has been used to create an account with the ECL IDE
+  (<a href="${req.protocol + '://' + req.get('host')}">${req.protocol + '://' + req.get('host')}</a>).<br /><br />Click the link below
+  (or copy and paste into your web browser) to verify your email address:<br /><br />
+  <a href="${url}">${url}</a><br /><br />
+  Or, if you haven't created this account, please ignore this email.`;
+
+  sendMail([emailAddress], 'Verify your email address', emailMsg);
+};
+
+router.get('/email/verify/:iv/:hash', (req, res, next) => {
+  let iv = Buffer.from(req.params.iv, 'hex'),
+      hash = req.params.hash,
+      key = crypto.createHash('sha256').update(process.env.SECRET).digest(),
+      decipher = crypto.createDecipheriv('aes256', key, iv),
+      email = '';
+
+  email = decipher.update(hash, 'hex', 'binary') + decipher.final('binary');
+
+  User.findOne({
+      where: {
+        emailAddress: email
+      }
+    }).then((user) => {
+      let userParams = user.dataValues;
+      userParams.emailVerified = true;
+      User.update(userParams, {
+        where: { id: user.id }
+      });
+
+      req.session.user = userParams;
+
+      return res.redirect('/users/account');
+    });
 });
 
 router.get('/logout', (req, res, next) => {
