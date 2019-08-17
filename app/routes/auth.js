@@ -118,7 +118,7 @@ router.post('/forgot', (req, res, next) => {
       }
     });
     let info = await transporter.sendMail({
-      from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@lexisnexisrisk.com>', // sender address
+      from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
       to: recipients.join(','), // list of receivers
       subject: (subject != '') ? subject : 'Subject', // Subject line
       html: (message != '') ? message : 'Message' // html body
