@@ -1339,8 +1339,8 @@ require([
   /* EDIT DATASET */
   $('#editDatasetModal').on('click', '.btn-primary', function(evt) {
     let $modal = $('#editDatasetModal'),
-        $datasets = $('.datasets'),
-        $dataset = $datasets.children().eq($(this).data('dataset')),
+        $datasets = $('.datasets ul'),
+        $dataset = $datasets.children().eq($(this).data('dataset')).find('.dataset'),
         $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
         $form = $modal.find('form'),
         data = getFormData($form);
