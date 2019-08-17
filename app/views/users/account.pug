@@ -13,4 +13,10 @@ block content
       main.col-md-9.ml-sm-auto.col-lg-10.px-4(role='main')
         p Hello, #{user.username}
 
+        if info.length > 0
+          div.alert.alert-info.login-error #{info[0]}
+
+        unless user.emailVerified
+          p #[a(href="/auth/email/verify") Verify your email address]
+
         p #[a(href="/users/password/change") Change password]
