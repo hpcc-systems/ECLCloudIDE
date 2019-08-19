@@ -108,6 +108,13 @@ a {
   display: none;
 }
 
+.dataset-content h4 span {
+  font-size: 0.9rem;
+  vertical-align: top;
+  margin: 0.5em 1em;
+  display: inline-block;
+  color: #999;
+}
 
 .navbar {
   border-bottom: 1px solid #242a30;

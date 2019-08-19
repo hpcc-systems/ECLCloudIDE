@@ -378,12 +378,18 @@ let getWorkunitResults = (wuid, count, sequence) => {
 let displayWorkunitResults = (wuid, title, sequence = 0) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
+      $scopeDefn = $title.find('span'),
+      query = $('.datasets .active').data('query'),
+      scopeRegex = /\~([a-zA-Z]+::)+[a-zA-Z0-9_]+\.csv_thor/,
       $loader = $datasetContent.siblings('.loader'),
       $tableWrapper = $datasetContent.find('.table-wrapper'),
       $table = null,
       dataTable = null;
 
-  $title.text(title);
+  $title.contents()[0].nodeValue = title;
+  if (query && query.match(scopeRegex) !== null) {
+    $scopeDefn.text('(' + query.match(scopeRegex)[0] + ')');
+  }
 
   $datasetContent.addClass('d-none');
   $loader.removeClass('d-none');
