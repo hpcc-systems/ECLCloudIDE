@@ -488,7 +488,10 @@ require([
       title: 'Create a Workspace',
       text: `
         First, create a new workspace to contain your<br />uploaded data files and ECL scripts.<br /></br />
-        <img src="/images/create-workspace.gif" alt="Animation of the creation of a workspace" width="600" />
+        <video muted autoplay loop width="600">
+          <source src="/videos/create-workspace.webm" type="video/webm" />
+          An HTML5 video tag showing the creation of a workspace.
+        </video>
       `,
       attachTo: {
         element: '.navbar-nav',
@@ -502,7 +505,10 @@ require([
       title: 'Upload a CSV',
       text: `
         Then upload a CSV file containing some data. The first<br />row of the file should contain column headings.<br /><br />
-        <img src="/images/add-dataset.gif" alt="Animation of uploading a CSV dataset" width="600" />
+        <video muted autoplay loop width="600">
+          <source src="/videos/add-dataset.webm" type="video/webm" />
+          An HTML5 video tag showing uploading a CSV dataset.
+        </video>
       `,
       attachTo: {
         element: '#datasets-wrapper'
@@ -516,7 +522,10 @@ require([
       title: 'Create an ECL Script',
       text: `
         Create a new script, add some ECL, and run that code<br />on the Workspace's cluster.<br /><br />
-        <img src="/images/add-script.gif" alt="Animation of creating and executing an ECL script" width="600" />
+        <video muted autoplay loop width="600">
+          <source src="/videos/add-script.webm" type="video/webm" />
+          An HTML5 video tag showing creating and executing an ECL script.
+        </video>
       `,
       attachTo: {
         element: '#scripts-wrapper'
