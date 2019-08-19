@@ -1008,6 +1008,10 @@ require([
 
     if (file === undefined) {
       $file.addClass('is-invalid');
+
+      $saveBtnStatus.addClass('d-none');
+      $saveBtn.removeAttr('disabled').removeClass('disabled');
+
       return false;
     } else {
       dataset.filename = file.name
@@ -1017,6 +1021,10 @@ require([
       evt.preventDefault();
       evt.stopPropagation();
       $form.addClass('was-validated');
+
+      $saveBtnStatus.addClass('d-none');
+      $saveBtn.removeAttr('disabled').removeClass('disabled');
+
       return false;
     }
     fetch('/datasets/', {
@@ -1032,6 +1040,9 @@ require([
       if (json.success === false) {
         $file.siblings('.invalid-feedback').text(json.message);
         $file.addClass('is-invalid');
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
       } else {
         dataset.id = json.data.id;
         sendFileToLandingZone(file)
@@ -1392,6 +1403,8 @@ require([
     $('.file-details').html('');
     $('#dataset-file + .invalid-feedback').text(FILE_FEEDBACK);
     $('#dataset-file').removeClass('is-invalid');
+    $('#newDatasetModal .btn-primary .fa-pulse').addClass('d-none');
+    $('#newDatasetModal .btn-primary').removeAttr('disabled').removeClass('disabled');
   });
 
   /* SHOW EDIT DATASET MODAL */
