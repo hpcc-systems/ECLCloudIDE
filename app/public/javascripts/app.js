@@ -480,6 +480,14 @@ require([
       classes: 'shadow-md bg-purple-dark',
       scrollTo: { behavior: 'smooth', block: 'center' },
       showCancelLink: true,
+      when: {
+        show: function() {
+          $('.shepherd-element').find('video').trigger('play');
+        },
+        hide: function() {
+          $('.shepherd-element').find('video').trigger('pause');
+        }
+      },
       shepherdElementMaxWidth: '500px'
     },
     useModalOverlay: true,
