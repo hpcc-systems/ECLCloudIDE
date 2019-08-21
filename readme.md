@@ -23,12 +23,17 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
   * ~~change password~~
   * ~~forgot password~~
 
-* user groups
-  * create a group
-  * invite a user to a group
-  * list groups user belongs to
-  * leave group
-  * remove from group
+* ~~user groups~~ _user groups aren't probably going to be a thing_
+  * ~~create a group~~
+  * ~~invite a user to a group~~
+  * ~~list groups user belongs to~~
+  * ~~leave group~~
+  * ~~remove from group~~
+
+* add a help menu, linking to:
+  * ~~ecl docs~~
+  * some sort of feedback form?
+  * ~~maybe one of those DOM-highlighty feature tours~~
 
 * ~~install supported ECL bundles (should occur during container creation)~~
 
