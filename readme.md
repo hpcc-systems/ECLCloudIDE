@@ -30,6 +30,10 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
   * ~~leave group~~
   * ~~remove from group~~
 
+* ~~security concern - change to docker file to not run the container as root~~
+
+* make mail configurable, based on env (nodemailer for dev, aws-sdk for prod?)
+
 * add a help menu, linking to:
   * ~~ecl docs~~
   * some sort of feedback form?
