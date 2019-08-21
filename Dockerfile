@@ -20,7 +20,10 @@ RUN apt-get install -y openssh-client openssh-server \
     libboost-regex1.65.1 libmemcached11 libmemcachedutil2 libnuma1 \
     libpython2.7 libpython3.6 libxslt1.1 netcat git
 
-ARG clientToolsUrl=https://edgecastcdn.net/00423A/releases/CE-Candidate-7.2.2/bin/clienttools/hpccsystems-clienttools-community_7.2.2-1bionic_amd64.deb
+ARG cdnUrl=https://d2wulyp08c6njk.cloudfront.net
+ARG hpccVersion=7.4.8
+
+ARG clientToolsUrl=$cdnUrl/releases/CE-Candidate-$hpccVersion/bin/clienttools/hpccsystems-clienttools-community_$hpccVersion-1bionic_amd64.deb
 
 RUN echo "get ${clientToolsUrl} with wget"
 RUN wget -O clienttools.deb $clientToolsUrl && dpkg -i clienttools.deb && rm clienttools.deb
