@@ -1,6 +1,10 @@
 FROM ubuntu:bionic
 
-WORKDIR /app
+ARG user=eclide
+ARG appDir=/home/$user/app
+
+RUN groupadd -r $user && useradd -r -g $user -d /home/$user -s /sbin/nologin -c "Docker image user" $user
+WORKDIR $appDir/
 
 RUN apt-get update -y && apt-get install -y build-essential curl
 
@@ -40,15 +44,20 @@ RUN ecl bundle install https://github.com/hpcc-systems/ML_Core.git \
     && ecl bundle install https://github.com/hpcc-systems/PerformanceTesting.git \
     && ecl bundle install https://github.com/hpcc-systems/Visualizer.git
 
-COPY ./app/package.json /app/
+COPY ./app/package.json $appDir/
 
 RUN npm install -g node-gyp && npm install
 
 RUN npm install sequelize-cli pm2 -g
 
-COPY ./app /app/
+COPY ./app $appDir
 
 RUN npm run clientdeps
 
-COPY [".env", "/app/.env"]
-COPY ["/app/config/config.js.sample", "/app/config/config.js"]
+RUN chown -R $user:$user /home/$user/
+RUN mkdir -p /tmp/pm2/logs && chown -R eclide:eclide /tmp/pm2/
+
+USER $user
+
+COPY [".env", "$appDir/.env"]
+COPY ["/app/config/config.js.sample", "$appDir/config/config.js"]
