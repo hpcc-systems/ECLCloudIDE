@@ -63,4 +63,4 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
 
 * records within records from ecl results
 
-* visualizations?
+* ~~visualizations?~~ _user can import the Visualizer bundle, the app will show the resulting html/js assets for the workunit_
