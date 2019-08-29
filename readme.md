@@ -23,6 +23,24 @@ Lastly, you will see a `SECRET` variable in the `.env` file. This value will be 
   * ~~change password~~
   * ~~forgot password~~
 
+* connecting to clusters with authentication
+  * route for managing cluters
+  * should this affect the new workspace dialog - cluster field to be a combobox instead of simple text input
+
+* implement password lockout?
+
+* uploading datasets
+  * ~~CSV~~
+  * JSON
+  * XML
+
+* importing datasets from data.gov
+
+* importing workspaces (ECL) from git repositories
+  * would it be possible to create a workspace definition file that references datasets?
+
+* exporting workspaces (ECL) to a git repository?
+
 * ~~user groups~~ _user groups aren't probably going to be a thing_
   * ~~create a group~~
   * ~~invite a user to a group~~
