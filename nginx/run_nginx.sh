@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 echo "######## Run nginx"
 export DOLLAR='$'
