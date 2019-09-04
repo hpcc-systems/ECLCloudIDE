@@ -2623,7 +2623,7 @@ require([
 
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
-      if (['+input', '+delete'].indexOf(changeObj.origin) > -1) {
+      if (['+input', '+delete', 'cut', 'paste'].indexOf(changeObj.origin) > -1) {
         console.log('autosave script...');
         $saveButton.trigger('click');
       }
@@ -2635,7 +2635,7 @@ require([
 
     console.log(instance, changeObj);
     changeRunButtonState($('.run-script'), 'ready');
-  }, 300));
+  }, 500));
 
   editor.on('focus', (instance, evt) => {
     if (false == $('#editor').hasClass('cmReady')) {
@@ -2657,11 +2657,13 @@ require([
     let doc = instance.getDoc();
     let content = '';
 
-    if ($draggedObject.data('query')) content = $draggedObject.data('query');
-    else if ($draggedObject.data('content')) content = $draggedObject.data('content');
-
-    doc.replaceRange(content, doc.getCursor());
-    evt.preventDefault();
+    if ($draggedObject) {
+      if ($draggedObject.data('query')) content = $draggedObject.data('query');
+      else if ($draggedObject.data('content')) content = $draggedObject.data('content');
+      doc.replaceRange(content, doc.getCursor());
+      $draggedObject = null;
+      evt.preventDefault();
+    }
   });
 
   $(document).on('keydown', function(evt) {
