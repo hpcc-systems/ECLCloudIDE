@@ -23,6 +23,11 @@ generate such a string, assuming you have NodeJS installed on your host system:
 
 ``` node -e "let crypto = require('crypto'); console.log(crypto.randomBytes(32).toString('hex'));" ```
 
+The application should be run with TLS, and by default this project assumes that will be
+handled outside of the application layer, e.g. via an AWS elastic load balancer. This
+could perhaps be changed to have the TLS configured at the nginx reverse proxy level; if so,
+the `./nginx/Dockerfile` should be modified accordingly.
+
 ---
 
 ### TODO
@@ -53,7 +58,7 @@ generate such a string, assuming you have NodeJS installed on your host system:
 
 * exporting workspaces (ECL) to a git repository?
 
-* dockerize a reverse proxy in front of the node app
+* ~~dockerize a reverse proxy in front of the node app~~
 
 * ~~user groups~~ _user groups probably aren't going to be a thing_
   * ~~create a group~~
@@ -62,7 +67,7 @@ generate such a string, assuming you have NodeJS installed on your host system:
   * ~~leave group~~
   * ~~remove from group~~
 
-* ~~security concern - change to docker file to not run the container as root~~
+* ~~security concern - change to docker file of node app to not run the container as root~~
 
 * make mail configurable, based on env (nodemailer for dev, aws-sdk for prod?)
 
