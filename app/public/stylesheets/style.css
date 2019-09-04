@@ -461,8 +461,8 @@ main .loader p {
 }
 
 .script-panel.maximized {
-  height: 95%;
-  transition: height 0.33s;
+  height: 100%;
+  top: 55px;
 }
 
 .script-panel.maximized #editor {
