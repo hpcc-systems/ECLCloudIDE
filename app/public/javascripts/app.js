@@ -2618,17 +2618,24 @@ require([
    *  EDITOR EVENT HANDLERS                                                   *
    *==========================================================================*/
 
-  editor.on('change', (instance, changeObj) => {
+  editor.on('change', _.debounce((instance, changeObj) => {
     let $saveButton = $('.save-script');
 
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
+      if (['+input', '+delete'].indexOf(changeObj.origin) > -1) {
+        console.log('autosave script...');
+        $saveButton.trigger('click');
+      }
+    }
+
+    if (changeObj.origin == 'setValue') {
       $saveButton.contents()[0].nodeValue = 'SAVE';
     }
 
     console.log(instance, changeObj);
     changeRunButtonState($('.run-script'), 'ready');
-  });
+  }, 300));
 
   editor.on('focus', (instance, evt) => {
     if (false == $('#editor').hasClass('cmReady')) {
