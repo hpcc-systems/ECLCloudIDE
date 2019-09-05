@@ -93,186 +93,182 @@ router.delete('/', (req, res, next) => {
   });
 });
 
-let shareWorkspace = async (workspaceId, users) => {
+let shareWorkspace = async (workspaceId, user) => {
   let _directoryTree = null,
       newWorkspaceId = null;
 
-  Workspace.findOne({
-    where: { id: workspaceId },
-    include: {
-      model: User,
-      through: {
-        where: { role: WorkspaceUser.roles.OWNER }
+  return new Promise((resolve, reject) => {
+    Workspace.findOne({
+      where: { id: workspaceId },
+      include: {
+        model: User,
+        through: {
+          where: { role: WorkspaceUser.roles.OWNER }
+        }
       }
-    }
-  }).then((workspaceToClone) => {
-    console.log(workspaceToClone.Users[0].username);
-    _directoryTree = workspaceToClone.directoryTree;
+    }).then((workspaceToClone) => {
+      console.log(workspaceToClone.Users[0].username);
+      _directoryTree = workspaceToClone.directoryTree;
 
-    users.forEach((user) => {
-      Workspace.create({
-        name: workspaceToClone.name,
-        cluster: workspaceToClone.cluster,
-        directoryTree: workspaceToClone.directoryTree
-      }).then((newWorkspace) => {
+        Workspace.create({
+          name: workspaceToClone.name,
+          cluster: workspaceToClone.cluster,
+          directoryTree: workspaceToClone.directoryTree
+        }).then((newWorkspace) => {
 
-        newWorkspaceId = newWorkspace.id;
+          newWorkspaceId = newWorkspace.id;
 
-        let oldWorkspaceScope = workspaceToClone.Users[0].username + '::' + workspaceToClone.name,
-            newWorkspaceScope = user.name + '::' + newWorkspace.name;
+          let oldWorkspaceScope = workspaceToClone.Users[0].username + '::' + workspaceToClone.name,
+              newWorkspaceScope = user.name + '::' + newWorkspace.name;
 
-        WorkspaceUser.create({
-          userId: user.id,
-          workspaceId: newWorkspace.id,
-          role: WorkspaceUser.roles.OWNER
-        });
-        console.log(workspaceToClone.name);
-        Script.findAll({
-          where: {
-            [db.Sequelize.Op.and]: {
-              workspaceId: workspaceToClone.id,
-              deletedAt: null
-            }
-          }
-        }).then((scripts) => {
-          scripts.forEach((scriptToClone) => {
-            console.log('scriptToClone', scriptToClone);
-            ScriptRevision.findOne({
-              where: {
-                [db.Sequelize.Op.and]: {
-                  scriptId: scriptToClone.id,
-                  deletedAt: null
-                }
-              },
-              order: [ ['createdAt', 'DESC'] ]
-            }).then((revision) => {
-              let _content = '';
-              if (revision && revision.content) {
-                console.log(revision.content);
-                _content = revision.content.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope);
+          WorkspaceUser.create({
+            userId: user.id,
+            workspaceId: newWorkspace.id,
+            role: WorkspaceUser.roles.OWNER
+          });
+          console.log(workspaceToClone.name);
+          Script.findAll({
+            where: {
+              [db.Sequelize.Op.and]: {
+                workspaceId: workspaceToClone.id,
+                deletedAt: null
               }
-              Script.create({
-                name: scriptToClone.name,
-                workspaceId: newWorkspace.id
-              }).then((newScript) => {
-                ScriptRevision.create({
-                  content: _content,
-                  scriptId: newScript.id
+            }
+          }).then((scripts) => {
+            scripts.forEach((scriptToClone) => {
+              console.log('scriptToClone', scriptToClone);
+              ScriptRevision.findOne({
+                where: {
+                  [db.Sequelize.Op.and]: {
+                    scriptId: scriptToClone.id,
+                    deletedAt: null
+                  }
+                },
+                order: [ ['createdAt', 'DESC'] ]
+              }).then((revision) => {
+                let _content = '';
+                if (revision && revision.content) {
+                  console.log(revision.content);
+                  _content = revision.content.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope);
+                }
+                Script.create({
+                  name: scriptToClone.name,
+                  workspaceId: newWorkspace.id
+                }).then((newScript) => {
+                  ScriptRevision.create({
+                    content: _content,
+                    scriptId: newScript.id
+                  });
+                  let _regex = new RegExp(scriptToClone.id, 'g');
+                  _directoryTree = _directoryTree.replace(_regex, newScript.id);
+                  console.log(_regex.toString(), newScript.id, _directoryTree);
                 });
-                let _regex = new RegExp(scriptToClone.id, 'g');
-                _directoryTree = _directoryTree.replace(_regex, newScript.id);
-                console.log(_regex.toString(), newScript.id, _directoryTree);
+              });
+            });
+          });
+
+          Dataset.findAll({
+            where: {
+              [db.Sequelize.Op.and]: {
+                workspaceId: workspaceToClone.id,
+                deletedAt: null
+              }
+            }
+          }).then((datasets) => {
+            datasets.forEach((datasetToClone) => {
+              let filename = datasetToClone.filename,
+                  clusterAddr = newWorkspace.cluster,
+                  clusterPort = null,
+                  wuid = null;
+
+              if (clusterAddr.substring(0, 4) != 'http') {
+                clusterAddr = 'http://' + clusterAddr;
+              }
+
+              request({
+                uri: clusterAddr + '/WsTopology/TpDropZoneQuery.json',
+                json: true
+              })
+              .then((json) => {
+                let dropzone = json.TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
+
+                return dropzone.TpMachines.TpMachine[0].Netaddress;
+              }).then((dropzoneIp) => {
+                console.log(dropzoneIp);
+                hpccFilesprayRouter.sprayFile(clusterAddr, filename, user.name, newWorkspace.name, dropzoneIp)
+                  .then((response) => {
+                    console.log(response.body);
+                    let json = JSON.parse(response.body);
+                    wuid = json.SprayResponse.wuid;
+
+                    Dataset.create({
+                      name: datasetToClone.name,
+                      filename: datasetToClone.filename,
+                      logicalfile: newWorkspaceScope + '::' + datasetToClone.filename + '_thor',
+                      rowCount: datasetToClone.rowCount,
+                      columnCount: datasetToClone.columnCount,
+                      eclSchema: datasetToClone.eclSchema,
+                      eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
+                      workspaceId: newWorkspace.id
+                    }).then((newDataset) => {
+                      let _regex = new RegExp(datasetToClone.id, 'g');
+                      _directoryTree = _directoryTree.replace(_regex, newDataset.id);
+                      console.log(_regex.toString(), newDataset.id, _directoryTree);
+
+                      Workunit.create({
+                        workunitId: wuid,
+                        objectId: newDataset.id
+                      }).then(() => {
+                        hpccWorkunitsRouter.createWorkunit(clusterAddr)
+                          .then((response) => {
+                            let json = JSON.parse(response.body),
+                                wuid = json.WUCreateResponse.Workunit.Wuid;
+
+                            Workunit.create({
+                              workunitId: wuid,
+                              objectId: newDataset.id
+                            });
+                            hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery);
+                            hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
+                            let _workspace = {
+                              directoryTree: _directoryTree
+                            };
+                            console.log('new workspace');
+                            console.log(_workspace);
+                            Workspace.update(_workspace, {
+                              where: {
+                                id: newWorkspaceId
+                              }
+                            }).then(() => {
+                               return resolve({ success: true, message: 'Workspace shared' });
+                            });
+                          }).catch((err) => {
+                            console.log(err);
+                            return reject(err);
+                          });
+                      })
+                    });
+                  }).catch((err) => {
+                    console.log(err);
+                    return reject(err);
+                  });
               });
             });
           });
         });
-
-        Dataset.findAll({
-          where: {
-            [db.Sequelize.Op.and]: {
-              workspaceId: workspaceToClone.id,
-              deletedAt: null
-            }
-          }
-        }).then((datasets) => {
-          datasets.forEach((datasetToClone) => {
-            let filename = datasetToClone.filename,
-                clusterAddr = newWorkspace.cluster,
-                clusterPort = null,
-                wuid = null;
-
-            if (clusterAddr.substring(0, 4) != 'http') {
-              clusterAddr = 'http://' + clusterAddr;
-            }
-
-            request({
-              uri: clusterAddr + '/WsTopology/TpDropZoneQuery.json',
-              json: true
-            })
-            .then((json) => {
-              let dropzone = json.TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
-
-              return dropzone.TpMachines.TpMachine[0].Netaddress;
-            }).then((dropzoneIp) => {
-              console.log(dropzoneIp);
-              hpccFilesprayRouter.sprayFile(clusterAddr, filename, user.name, newWorkspace.name, dropzoneIp)
-                .then((response) => {
-                  console.log(response.body);
-                  let json = JSON.parse(response.body);
-                  wuid = json.SprayResponse.wuid;
-
-                  Dataset.create({
-                    name: datasetToClone.name,
-                    filename: datasetToClone.filename,
-                    logicalfile: newWorkspaceScope + '::' + datasetToClone.filename + '_thor',
-                    rowCount: datasetToClone.rowCount,
-                    columnCount: datasetToClone.columnCount,
-                    eclSchema: datasetToClone.eclSchema,
-                    eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
-                    workspaceId: newWorkspace.id
-                  }).then((newDataset) => {
-                    let _regex = new RegExp(datasetToClone.id, 'g');
-                    _directoryTree = _directoryTree.replace(_regex, newDataset.id);
-                    console.log(_regex.toString(), newDataset.id, _directoryTree);
-
-                    Workunit.create({
-                      workunitId: wuid,
-                      objectId: newDataset.id
-                    }).then(() => {
-                      hpccWorkunitsRouter.createWorkunit(clusterAddr)
-                        .then((response) => {
-                          let json = JSON.parse(response.body),
-                              wuid = json.WUCreateResponse.Workunit.Wuid;
-
-                          Workunit.create({
-                            workunitId: wuid,
-                            objectId: newDataset.id
-                          });
-                          hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery)
-                            .then((response) => {
-                              hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
-                              let _workspace = {
-                                directoryTree: _directoryTree
-                              };
-                              Workspace.update(_workspace, {
-                                where: {
-                                  id: newWorkspaceId
-                                }
-                              });
-                              return { success: true, message: 'Workspace shared' };
-                            });
-                        }).catch((err) => {
-                          console.log(err);
-                          return err;
-                        });
-                    })
-                  });
-                }).catch((err) => {
-                  console.log(err);
-                  return err;
-                });
-            });
-          });
-        });
-      });
     });
-  });
+  }); //end new Promise(...)
 };
 
-router.post('/share', (req, res, next) => {
-  console.log(req.body);
-  let result = shareWorkspace(req.body.workspaceId, req.body.users);
+router.get('/share/:id', async (req, res, next) => {
+  let workspaceId = req.params.id,
+      user = { id: req.session.user.id, name: req.session.user.username };
+  console.log(workspaceId, user);
+  let result = await shareWorkspace(workspaceId, user);
   console.log(result);
   return res.redirect('/');
 });
 
-router.get('/share/:id', (req, res, next) => {
-  let workspaceId = req.params.id,
-      users = [{ id: req.session.user.id, name: req.session.user.username }];
-  console.log(workspaceId, users);
-  let result = shareWorkspace(workspaceId, users);
-  console.log(result);
-  return res.redirect('/');
 });
 
 module.exports = router;
