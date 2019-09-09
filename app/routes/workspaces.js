@@ -28,9 +28,8 @@ router.post('/', (req, res, next) => {
   }).then((workspace) => {
     let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
     if (!fs.existsSync(workspaceDirPath)) {
-      fs.mkdirSync(workspaceDirPath);
-      fs.mkdirSync(workspaceDirPath + '/scripts');
-      fs.mkdirSync(workspaceDirPath + '/datasets');
+      fs.mkdirpSync(workspaceDirPath + '/scripts');
+      fs.mkdirpSync(workspaceDirPath + '/datasets');
     }
     WorkspaceUser.create({
       role: WorkspaceUser.roles.OWNER,
