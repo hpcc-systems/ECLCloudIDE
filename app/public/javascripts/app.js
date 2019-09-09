@@ -6,7 +6,9 @@ const NO_WORKSPACE = 'Select Workspace...';
 const NEW_SCRIPT = 'New Script...';
 const NEW_DATASET = 'New Dataset...';
 
-const FILE_FEEDBACK = 'Please select a CSV file to upload.';
+const FILE_LIMIT = 16 * 1024 * 1024;
+
+const DEFAUT_FILE_FEEDBACK = 'Please select a CSV file to upload.';
 
 let currentDatasetFile = {};
 let cluster = {
@@ -982,6 +984,8 @@ require([
    *  DATASETS                                                                *
    *==========================================================================*/
 
+  $('#newDatasetModal label[for="dataset-file"]').text('File (limit ' + (FILE_LIMIT / (1024 * 1024)) + 'MB):');
+
   /* CREATE NEW DATASET */
   $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
     let $this = $(this),
@@ -1017,6 +1021,7 @@ require([
     $saveBtn.attr('disabled', 'disabled').addClass('disabled');
 
     if (file === undefined) {
+      $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
       $file.addClass('is-invalid');
 
       $saveBtnStatus.addClass('d-none');
@@ -1326,10 +1331,16 @@ require([
         ln = new LineNavigator(file);
 
     $file.removeClass('is-invalid');
-    $fileFeedback.text(FILE_FEEDBACK);
+    $fileFeedback.text(DEFAULT_FILE_FEEDBACK);
 
     if (!file) {
+      $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
       $file.addClass('is-invalid');
+      return false;
+    } else if (file.size > FILE_LIMIT) {
+      $file.siblings('.invalid-feedback').text('Please select a file less than "' + (FILE_LIMIT / (1024 * 1024)) + 'MB" to upload.');
+      $file.addClass('is-invalid');
+
       return false;
     }
 
@@ -1411,7 +1422,7 @@ require([
     $('#newDatasetModal form').removeClass('was-validated');
     $('#newDatasetModal form')[0].reset();
     $('.file-details').html('');
-    $('#dataset-file + .invalid-feedback').text(FILE_FEEDBACK);
+    $('#dataset-file + .invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
     $('#dataset-file').removeClass('is-invalid');
     $('#newDatasetModal .btn-primary .fa-pulse').addClass('d-none');
     $('#newDatasetModal .btn-primary').removeAttr('disabled').removeClass('disabled');
