@@ -34,8 +34,8 @@ app.set('view engine', 'pug');
 app.use(compression());
 
 app.use(logger('dev'));
-app.use(express.json({ limit: '8mb' }));
-app.use(express.urlencoded({ limit: '8mb', extended: false }));
+app.use(express.json({ limit: '24mb' }));
+app.use(express.urlencoded({ limit: '24mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cookieParser(process.env.SECRET));
