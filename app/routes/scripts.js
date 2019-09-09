@@ -57,8 +57,7 @@ router.post('/', (req, res, next) => {
         scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
 
     if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
-      fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId);
-      fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
+      fs.mkdirpSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
     }
 
     if (!fs.existsSync(scriptDirPath)) {
@@ -97,16 +96,15 @@ router.post('/revision', (req, res, next) => {
           scriptFilePath = workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ) + script.name + '.ecl';
 
       if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
-        fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId);
-        fs.mkdirSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
+        fs.mkdirpSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
       }
 
       if (!fs.existsSync(workspaceDirPath)) {
-        fs.mkdirSync(workspaceDirPath);
+        fs.mkdirpSync(workspaceDirPath);
       }
 
       if (!fs.existsSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ))) {
-        fs.mkdirSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ));
+        fs.mkdirpSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ));
       }
       console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
       fs.writeFileSync(scriptFilePath, revision.content);
