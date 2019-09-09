@@ -267,6 +267,4 @@ router.get('/share/:id', async (req, res, next) => {
   return res.redirect('/');
 });
 
-});
-
 module.exports = router;
