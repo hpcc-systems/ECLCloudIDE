@@ -1614,6 +1614,10 @@ require([
     } else {
       editor.getDoc().setValue('');
     }
+    let _t = window.setTimeout(function() {
+      $('#editor').addClass('cmReady');
+      window.clearTimeout(_t);
+    }, 100);
   });
 
   toggleNewScriptPopover();
@@ -2634,7 +2638,7 @@ require([
 
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
-      if (['+input', '+delete', 'cut', 'paste'].indexOf(changeObj.origin) > -1) {
+      if (['+input', '+delete', 'cut', 'paste', 'drop'].indexOf(changeObj.origin) > -1) {
         console.log('autosave script...');
         $saveButton.trigger('click');
       }
@@ -2671,7 +2675,7 @@ require([
     if ($draggedObject) {
       if ($draggedObject.data('query')) content = $draggedObject.data('query');
       else if ($draggedObject.data('content')) content = $draggedObject.data('content');
-      doc.replaceRange(content, doc.getCursor());
+      doc.replaceRange(content, doc.getCursor(), null, 'drop');
       $draggedObject = null;
       evt.preventDefault();
     }
