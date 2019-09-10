@@ -8,7 +8,7 @@ const NEW_DATASET = 'New Dataset...';
 
 const FILE_LIMIT = 16 * 1024 * 1024;
 
-const DEFAUT_FILE_FEEDBACK = 'Please select a CSV file to upload.';
+const DEFAULT_FILE_FEEDBACK = 'Please select a CSV file to upload.';
 
 let currentDatasetFile = {};
 let cluster = {
