@@ -380,20 +380,18 @@ let getWorkunitResults = (wuid, count, sequence) => {
 let displayWorkunitResults = (wuid, title, sequence = 0) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
-      $scopeDefn = $title.find('span'),
+      $scopeDefn = $title.find('.scopename'),
       query = $('.datasets .active').data('query'),
-      scopeRegex = /\~([a-zA-Z]+::)+[a-zA-Z0-9_]+\.csv_thor/,
+      scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.csv_thor/,
       $loader = $datasetContent.siblings('.loader'),
       $tableWrapper = $datasetContent.find('.table-wrapper'),
       $table = null,
       dataTable = null;
 
   $title.contents()[0].nodeValue = title;
-  if (query && query.match(scopeRegex) !== null) {
-    $scopeDefn.text('(' + query.match(scopeRegex)[0] + ')');
-  }
 
   $datasetContent.addClass('d-none');
+  $scopeDefn.addClass('d-none');
   $loader.removeClass('d-none');
 
   checkWorkunitStatus(wuid).then(() => {
@@ -433,6 +431,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
       });
       $loader.addClass('d-none');
       $datasetContent.removeClass('d-none');
+      if (query && query.match(scopeRegex) !== null) {
+        $scopeDefn.text('(' + query.match(scopeRegex)[0] + ')');
+        $scopeDefn.removeClass('d-none');
+      }
     })
     .catch((err) => {
       $loader.addClass('d-none');
