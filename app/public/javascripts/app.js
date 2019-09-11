@@ -1329,6 +1329,7 @@ require([
   /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
   $('#dataset-file').on('change', function(evt) {
     let $file = $(evt.target),
+        $saveBtn = $file.parents('.modal').find('.btn-primary'),
         $fileFeedback = $file.siblings('.invalid-feedback'),
         file = evt.target.files[0],
         fileName = '',
@@ -1340,11 +1341,12 @@ require([
     if (!file) {
       $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
       $file.addClass('is-invalid');
+      $saveBtn.attr('disabled', 'disabled').addClass('disabled');
       return false;
     } else if (file.size > FILE_LIMIT) {
       $file.siblings('.invalid-feedback').text('Please select a file less than "' + (FILE_LIMIT / (1024 * 1024)) + 'MB" to upload.');
       $file.addClass('is-invalid');
-
+      $saveBtn.attr('disabled', 'disabled').addClass('disabled');
       return false;
     }
 
@@ -1362,6 +1364,16 @@ require([
       let labels = lines[0].split(','),
           values = lines[1].split(','),
           $fileDetails = $('.file-details');
+
+      if (labels.length != values.length) {
+        $file.siblings('.invalid-feedback').text(
+          'There may be an issue with this file: the number of column headings doesn\'t match ' +
+          'the number of columns in the first row of data.'
+        );
+        $file.addClass('is-invalid');
+        $saveBtn.attr('disabled', 'disabled').addClass('disabled');
+        return false;
+      }
 
       $fileDetails.html('');
 
@@ -1419,6 +1431,7 @@ require([
 
       currentDatasetFile = averages;
     });
+    $saveBtn.removeAttr('disabled').removeClass('disabled');
   });
 
   /* RESET NEW DATASET FORM ON MODAL HIDE */
