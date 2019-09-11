@@ -170,9 +170,11 @@ let populateScripts = () => {
         $scriptLis.each((idx, el) => {
           let $script = $(el),
               _script = scripts[$script.data('id')];
-          $script.data('revisionId', _script.revisionId);
-          $script.data('content', _script.content);
-          $script.data('parentPathNames', _script.parentPathNames);
+          if (_script) {
+            $script.data('revisionId', _script.revisionId);
+            $script.data('content', _script.content);
+            $script.data('parentPathNames', _script.parentPathNames);
+          }
         });
       }
     });
