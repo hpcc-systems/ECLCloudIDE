@@ -173,6 +173,21 @@ let shareWorkspace = async (workspaceId, user) => {
             }
           }
         }).then((datasets) => {
+          if (!datasets || datasets.length == 0) {
+            let _workspace = {
+              directoryTree: _directoryTree
+            };
+            console.log('new workspace');
+            console.log(_workspace);
+            Workspace.update(_workspace, {
+              where: {
+                id: newWorkspaceId
+              }
+            }).then(() => {
+               return resolve({ success: true, message: 'Workspace shared' });
+            });
+          }
+
           datasets.forEach((datasetToClone) => {
             let filename = datasetToClone.filename,
                 clusterAddr = newWorkspace.cluster,
