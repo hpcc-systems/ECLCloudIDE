@@ -2189,8 +2189,6 @@ require([
 
     console.log(directoryTree);
 
-    $modal.modal('hide');
-
     fetch('/workspaces/', {
       method: 'PUT',
       body: JSON.stringify({
@@ -2230,16 +2228,78 @@ require([
   $('.datasets, .scripts').on('click', '.folder .edit', function(evt) {
     let $this = $(this),
         $folder = $this.parents('.folder'),
-        $modal = $('#editFolderModal');
+        $li = $folder.parents('li'),
+        $modal = $('#editFolderModal'),
+        $saveBtn = $modal.find('.btn-primary');
 
     evt.stopPropagation();
 
     //link.parentElement.removeChild(link);
     $modal.find('#edit-folder-name').val($folder.find('.foldername').text());
     $modal.modal('show');
-    console.log($folder.index());
-    $modal.find('.btn-primary').data('folder', $folder.index());
-    console.log($modal.find('.btn-primary').data('folder'));
+    $saveBtn.data('folderId', $li.data('id'));
+    $saveBtn.data('targetFolder', $folder);
+    $saveBtn.data('folderType', $li.data('type'));
+  });
+
+  /* EDIT FOLDER */
+  $('#editFolderModal').on('click', '.btn-primary', function(evt) {
+    let $modal = $('#editFolderModal'),
+        $workspaces = $('.workspaces'),
+        $activeWorkspace = $workspaces.find('.active'),
+        $folderName = $modal.find('#edit-folder-name'),
+        $form = $modal.find('form'),
+        $saveBtn = $modal.find('.btn-primary'),
+        $targetFolder = $saveBtn.data('targetFolder'),
+        folderType = $saveBtn.data('folderType'),
+        folderId = $saveBtn.data('folderId'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree'));
+
+    if ($form[0].checkValidity() === false) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      $form.addClass('was-validated');
+      return false;
+    }
+
+    console.log($folderName.val(), folderId, directoryTree);
+
+    let changeFolderName = (root, id, name) => {
+      for (var key in root) {
+        let el = root[key];
+        console.log(el);
+        if (el.id == id) {
+          console.log('changing ' + el.id);
+          el.name = name;
+          return false;
+        }
+        if (el.children) {
+          console.log('recursing to children of ' + el.id);
+          changeFolderName(el.children, id, name);
+        }
+      }
+    };
+
+    changeFolderName(directoryTree[folderType], folderId, $folderName.val());
+
+    console.log(directoryTree);
+
+    fetch('/workspaces/', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: $activeWorkspace.data('id'),
+        directoryTree: directoryTree
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then((workspace) => {
+      $modal.modal('hide');
+      $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+      $targetFolder.find('.foldername').text($folderName.val());
+    });
   });
 
   /* RESET NEW WORKSPACE FORM ON MODAL HIDE */
