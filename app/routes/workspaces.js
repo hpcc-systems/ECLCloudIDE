@@ -151,7 +151,8 @@ let shareWorkspace = async (workspaceId, user) => {
               }
               Script.create({
                 name: scriptToClone.name,
-                workspaceId: newWorkspace.id
+                workspaceId: newWorkspace.id,
+                eclFilePath: scriptToClone.eclFilePath
               }).then((newScript) => {
                 ScriptRevision.create({
                   content: _content,
@@ -160,6 +161,14 @@ let shareWorkspace = async (workspaceId, user) => {
                 let _regex = new RegExp(scriptToClone.id, 'g');
                 _directoryTree = _directoryTree.replace(_regex, newScript.id);
                 console.log(_regex.toString(), newScript.id, _directoryTree);
+                let _scriptDirPath = process.cwd() + '/workspaces/' + newScript.workspaceId +
+                      '/scripts/' + newScript.eclFilePath,
+                    _scriptFilePath = _scriptDirPath + '/' + newScript.name + '.ecl';
+
+                console.log('creating directory: ' + _scriptDirPath);
+                if (!fs.existsSync(_scriptDirPath)) { fs.mkdirpSync(_scriptDirPath); }
+                console.log('creating ECL file: ' + _scriptFilePath);
+                fs.writeFileSync(_scriptFilePath, _content);
               });
             });
           });
