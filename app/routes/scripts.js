@@ -50,7 +50,8 @@ router.post('/', (req, res, next) => {
   console.log('request body', req.body);
   Script.create({
     name: req.body.scriptName,
-    workspaceId: req.body.workspaceId
+    workspaceId: req.body.workspaceId,
+    eclFilePath: req.body.parentPathNames
   }).then((script) => {
     let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
         scriptDirPath = workspaceDirPath + '/' + req.body.parentPathNames,
