@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: false,
     },
     name: DataTypes.STRING,
+    eclFilePath: DataTypes.STRING,
     workspaceId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
