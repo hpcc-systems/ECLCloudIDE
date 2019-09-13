@@ -2762,6 +2762,7 @@ require([
   });
 
   $(document).on('keydown', function(evt) {
+    let $target = $(evt.target);
     if (evt.ctrlKey) {
       switch (evt.keyCode) {
         case 80: // P
@@ -2773,6 +2774,15 @@ require([
             window.onhelp = function() { return false; }
             evt.preventDefault();
             alert('check syntax');
+          }
+          break;
+      }
+    } else {
+      switch (evt.keyCode) {
+        case 13: // Enter
+          evt.preventDefault();
+          if ($target.hasClass('form-control')) {
+            $target.parents('.modal-content').find('.btn-primary').trigger('click');
           }
           break;
       }
