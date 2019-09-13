@@ -2763,6 +2763,16 @@ require([
             alert('check syntax');
           }
           break;
+        case 192: // ~
+          let $scriptPanel = $('.script-panel');
+          if (!$scriptPanel.hasClass('d-none')) {
+            if (!$scriptPanel.hasClass('minimized')) {
+              $scriptPanel.find('.js-minimize').trigger('click');
+            } else {
+              $scriptPanel.find('.js-restore').trigger('click');
+            }
+          }
+          break;
       }
     } else {
       switch (evt.keyCode) {
