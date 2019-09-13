@@ -424,6 +424,11 @@ main .loader p {
   height: 100%;
 }
 
+#editor .CodeMirror-overlayscroll-horizontal div,
+#editor .CodeMirror-overlayscroll-vertical div {
+  background: rgba(128, 128, 128, 0.66);
+}
+
 .cm-errors {
   width: 15px;
 }

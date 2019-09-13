@@ -484,7 +484,8 @@ require.config({
 require([
   'ln/line-navigator.min', 'codemirror', '_/lodash.min',
   'codemirror/mode/ecl/ecl',
-  'codemirror/addon/selection/active-line'
+  'codemirror/addon/selection/active-line',
+  'codemirror/addon/scroll/simplescrollbars'
 ], function(LineNavigator, CodeMirror, _) {
   let editor = null, $draggedObject = null;
 
@@ -573,27 +574,10 @@ require([
       showCursorWhenSelecting: true,
       styleActiveLine: true,
       viewPortMargin: 10,
-      scrollbarStyle: 'null',
+      scrollbarStyle: 'overlay',
       theme: "darcula",
       tabSize: 2,
-      gutters: ['CodeMirror-linenumbers', 'cm-errors'],
-      value: [
-        "PersonLayout := RECORD",
-        "\tUNSIGNED1 PersonID;",
-        "\tSTRING15 FirstName;",
-        "\tSTRING25 LastName;",
-        "END;",
-        "",
-        "Person := DATASET([",
-        "\t{1, 'Fred', 'Smith'},",
-        "\t{2, 'Joe', 'Blow'},",
-        "\t{3, 'Jane', 'Doe'}",
-        "], PersonLayout);",
-        "",
-        "SortedPerson := SORT(Person, LastName, FirstName);",
-        "",
-        "SortedPerson;"
-      ].join("\n")
+      gutters: ['CodeMirror-linenumbers', 'cm-errors']
     });
   }
 
