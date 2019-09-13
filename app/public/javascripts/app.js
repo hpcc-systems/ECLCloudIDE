@@ -2655,6 +2655,7 @@ require([
     $('.scripts .script').removeClass('active');
     $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
     $('.script-panel').removeClass('maximized').removeClass('minimized');
+    $('.script-panel-placeholder').removeClass('minimized');
     $('#editor').removeClass('cmReady');
     $('.save-script').removeClass('badge-info').addClass('badge-secondary');
   });
@@ -2663,6 +2664,7 @@ require([
     if ($('.script-panel').hasClass('minimized') || $('.script-panel').hasClass('maximized')) return;
 
     $('.script-panel').addClass('minimized');
+    $('.script-panel-placeholder').addClass('minimized');
     if ($('.js-restore').hasClass('fa-window-maximize')) {
       $('.script-panel-controls .js-restore').removeClass('fa-window-maximize').addClass('fa-window-restore');
     } else {
@@ -2673,6 +2675,7 @@ require([
   $scriptPanelControls.on('click', '.js-restore', function() {
     if ($('.script-panel').hasClass('minimized')) {
       $('.script-panel').removeClass('minimized');
+      $('.script-panel-placeholder').removeClass('minimized');
       $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
     } else if ($('.script-panel').hasClass('maximized')) {
       $('.script-panel').removeClass('maximized');

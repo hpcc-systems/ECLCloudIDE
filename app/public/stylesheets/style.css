@@ -381,6 +381,10 @@ main .loader p {
   width: 100%;
 }
 
+.script-panel-placeholder.minimized {
+  height: 38px;
+}
+
 .script-panel {
   position: fixed;
   bottom: 0;
