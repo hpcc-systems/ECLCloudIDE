@@ -2661,6 +2661,8 @@ require([
       displayWorkunitResults($script.data('wuid'), $output.text(), $output.index());
       $tableWrapper.css({ height: '' });
     }
+
+    $datasetContent.removeClass('d-none');
   });
 
   $scriptPanelControls.on('click', '.js-close', function() {
