@@ -1,6 +1,7 @@
 'use strict';
 
-let hostname = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
+let hostname = window.location.protocol + '//' + window.location.hostname +
+  (window.location.port ? (':' + window.location.port) : '');
 
 const NO_WORKSPACE = 'Select Workspace...';
 const NEW_SCRIPT = 'New Script...';
