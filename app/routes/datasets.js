@@ -66,11 +66,7 @@ router.post('/', (req, res, next) => {
               "OUTPUT(profileResults, ALL, NAMED('profileResults'));";
 
         if (!fs.existsSync(profileFilePath)) {
-          fs.mkdirSync(profileFilePath, { resursive: true }, (err) => {
-            if (err) {
-              throw err;
-            }
-          });
+          fs.mkdirpSync(profileFilePath);
         }
 
         fs.closeSync(fs.openSync(profileFilePath + dataset.name + '-profile.ecl', 'w'));
