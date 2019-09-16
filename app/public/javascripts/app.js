@@ -420,13 +420,18 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
         $table.find('thead tr').append('<th scope="col">' + key + '</th>');
         $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
       });
+      let docFrag = document.createDocumentFragment();
       results.forEach((row) => {
-        $table.find('tbody').append('<tr></tr>');
-        let $row = $table.find('tbody tr:last-child');
+        let _tr = document.createElement('tr');
         for (var x in row) {
-          $row.append('<td scope="row">' + row[x] + '</td>');
+          let _td = document.createElement('td');
+          _td.setAttribute('scope', 'row');
+          _td.textContent = row[x];
+          _tr.appendChild(_td);
         }
+        docFrag.appendChild(_tr);
       });
+      $table.find('tbody')[0].appendChild(docFrag);
 
       if (dataTable !== null) {
         dataTable.destroy();
