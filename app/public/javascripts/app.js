@@ -16,6 +16,7 @@ let cluster = {
   host: 'http://10.173.147.1',
   port: '8010'
 };
+let dataTable = null;
 
 let renderTree = (subtree, type = 'scripts') => {
   let $ul = $('<ul>');
@@ -388,8 +389,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
       scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.csv_thor/,
       $loader = $datasetContent.siblings('.loader'),
       $tableWrapper = $datasetContent.find('.table-wrapper'),
-      $table = null,
-      dataTable = null;
+      $table = null;
 
   $title.contents()[0].nodeValue = title;
 
@@ -428,6 +428,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
         }
       });
 
+      if (dataTable !== null) {
+        dataTable.destroy();
+      }
       dataTable = $table.DataTable({
         order: [[Object.keys(results[0]).length - 1, 'asc']],
         pageLength: 25
