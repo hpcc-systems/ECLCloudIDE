@@ -31,12 +31,12 @@ a {
 }
 
 .ctrl-p {
-  position: absolute;
+  position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: rgba(52, 58, 64, 0.85);
+  background-color: rgba(52, 58, 64, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,14 +45,14 @@ a {
 
 .ctrl-p .form-control {
   position: fixed;
-  width: 33%;
-  top: 20%;
-  background-color: #51565b;
-  height: 48px;
-  font-size: 36px;
-  color: #343a40;
-  border-color: #343a40;
-  border-width: 3px;
+  width: 40%;
+  top: 15%;
+  background-color: #343a40;
+  height: 36px;
+  font-size: 24px;
+  color: #fff;
+  border-color: #fff;
+  border-width: 2px;
 }
 
 .account-page [role="main"] {

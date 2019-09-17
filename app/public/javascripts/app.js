@@ -2762,7 +2762,7 @@ require([
       switch (evt.keyCode) {
         case 80: // P
           evt.preventDefault();
-          $('.ctrl-p').toggleClass('d-none');
+          $('.ctrl-p').toggleClass('d-none').find('input').focus();
           break;
         case 118: // F7
           if (!$('.script-panel').hasClass('d-none')) {
@@ -2788,6 +2788,12 @@ require([
           evt.preventDefault();
           if ($target.hasClass('form-control')) {
             $target.parents('.modal-content').find('.btn-primary').trigger('click');
+          }
+          break;
+        case 27:
+          if (!$('.ctrl-p').hasClass('d-none')) {
+            $('.ctrl-p').find('input').val('');
+            $('.ctrl-p').addClass('d-none');
           }
           break;
       }
