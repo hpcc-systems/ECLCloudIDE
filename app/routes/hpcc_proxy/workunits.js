@@ -163,6 +163,10 @@ router.put('/', buildClusterAddr, (req, res, next) => {
     scriptPath += '/scripts/' + (_scriptPath ? _scriptPath : '');
   }
 
+  if (!fs.existsSync(scriptPath)) {
+    fs.mkdirpSync(scriptPath);
+  }
+
   let args = ['-E', scriptPath + '/' + _filename];
 
   if (_filename) {
