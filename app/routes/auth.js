@@ -222,7 +222,7 @@ router.get('/email/verify', (req, res, next) => {
   }).then((user) => {
     console.log(user.dataValues.emailAddress);
 
-    router.sendVerifyEmail(user.dataValues.emailAddress);
+    router.sendVerifyEmail(req, user.dataValues.emailAddress);
 
     let msg = 'A verification email has been sent to your registered address.';
     req.flash('info', msg);
