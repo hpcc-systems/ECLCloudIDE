@@ -124,24 +124,50 @@ router.post('/forgot', (req, res, next) => {
   // res.redirect('/');
 
   let sendMail = async (recipients, subject = '', message = '') => {
-    let transporter = nodemailer.createTransport({
-      host: 'appmail.choicepoint.net',
-      port: 25,
-      secure: false, // true for 465, false for other ports
-      auth: {},
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-    let info = await transporter.sendMail({
-      from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
-      to: recipients.join(','), // list of receivers
-      subject: (subject != '') ? subject : 'Subject', // Subject line
-      html: (message != '') ? message : 'Message' // html body
-    });
+    let info, transporter;
 
-    console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    if (process.env.MAILER.toLowerCase() == 'aws') {
+      getAwsCredentials().then((credentials) => {
+        AWS.config.accessKeyId = credentials.AccessKeyId;
+        AWS.config.secretAccessKey = credentials.SecretAccessKey;
+        AWS.config.sessionToken = credentials.Token;
+        AWS.config.update({ region: 'us-east-1' });
+      }).then(() => {
+        transporter = nodemailer.createTransport({
+          SES: new AWS.SES({
+            apiVersion: '2010-12-01'
+          })
+        });
+        info = transporter.sendMail({
+          from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+          to: recipients.join(','), // list of receivers
+          subject: (subject != '') ? subject : 'Subject', // Subject line
+          html: (message != '') ? message : 'Message' // html body
+        });
+
+        console.log("Message sent: %s", info.messageId);
+        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        host: 'appmail.choicepoint.net',
+        port: 25,
+        secure: false, // true for 465, false for other ports
+        auth: {},
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+      info = await transporter.sendMail({
+        from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+        to: recipients.join(','), // list of receivers
+        subject: (subject != '') ? subject : 'Subject', // Subject line
+        html: (message != '') ? message : 'Message' // html body
+      });
+
+      console.log("Message sent: %s", info.messageId);
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
   };
 
   User.findOne({
@@ -253,24 +279,50 @@ router.sendVerifyEmail = (req, emailAddress) => {
       emailMsg = '';
 
   let sendMail = async (recipients, subject = '', message = '') => {
-    let transporter = nodemailer.createTransport({
-      host: 'appmail.choicepoint.net',
-      port: 25,
-      secure: false, // true for 465, false for other ports
-      auth: {},
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-    let info = await transporter.sendMail({
-      from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
-      to: recipients.join(','), // list of receivers
-      subject: (subject != '') ? subject : 'Subject', // Subject line
-      html: (message != '') ? message : 'Message' // html body
-    });
+    let info, transporter;
 
-    console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    if (process.env.MAILER.toLowerCase() == 'aws') {
+      getAwsCredentials().then((credentials) => {
+        AWS.config.accessKeyId = credentials.AccessKeyId;
+        AWS.config.secretAccessKey = credentials.SecretAccessKey;
+        AWS.config.sessionToken = credentials.Token;
+        AWS.config.update({ region: 'us-east-1' });
+      }).then(() => {
+        transporter = nodemailer.createTransport({
+          SES: new AWS.SES({
+            apiVersion: '2010-12-01'
+          })
+        });
+        info = transporter.sendMail({
+          from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+          to: recipients.join(','), // list of receivers
+          subject: (subject != '') ? subject : 'Subject', // Subject line
+          html: (message != '') ? message : 'Message' // html body
+        });
+
+        console.log("Message sent: %s", info.messageId);
+        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        host: 'appmail.choicepoint.net',
+        port: 25,
+        secure: false, // true for 465, false for other ports
+        auth: {},
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+      info = await transporter.sendMail({
+        from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+        to: recipients.join(','), // list of receivers
+        subject: (subject != '') ? subject : 'Subject', // Subject line
+        html: (message != '') ? message : 'Message' // html body
+      });
+
+      console.log("Message sent: %s", info.messageId);
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
   };
 
   hash = cipher.update(emailAddress, 'binary', 'hex') + cipher.final('hex');
