@@ -4,6 +4,7 @@ const passport = require('passport');
 const validator = require('express-validator');
 
 const nodemailer = require('nodemailer');
+let AWS = require('aws-sdk');
 
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
@@ -13,6 +14,19 @@ const User = db.User;
 const PasswordReset = db.PasswordReset;
 
 const router = express.Router();
+
+
+async function getAwsCredentials() {
+  let role = process.env.AWS_IAM_ROLE ? process.env.AWS_IAM_ROLE : '';
+  return new Promise((resolve, reject) => {
+    if (role == '') reject(new Error('AWS_IAM_ROLE env variable is undefined'));
+    let metadata = new AWS.MetadataService();
+    metadata.request('/latest/meta-data/iam/security-credentials/' + role, (err, data) => {
+      if (err) reject(err);
+      resolve(JSON.parse(data));
+    });
+  });
+}
 
 /* Register */
 router.get('/register', (req, res, next) => {
