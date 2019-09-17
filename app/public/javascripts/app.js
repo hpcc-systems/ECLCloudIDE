@@ -437,7 +437,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
         dataTable.destroy();
       }
       dataTable = $table.DataTable({
-        order: [[Object.keys(results[0]).length - 1, 'asc']],
+        order: [],
         pageLength: 25
       });
       $loader.addClass('d-none');
