@@ -36,9 +36,10 @@ let buildClusterAddr = (req, res, next) => {
 }
 
 let createEclArchive = (args, cwd) => {
-  console.log('createEclArchive', cwd, args);
+  console.log('in createEclArchive');
+  //console.log('createEclArchive', cwd, args);
   return new Promise((resolve, _reject) => {
-    console.log('eclcc ' + args.join(' '));
+    //console.log('eclcc ' + args.join(' '));
     const child = cp.spawn('eclcc', args, { cwd: cwd });
     let stdOut = "", stdErr = "";
     child.stdout.on("data", (data) => {
@@ -193,8 +194,9 @@ router.put('/', buildClusterAddr, (req, res, next) => {
 
     createEclArchive(args, scriptPath).then((response) => {
       _query = response.stdout;
-      console.log(response);
-      console.log('ecl archive: ' + _query);
+      console.log('in createEclArchive .then()');
+      //console.log(response);
+      //console.log('ecl archive: ' + _query);
 
       router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query, _filename)
         .then((response) => {
