@@ -69,7 +69,7 @@ the `./nginx/Dockerfile` should be modified accordingly.
 
 * ~~security concern - change to docker file of node app to not run the container as root~~
 
-* make mail configurable, based on env (nodemailer for dev, aws-sdk for prod?)
+* ~~make mail configurable, based on env (nodemailer for dev, aws-sdk for prod?)~~
 
 * add a help menu, linking to:
   * ~~ecl docs~~
