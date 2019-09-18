@@ -114,7 +114,7 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
 });
 
 router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
-  console.log('in /spray ', req.body, req.params, req.file);
+  console.log('in /spray ', req.body, req.params, req.file, router.clusters);
 
   router.sprayFile(router.clusterAddrAndPort, req.body.filename, req.session.user.username, req.body.workspaceId)
     .then((response) => {
@@ -135,7 +135,9 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId, dropzoneIp = '
     method: 'POST',
     uri: clusterAddr + '/FileSpray/SprayVariable.json',
     formData: {
-      destGroup: 'mythor',
+      destGroup: (router.clusters.length > 0) ?
+        router.clusters[Math.floor(Math.random() * Math.floor(router.clusters.length))] :
+        'mythor',
       DFUServerQueue: 'dfuserver_queue',
       namePrefix: username + '::' + workspaceId,
       targetName: filename,
