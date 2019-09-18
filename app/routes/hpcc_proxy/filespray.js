@@ -37,12 +37,29 @@ let buildClusterAddr = (req, res, next) => {
       router.clusterAddrAndPort += ':' + router.clusterPort;
     }
 
-    request({
+    let dropZoneJson = request({
       uri: router.clusterAddrAndPort + '/WsTopology/TpDropZoneQuery.json',
       json: true
-    })
-    .then((json) => {
-      let dropzone = json.TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
+    });
+    let clusterJson = request({
+      uri: router.clusterAddrAndPort + '/WsTopology/TpTargetClusterQuery.json',
+      json: true
+    });
+
+    Promise.all([
+      dropZoneJson.catch((err) => { console.log(err); }),
+      clusterJson.catch((err) => { console.log(err); })
+    ])
+    .then((values) => {
+      if (values[1] instanceof Error !== true) {
+        router.clusters = values[1].TpTargetClusterQueryResponse.TpTargetClusters.TpTargetCluster
+          .filter((cluster) => cluster.Type === 'ThorCluster')[0].TpClusters.TpCluster
+          .map((cluster) => cluster.Name);
+      } else {
+        router.clusters = [];
+      }
+
+      let dropzone = values[0].TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
 
       router.dropzoneIp = dropzone.TpMachines.TpMachine[0].Netaddress;
 
@@ -57,9 +74,6 @@ let buildClusterAddr = (req, res, next) => {
           next();
         });
       }
-    }).catch((err) => {
-      console.log(err);
-      res.json(err);
     });
   }
 }
