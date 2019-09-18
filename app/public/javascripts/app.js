@@ -1215,7 +1215,7 @@ require([
                           _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
                             dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
                             "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
-                            ",CLUSTER('mythor'),OVERWRITE);";
+                            ",'thor',OVERWRITE);";
 
                           console.log(_query);
 
