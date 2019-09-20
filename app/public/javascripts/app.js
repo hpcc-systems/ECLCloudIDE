@@ -2609,6 +2609,20 @@ require([
     });
   });
 
+  $scriptControls.on('click', '.show-results', function(evt) {
+    let $this = $(this),
+        $script = $('.scripts .active'),
+        _wuid = $script.data('wuid') ? $script.data('wuid') : '';
+
+    if (_wuid !== '') {
+      displayWorkunitResults(_wuid, $script.data('name'));
+      let _t = window.setTimeout(function() {
+        $this.blur();
+        window.clearTimeout(_t);
+      }, 300);
+    }
+  });
+
   $scriptControls.on('click', '.save-script', function(evt) {
     let $script = $('.scripts .active'),
         $saveButton = $(this),
