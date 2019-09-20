@@ -1621,9 +1621,19 @@ require([
    *==========================================================================*/
 
   $('.scripts').on('click', '.script', function(evt) {
-    let $this = $(this);
+    let $this = $(this),
+        _wuid = $this.data('wuid') ? $this.data('wuid') : '',
+        $scriptControls = $('.script-controls');
+
     $('#scripts').find('.script').removeClass('active');
     $this.addClass('active');
+
+    $('.script-panel-placeholder').removeClass('d-none');
+    $('.script-panel').removeClass('d-none');
+    $('#editor').removeClass('cmReady');
+    $('.save-script').removeClass('badge-info').addClass('badge-secondary');
+    changeRunButtonState($('.run-script'), 'ready');
+    editor.refresh();
 
     if ($this.data('content')) {
       editor.getDoc().setValue($this.data('content'));
@@ -1634,6 +1644,12 @@ require([
       $('#editor').addClass('cmReady');
       window.clearTimeout(_t);
     }, 100);
+
+    if (_wuid == '') {
+      $scriptControls.find('.show-results').addClass('d-none');
+    } else {
+      $scriptControls.find('.show-results').removeClass('d-none');
+    }
   });
 
   toggleNewScriptPopover();
@@ -2699,15 +2715,6 @@ require([
       $('.script-panel-controls .js-restore').removeClass('fa-window-maximize').addClass('fa-window-restore');
       editor.layout();
     }
-  });
-
-  $('#scripts').on('click', '.script', function() {
-    $('.script-panel-placeholder').removeClass('d-none');
-    $('.script-panel').removeClass('d-none');
-    $('#editor').removeClass('cmReady');
-    $('.save-script').removeClass('badge-info').addClass('badge-secondary');
-    changeRunButtonState($('.run-script'), 'ready');
-    editor.refresh();
   });
 
   /*==========================================================================*
