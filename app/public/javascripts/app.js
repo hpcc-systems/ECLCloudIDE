@@ -176,8 +176,13 @@ let populateScripts = () => {
             $script.data('revisionId', _script.revisionId);
             $script.data('content', _script.content);
             $script.data('parentPathNames', _script.parentPathNames);
+            $script.data('wuid', _script.workunitId);
           }
         });
+      }
+
+      if (scripts.length > 0) {
+        showScripts();
       }
     });
 };
@@ -193,6 +198,7 @@ let addScript = (script) => {
   $newScript.data('revisionId', script.revisionId);
   $newScript.data('content', script.content);
   $newScript.data('parentPathNames', script.parentPathNames);
+  $newScript.data('wuid', '');
   $newScript.find('.scriptname').contents()[0].nodeValue = script.name;
 
   $newLi.append($newScript);
