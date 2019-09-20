@@ -116,11 +116,9 @@ let populateDatasets = () => {
           $dataset.data('wuid', _dataset.workunitId);
           $dataset.data('rows', _dataset.rowCount);
           $dataset.data('cols', _dataset.columnCount);
+        }).promise().done(function() {
+          showDatasets();
         });
-      }
-
-      if (datasets.length > 0) {
-        showDatasets();
       }
     });
 };
@@ -178,11 +176,9 @@ let populateScripts = () => {
             $script.data('parentPathNames', _script.parentPathNames);
             $script.data('wuid', _script.workunitId);
           }
+        }).promise().done(function() {
+          showScripts();
         });
-      }
-
-      if (scripts.length > 0) {
-        showScripts();
       }
     });
 };
@@ -763,10 +759,8 @@ require([
     $scriptPanelClose.trigger('click');
 
     populateWorkspaceDirectoryTree(JSON.parse($this.data('directoryTree')));
-    showDatasets();
-    showScripts();
-    populateScripts();
     populateDatasets();
+    populateScripts();
 
     if ($this.data('cluster').lastIndexOf(':') > 4) {
       cluster.host = $this.data('cluster').substring(0, $this.data('cluster').lastIndexOf(':'));
