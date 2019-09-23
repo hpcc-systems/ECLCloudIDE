@@ -104,10 +104,6 @@ a {
   display: block;
 }
 
-.show-outputs h4 {
-  display: none;
-}
-
 .dataset-content h4 span {
   font-size: 0.9rem;
   vertical-align: top;
