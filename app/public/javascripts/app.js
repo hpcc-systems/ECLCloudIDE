@@ -383,7 +383,7 @@ let getWorkunitResults = (wuid, count, sequence) => {
   });
 };
 
-let displayWorkunitResults = (wuid, title, sequence = 0) => {
+let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
       $scopeDefn = $title.find('.scopename'),
@@ -444,7 +444,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0) => {
       });
       $loader.addClass('d-none');
       $datasetContent.removeClass('d-none');
-      if (query && query.match(scopeRegex) !== null) {
+      if (query && query.match(scopeRegex) !== null && !hideScope) {
         $scopeDefn.text('(' + query.match(scopeRegex)[0] + ')');
         $scopeDefn.removeClass('d-none');
       }
@@ -2679,7 +2679,7 @@ require([
       $tableWrapper.html('<iframe src="' + visualizationUrl + '" />');
       $tableWrapper.css({ height: '770px' });
     } else {
-      displayWorkunitResults($script.data('wuid'), $output.text(), $output.index());
+      displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.index(), true);
       $tableWrapper.css({ height: '' });
     }
 
