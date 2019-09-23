@@ -2606,14 +2606,46 @@ require([
   $scriptControls.on('click', '.show-results', function(evt) {
     let $this = $(this),
         $script = $('.scripts .active'),
+        $main = $('main'),
         _wuid = $script.data('wuid') ? $script.data('wuid') : '';
 
+    $main.removeClass('show-outputs');
+    $outputsList.html('');
+
     if (_wuid !== '') {
-      displayWorkunitResults(_wuid, $script.data('name'));
-      let _t = window.setTimeout(function() {
-        $this.blur();
-        window.clearTimeout(_t);
-      }, 300);
+      checkWorkunitStatus(_wuid)
+        .then(response => response.json())
+        .then((json) => {
+
+          editor.getDoc().clearGutter('cm-errors');
+
+          if (json.state == 'completed') {
+            console.log(json);
+            changeRunButtonState($runButton, 'ready');
+            $main.addClass('show-outputs');
+            $outputsList.html('');
+            json.results.forEach((result, idx) => {
+              let classList = ['output', 'text-light', 'badge', 'ml-2'],
+                  outputLabel = result.name;
+
+              if (idx == 0) classList.push('badge-primary');
+              else classList.push('badge-secondary');
+
+              if (isDataPatternProfile(result.schema)) {
+                if ($outputsList.find('.data-pattern').length > 0) return;
+                classList.push('data-pattern');
+                outputLabel = 'Data Patterns';
+              } else if (isVisualization(result.name)) {
+                if ($outputsList.find('.visualization').length > 0) return;
+                classList.push('visualization');
+                outputLabel = 'Visualizations';
+              }
+
+              $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
+            });
+            $outputsList.children().eq(0).trigger('click');
+          }
+        });
     }
   });
 
