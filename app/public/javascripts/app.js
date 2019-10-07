@@ -2517,6 +2517,26 @@ require([
     })
     .then(response => response.json())
     .then((json) => {
+      if (!json.success) {
+        changeRunButtonState($runButton, 'failed');
+
+        let _annotateTimeout = window.setTimeout(function() {
+          updateCodemirrorAnnotations(json.errors);
+          window.clearTimeout(_annotateTimeout);
+        }, 500);
+
+        let updateCodemirrorAnnotations = (errors) => {
+          errors.forEach((err) => {
+            console.log(err);
+            let marker = document.createElement('div');
+            marker.style.color = '#dc3545';
+            marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
+            editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
+          });
+        };
+        return false;
+      }
+
       $script.data('revisionId', json.data.id);
 
       createWorkunit()
