@@ -16,6 +16,14 @@ a {
   margin: 0 auto;
 }
 
+.help-menu .dropdown-item {
+  padding-left: 0.9rem;
+}
+
+#feedbackModal textarea {
+  height: 170px;
+}
+
 .form-control {
   box-shadow: none;
 }
