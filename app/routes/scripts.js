@@ -3,6 +3,8 @@ const router = express.Router();
 
 const db = require('../models/index');
 
+const cp = require('child_process');
+
 const fs = require('fs-extra');
 
 const User = db.User;
@@ -14,6 +16,33 @@ const Script = db.Script;
 const ScriptRevision = db.ScriptRevision;
 const Workunit = db.Workunit;
 
+let eclccCmd = (args, cwd) => {
+  console.log('in eclccCmd');
+  //console.log('eclccCmd', cwd, args);
+  return new Promise((resolve, _reject) => {
+    console.log('eclcc ' + args.join(' '));
+    const child = cp.spawn('eclcc', args, { cwd: cwd });
+    let stdOut = "", stdErr = "";
+    child.stdout.on("data", (data) => {
+      stdOut += data.toString();
+    });
+    child.stderr.on("data", (data) => {
+      stdErr += data.toString();
+    });
+    child.on("close", (_code, _signal) => {
+      if (stdErr !== "") {
+        _reject({
+          stdout: stdOut.trim(),
+          stderr: stdErr.trim()
+        });
+      }
+      resolve({
+        stdout: stdOut.trim(),
+        stderr: stdErr.trim()
+      });
+    });
+  });
+};
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
   const query = `SELECT s.id, s.name, sr.id AS revisionId, sr.content, \
