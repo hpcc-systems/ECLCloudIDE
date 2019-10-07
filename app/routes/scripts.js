@@ -43,6 +43,7 @@ let eclccCmd = (args, cwd) => {
     });
   });
 };
+
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
   const query = `SELECT s.id, s.name, sr.id AS revisionId, sr.content, \
@@ -110,7 +111,11 @@ router.post('/', (req, res, next) => {
 /* Create script revision */
 router.post('/revision', (req, res, next) => {
   // console.log('request body', req.body);
-  let path = req.body.path || '';
+  let path = req.body.path || '',
+      args = [],
+      workspaceDirPath = '',
+      scriptFilePath = '';
+
   ScriptRevision.create({
     scriptId: req.body.scriptId,
     content: req.body.content
@@ -122,26 +127,39 @@ router.post('/revision', (req, res, next) => {
       }
     }).then((script) => {
       console.log('update contents of script file');
-      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-          scriptFilePath = workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ) + script.name + '.ecl';
-
-      if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
-        fs.mkdirpSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
-      }
+      workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
+      scriptFilePath = workspaceDirPath + ( (path != '') ? path + '/' : '' ) + script.name + '.ecl';
 
       if (!fs.existsSync(workspaceDirPath)) {
         fs.mkdirpSync(workspaceDirPath);
       }
 
-      if (!fs.existsSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ))) {
-        fs.mkdirpSync(workspaceDirPath + '/' + ( (path != '') ? path + '/' : '' ));
-      }
       console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
       fs.writeFileSync(scriptFilePath, revision.content);
+
+      args = ['-syntax', scriptFilePath];
     }).then(() => {
-      return res.json({ success: true, data: revision });
-    }).catch((err) => {
-      console.log(err);
+      eclccCmd(args, workspaceDirPath).then((response) => {
+        return res.json({ success: true, data: revision });
+      }).catch((response) => {
+        let errors = [], parsedErrors = [];
+        if (response.stderr !== '') {
+          errors = response.stderr.split(/\r\n/);
+          errors.pop();
+          errors.forEach((error) => {
+            console.log(error);
+            parsedErrors.push({
+              'Source': 'eclcc',
+              'Severity': 'Error',
+              'FileName': error.match(new RegExp(/(.*)\(/))[1],
+              'LineNo': error.match(new RegExp(/.*\(([0-9]+)/))[1],
+              'Column': error.match(new RegExp(/.*\([0-9]+,([0-9]+)/))[1],
+              'Message': error.match(new RegExp(/.*\):\s+error\s+[A-Z0-9]+\s*:\s+(.*)/))[1]
+            });
+          });
+        }
+        return res.json({ success: false, errors: parsedErrors, data: {} });
+      });
     });
   }).catch((err) => {
     console.log(err);
