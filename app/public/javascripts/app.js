@@ -2809,6 +2809,7 @@ require([
   });
 
   $(document).on('keydown', function(evt) {
+    //console.log(evt.keyCode);
     let $target = $(evt.target);
     if (evt.ctrlKey) {
       switch (evt.keyCode) {
@@ -2817,10 +2818,17 @@ require([
           $('.ctrl-p').toggleClass('d-none').find('input').focus();
           break;
         case 118: // F7
-          if (!$('.script-panel').hasClass('d-none')) {
+        case 83: // S
+          if (!$('.script-panel').hasClass('d-none') && $('.CodeMirror').hasClass('CodeMirror-focused')) {
             window.onhelp = function() { return false; }
             evt.preventDefault();
             alert('check syntax');
+          }
+          break;
+        case 13: // Enter
+          if (!$('.script-panel').hasClass('d-none') && $('.CodeMirror').hasClass('CodeMirror-focused')) {
+            evt.preventDefault();
+            $('.run-script').trigger('click');
           }
           break;
         case 192: // ~
