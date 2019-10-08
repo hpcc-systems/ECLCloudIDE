@@ -497,7 +497,28 @@ require([
   'codemirror/addon/selection/active-line',
   'codemirror/addon/scroll/simplescrollbars'
 ], function(LineNavigator, CodeMirror, _) {
-  let editor = null, $draggedObject = null;
+  let editor = null,
+      $draggedObject = null,
+      $scriptPanel = $('.script-panel'),
+      $main = $('[role="main"]'),
+      $sidebar = $('.sidebar'),
+      $outputsPanel = $('.outputs-panel');
+
+  $scriptPanel.resizable({ handles: 'n' });
+  $main.css('margin-left', $sidebar.css('width'));
+  $outputsPanel.css('left', $sidebar.css('width'));
+  $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+  $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+
+  $sidebar.resizable({
+    handles: 'e',
+    resize: function(evt, ui) {
+      $main.css('margin-left', $sidebar.css('width'));
+      $outputsPanel.css('left', $sidebar.css('width'));
+      $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+      $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+    }
+  });
 
   let tour = new Shepherd.Tour({
     defaultStepOptions: {
