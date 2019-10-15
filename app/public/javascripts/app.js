@@ -2824,7 +2824,7 @@ require([
 
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
-      if (['+input', '+delete', 'cut', 'paste', 'drop'].indexOf(changeObj.origin) > -1) {
+      if (['+input', '+delete', 'cut', 'paste', 'drop', 'undo'].indexOf(changeObj.origin) > -1) {
         console.log('autosave script...');
         $saveButton.trigger('click');
       }
