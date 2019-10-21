@@ -63,18 +63,6 @@ a {
   border-width: 2px;
 }
 
-.account-page [role="main"] {
-  margin-left: 0 !important;
-}
-
-.account-page .app-controls {
-  display: none;
-}
-
-.account-page .sidebar {
-  display: none !important;
-}
-
 [role="main"] {
   padding-top: 58px;
   width: 85%;
@@ -86,6 +74,19 @@ a {
 
 [role="main"] h4 {
   margin: 0;
+}
+
+.account-page [role="main"] {
+  margin-left: 0 !important;
+  width: auto;
+}
+
+.account-page .app-controls {
+  display: none;
+}
+
+.account-page .sidebar {
+  display: none !important;
 }
 
 .outputs-panel {
