@@ -54,10 +54,15 @@ router.get('/search', (req, res, next) => {
 });
 
 router.get('/password/change', (req, res, next) => {
+  let user = {
+    id: req.session.user.id,
+    username: req.session.user.username,
+    emailVerified: req.session.user.emailVerified
+  };
   res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
   console.log('locals', res.locals);
-  res.render('users/change_password', { title: 'ECL IDE' });
+  res.render('users/change_password', { title: 'ECL IDE', user: user });
 });
 
 router.post('/password/change', (req, res, next) => {
