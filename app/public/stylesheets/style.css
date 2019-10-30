@@ -16,6 +16,10 @@ a {
   margin: 0 auto;
 }
 
+.help-menu {
+  min-width: 11rem;
+}
+
 .help-menu .dropdown-item {
   padding-left: 0.9rem;
 }
