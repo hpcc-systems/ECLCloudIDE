@@ -2,6 +2,13 @@
 
     A web-based environment for starting out with ECL.
 
+### RE: Git LFS
+Just a note regarding this project's usage of Git Large File Storage (LFS) for tracking
+binary assets. At the time of writing, this only includes some .webm videos used in the
+"Feature Tour" item under the application's "Help" menu & a local copy of the ECL
+Cheatsheet PDF (https://github.com/hpcc-systems/HPCC-ECL-Training/tree/master/CheatSheet).
+But initialization of a fork of this project would include having LFS installed during
+checkout, otherwise you wouldn't get these and any future larger binary assets.
 
 ### Running the Application
 
