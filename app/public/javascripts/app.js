@@ -933,7 +933,10 @@ require([
       $modal.modal('hide');
       $workspace.data('name', workspace.data.name);
       $selected.text($workspace.data('name'));
-      $selected.append('<i class="fa fa-pencil-square-o edit float-right d-none"></i>');
+      $selected.append(
+        '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
+        '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
+      );
       $modal.find('#edit-workspace-name').val('');
       $form.removeClass('was-validated');
     });
