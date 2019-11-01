@@ -145,6 +145,7 @@ router.post('/revision', (req, res, next) => {
         let errors = [], parsedErrors = [];
         if (response.stderr !== '') {
           errors = response.stderr.split(/\r\n/);
+          errors.pop();
           errors.forEach((error) => {
             console.log(error);
             parsedErrors.push({
