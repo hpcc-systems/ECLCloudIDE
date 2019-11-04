@@ -55,14 +55,15 @@ router.get('/', (req, res, next) => {
       WHERE sr2.id IS NULL \
     ) AS sr ON sr.scriptId = s.id \
     LEFT JOIN Workunits AS w ON sr.id = w.objectId \
-    WHERE s.workspaceId = "${req.query.workspaceId}" \
+    WHERE s.workspaceId = :workspaceId \
     AND (w.workunitId LIKE "W%" OR w.workunitId IS NULL) \
     AND sr.id IS NOT NULL \
     AND s.deletedAt IS NULL \
     ORDER BY sr.updatedAt desc`;
 
   db.sequelize.query(query, {
-    type: db.sequelize.QueryTypes.SELECT
+    type: db.sequelize.QueryTypes.SELECT,
+    replacements: { workspaceId: req.query.workspaceId }
   }).then((_scripts) => {
     let scripts = {};
     _scripts.forEach((script) => {

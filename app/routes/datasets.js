@@ -18,12 +18,13 @@ router.get('/', (req, res, next) => {
   const query = `SELECT d.*, w.workunitId \
     FROM Datasets AS d \
     LEFT JOIN Workunits AS w ON d.id = w.objectId \
-    WHERE d.workspaceId = "${req.query.workspaceId}" \
+    WHERE d.workspaceId = :workspaceId \
     AND w.workunitId LIKE "W%" \
     AND d.deletedAt IS NULL`;
 
   db.sequelize.query(query, {
-    type: db.sequelize.QueryTypes.SELECT
+    type: db.sequelize.QueryTypes.SELECT,
+    replacements: { workspaceId: req.query.workspaceId }
   }).then((_datasets) => {
     let datasets = {};
     _datasets.forEach((dataset) => {
