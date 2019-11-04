@@ -72,7 +72,7 @@ router.get('/', (req, res, next) => {
     res.json(scripts);
   }).catch((err) => {
     console.log(err);
-    res.json(err);
+    res.json({ success: false, message: 'Could not retrieve Scripts for specified Workspace.' });
   });
 });
 

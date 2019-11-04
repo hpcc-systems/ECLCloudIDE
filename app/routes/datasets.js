@@ -33,7 +33,7 @@ router.get('/', (req, res, next) => {
     res.json(datasets);
   }).catch((err) => {
     console.log(err);
-    res.json(err);
+    res.json({ success: false, message: 'Could not retrieve Datasets for specified Workspace.' });
   });
 });
 
