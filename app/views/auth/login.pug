@@ -15,7 +15,7 @@ block content
           div.alert.alert-info.login-error #{info[0]}
         input.form-control(type='text', name="username", placeholder='Username or Email Address')
       .form-group
-        input.form-control(type='password', name='password', placeholder='Password')
+        input.form-control(type='password', name='password', placeholder='Password', autocomplete='off')
       .form-group
         p #[a(href='/auth/forgot') Forgot password?]
       button.btn.btn-large.btn-primary.btn-block(type='submit') Log in
