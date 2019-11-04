@@ -43,9 +43,15 @@ app.use(cookieParser(process.env.SECRET));
 app.use(session({
   secret: process.env.SECRET,
   resave: false,
+  name: 'sessionId',
   store: new session.MemoryStore,
   saveUninitialized: true,
-  cookie: { secure: (process.env.NODE_ENV === 'production') }
+  cookie: {
+    secure: (process.env.NODE_ENV === 'production'),
+    httpOnly: true,
+    sameSite: 'strict',
+    maxAge: 3600000,
+  }
 }));
 
 app.use(flash());
