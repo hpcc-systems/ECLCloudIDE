@@ -18,6 +18,9 @@ server {
     #proxy_set_header Host ${DOLLAR}http_host;
     #proxy_set_header X-NginX-Proxy true;
 
+    proxy_hide_header X-Powered-By;
+    proxy_hide_header Server;
+
     proxy_pass http://eclide${DOLLAR}request_uri;
   }
 
