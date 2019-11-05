@@ -6,6 +6,8 @@ block beforeBody
 block content
   main.container(role='main')
     form.form-signin(role='form', action='/auth/login', method='post')
+      - var _csrfToken = csrfToken;
+      input(type='hidden', name='_csrf', value=_csrfToken)
       .form-group
         p #[a(href='/auth/register') Register] a new account
       .form-group

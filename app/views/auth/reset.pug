@@ -6,6 +6,8 @@ block beforeBody
 block content
   main.container(role='main')
     form.form-signin(role='form', action='/auth/reset/' + id, method='post')
+      - var _csrfToken = csrfToken;
+      input(type='hidden', name='_csrf', value=_csrfToken)
       .form-group
         p.lead Reset password
       .form-group
