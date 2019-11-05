@@ -24,8 +24,10 @@ let setClusterPort = (port) => {
   cluster.port = port;
 };
 
+let csrfToken = document.querySelector('[name="csrf-token"]').content;
+
 export {
   hostname, NO_WORKSPACE, NEW_SCRIPT, NEW_DATASET, FILE_LIMIT,
   DEFAULT_FILE_FEEDBACK, currentDatasetFile, cluster,
-  setClusterHost, setClusterPort,
+  setClusterHost, setClusterPort, csrfToken,
 };

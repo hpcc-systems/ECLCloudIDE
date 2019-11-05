@@ -1,6 +1,6 @@
 'use strict';
 
-import { cluster } from './consts.mjs';
+import { cluster, csrfToken, } from './consts.mjs';
 
 let createWorkunit = () => {
   return fetch('/hpcc/workunits', {
@@ -10,7 +10,8 @@ let createWorkunit = () => {
       clusterPort: cluster.port
     }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken
     }
   });
 };
@@ -29,7 +30,8 @@ let updateWorkunit = (wuid, query, scriptName, scriptPath = null, datasetId = nu
       workspace: workspaceId
     }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken
     }
   });
 };
@@ -44,7 +46,8 @@ let submitWorkunit = (wuid) => {
       cluster: 'thor'
     }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken
     }
   });
 };
@@ -58,7 +61,10 @@ let sendFileToLandingZone = (file) => {
 
   return fetch('/hpcc/filespray/upload', {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers: {
+      'CSRF-Token': csrfToken
+    }
   });
 };
 
@@ -72,7 +78,10 @@ let sprayFile = (clusterFilename, workspaceId) => {
 
   return fetch('/hpcc/filespray/spray', {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers: {
+      'CSRF-Token': csrfToken
+    }
   });
 };
 
@@ -84,7 +93,10 @@ let getDfuWorkunit = (wuid) => {
 
   return fetch('/hpcc/filespray/getDfuWorkunit', {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers: {
+      'CSRF-Token': csrfToken
+    }
   });
 };
 
@@ -95,8 +107,9 @@ let saveWorkunit = (objectId, workunitId) => {
       objectId: objectId,
       workunitId: workunitId
     }),
-    headers:{
-      'Content-Type': 'application/json'
+    headers: {
+      'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken
     }
   });
 };
@@ -120,7 +133,8 @@ let getWorkunitResults = (wuid, count, sequence) => {
       sequence: ((sequence) ? sequence : 0)
     }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken
     }
   });
 };

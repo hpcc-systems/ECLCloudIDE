@@ -3,7 +3,7 @@
 import {
   hostname, NO_WORKSPACE, NEW_SCRIPT, NEW_DATASET, FILE_LIMIT,
   DEFAULT_FILE_FEEDBACK, currentDatasetFile, cluster,
-  setClusterHost, setClusterPort,
+  setClusterHost, setClusterPort, csrfToken,
 } from './modules/consts.mjs';
 
 import { tour } from './modules/featureTour.mjs';
@@ -333,8 +333,9 @@ require([
     fetch('/workspaces/', {
       method: 'POST',
       body: JSON.stringify(getFormData($form)),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -484,7 +485,8 @@ require([
         users: users
       }),
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -542,8 +544,9 @@ require([
     fetch('/workspaces/', {
       method: 'PUT',
       body: JSON.stringify(data),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -594,8 +597,9 @@ require([
     fetch('/workspaces/', {
       method: 'DELETE',
       body: JSON.stringify({ workspaceId: $selectedWorkspace.data('id') }),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -684,8 +688,9 @@ require([
     fetch('/datasets/', {
       method: 'POST',
       body: JSON.stringify(dataset),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -766,7 +771,8 @@ require([
                   directoryTree: directoryTree
                 }),
                 headers: {
-                  'Content-Type': 'application/json'
+                  'Content-Type': 'application/json',
+                  'CSRF-Token': csrfToken
                 }
               })
               .then(response => response.json())
@@ -885,7 +891,8 @@ require([
                                   method: 'PUT',
                                   body: JSON.stringify(dataset),
                                   headers: {
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'CSRF-Token': csrfToken
                                   }
                                 }).then(() => {
                                   $newDataset.data('wuid', _wuid);
@@ -945,8 +952,9 @@ require([
             fetch('/datasets/', {
               method: 'PUT',
               body: JSON.stringify(dataset),
-              headers:{
-                'Content-Type': 'application/json'
+              headers: {
+                'Content-Type': 'application/json',
+                'CSRF-Token': csrfToken
               }
             }).then(() => {
               $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
@@ -1120,8 +1128,9 @@ require([
     fetch('/datasets/', {
       method: 'PUT',
       body: JSON.stringify(data),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -1201,8 +1210,9 @@ require([
     fetch('/datasets/', {
       method: 'DELETE',
       body: JSON.stringify({ datasetId: targetId }),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -1233,7 +1243,8 @@ require([
           directoryTree: directoryTree
         }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
         }
       })
       .then(response => response.json())
@@ -1320,8 +1331,9 @@ require([
     fetch('/scripts/', {
       method: 'POST',
       body: JSON.stringify(data),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -1373,7 +1385,8 @@ require([
           directoryTree: directoryTree
         }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
         }
       })
       .then(response => response.json())
@@ -1475,8 +1488,9 @@ require([
     fetch('/scripts/', {
       method: 'PUT',
       body: JSON.stringify(data),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -1519,7 +1533,8 @@ require([
           directoryTree: directoryTree
         }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
         }
       })
       .then(response => response.json())
@@ -1586,8 +1601,9 @@ require([
     fetch('/scripts/', {
       method: 'DELETE',
       body: JSON.stringify({ scriptId: targetId }),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -1622,7 +1638,8 @@ require([
           directoryTree: directoryTree
         }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
         }
       })
       .then(response => response.json())
@@ -1860,7 +1877,8 @@ require([
         directoryTree: directoryTree
       }),
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -1955,7 +1973,8 @@ require([
         directoryTree: directoryTree
       }),
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -2066,7 +2085,8 @@ require([
         ids: childrenToDelete
       }),
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -2078,7 +2098,8 @@ require([
           directoryTree: directoryTree
         }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
         }
       })
       .then(response => response.json())
@@ -2153,8 +2174,9 @@ require([
         path: $script.data('parentPathNames'),
         content: editor.getValue()
       }),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
@@ -2338,8 +2360,9 @@ require([
         path: $script.data('parentPathNames'),
         content: editor.getValue()
       }),
-      headers:{
-        'Content-Type': 'application/json'
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     })
     .then(response => response.json())
