@@ -12,6 +12,12 @@ server {
 
   server_name $HOSTNAME;
 
+  add_header Strict-Transport-Security "max-age=31536000;" always;
+  add_header X-XSS-Protection "1; mode=block";
+  add_header X-Frame-Options "deny";
+  add_header X-Content-Type-Options "nosniff";
+  add_header Content-Security-Policy "script-src 'self' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.datatables.net; object-src 'self'";
+
   location / {
     #proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
     #proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
@@ -20,6 +26,8 @@ server {
 
     proxy_hide_header X-Powered-By;
     proxy_hide_header Server;
+
+    expires -1;
 
     proxy_pass http://eclide${DOLLAR}request_uri;
   }
