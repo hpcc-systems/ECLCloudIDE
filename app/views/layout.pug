@@ -50,6 +50,9 @@ html
     meta(name="msapplication-TileColor", content="#343a40")
     - var bodyClasses = [];
 
+    - var _csrfToken = csrfToken;
+    meta(name="csrf-token", content=_csrfToken)
+
   block beforeBody
 
   body(class=bodyClasses)
