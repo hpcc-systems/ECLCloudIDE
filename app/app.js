@@ -11,6 +11,8 @@ require('./passport');
 
 const passport = require('passport');
 
+const csrf = require('csurf');
+
 const session = require('express-session');
 const flash = require('express-flash');
 
@@ -59,6 +61,17 @@ app.use(session({
 app.use(flash());
 
 app.use(passport.initialize());
+
+app.use(csrf({
+  cookie: true, secure: true, maxAge: 3600, httpOnly: true, sameSite: 'strict'
+}));
+
+app.use((err, req, res, next) => {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err);
+
+  // handle CSRF token errors
+  res.status(403).send('CSRF token invalid');
+});
 
 app.use('/auth', authRouter);
 

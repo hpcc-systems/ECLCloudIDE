@@ -62,7 +62,7 @@ router.get('/password/change', (req, res, next) => {
   res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
   console.log('locals', res.locals);
-  res.render('users/change_password', { title: 'ECL IDE', user: user });
+  res.render('users/change_password', { title: 'ECL IDE', user: user, csrfToken: req.csrfToken() });
 });
 
 router.post('/password/change', (req, res, next) => {

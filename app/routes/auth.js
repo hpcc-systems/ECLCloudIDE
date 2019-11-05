@@ -35,7 +35,7 @@ router.get('/register', (req, res, next) => {
   }
 
   res.locals.errors = req.flash();
-  res.render('auth/register', { title: 'ECL IDE' });
+  res.render('auth/register', { title: 'ECL IDE', csrfToken: req.csrfToken() });
 });
 
 router.post('/register', (req, res, next) => {
@@ -89,7 +89,7 @@ router.get('/login', (req, res, next) => {
   res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
   console.log('locals', res.locals);
-  res.render('auth/login', { title: 'ECL IDE' });
+  res.render('auth/login', { title: 'ECL IDE', csrfToken: req.csrfToken() });
 });
 
 router.post('/login', (req, res, next) => {
@@ -117,7 +117,7 @@ router.get('/forgot', (req, res, next) => {
     res.redirect('/');
   }
 
-  res.render('auth/forgot', { title: 'ECL IDE' });
+  res.render('auth/forgot', { title: 'ECL IDE', csrfToken: req.csrfToken() });
 });
 
 router.post('/forgot', (req, res, next) => {

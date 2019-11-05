@@ -10,7 +10,7 @@ router.get('/', (req, res, next) => {
     username: req.session.user.username,
     emailVerified: req.session.user.emailVerified
   };
-  res.render('index', { title: 'ECL IDE', user: user });
+  res.render('index', { title: 'ECL IDE', user: user, csrfToken: req.csrfToken() });
 });
 
 module.exports = router;
