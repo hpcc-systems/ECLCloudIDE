@@ -4,7 +4,10 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
   div#main-nav.collapse.navbar-collapse
     ul.navbar-nav.mr-auto.app-controls
       li.nav-item.dropdown
-        a#workspaceSelect.nav-link.dropdown-toggle(href='#', role='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Select Workspace...
+        a#workspaceSelect.nav-link.dropdown-toggle(
+          href='#', role='button', data-toggle='dropdown',
+          aria-haspopup='true', aria-expanded='false'
+        ) Select Workspace...
         div.dropdown-menu.workspaces(aria-labelledby='workspaceSelect')
           a.dropdown-item.cloner.d-none(href='#') Workspace
           .workspace-tip.ml-3.mr-2.d-none
@@ -12,10 +15,16 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
             span.float-right
               i.mt-1.mr-2.fa.fa-2x.fa-arrow-up
       li.nav-item
-        a.workspace-btn.new-workspace.text-light.badge.badge-pill.badge-secondary.float-left(href='#', title="New Workspace...", data-toggle="modal", data-target="#newWorkspaceModal") NEW
+        a.workspace-btn.new-workspace.text-light.badge.badge-pill.badge-secondary.float-left(
+          href='#', title="New Workspace...", data-toggle="modal",
+          data-target="#newWorkspaceModal"
+        ) NEW
             i.fa.fa-plus.ml-1.float-right
       li.nav-item.d-none
-        a.workspace-btn.delete-workspace.text-light.badge.badge-pill.badge-danger.float-left(href='#', title="Delete Workspace...", data-toggle="modal", data-target="#removeWorkspaceModal") DELETE
+        a.workspace-btn.delete-workspace.text-light.badge.badge-pill.badge-danger.float-left(
+          href='#', title="Delete Workspace...", data-toggle="modal",
+          data-target="#removeWorkspaceModal"
+        ) DELETE
     ul.navbar-nav.ml-md-auto
       li.nav-item.dropdown
         a.nav-link.dropdown-toggle(href="#", data-toggle="dropdown") Help
@@ -24,7 +33,10 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
           a.dropdown-item(id="tour-link", href="#")
             span.align-middle Feature Tour
             i.fa.fa-map-signs.float-left.mr-2.mt-1
-          a.dropdown-item(href="https://d2wulyp08c6njk.cloudfront.net/releases/CE-Candidate-7.4.8/docs/EN_US/ECLLanguageReference_EN_US-7.4.8-1.pdf", target="_blank")
+          a.dropdown-item(
+            href="https://d2wulyp08c6njk.cloudfront.net/releases/CE-Candidate-7.4.8/" +
+              "docs/EN_US/ECLLanguageReference_EN_US-7.4.8-1.pdf", target="_blank"
+          )
             span.align-middle ECL Docs
             i.fa.fa-book.float-left.mr-2.mt-1
           a.dropdown-item(href="/files/ECL_Cheat_Sheet.pdf", target="_blank")
@@ -52,7 +64,10 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
             .invalid-feedback Please provide a name for the workspace.
           div.form-group
             label.col-form-label(for="workspace-cluster") Cluster:
-            input.form-control(id="workspace-cluster", name="workspaceCluster", type="text", required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"...")
+            input.form-control(
+              id="workspace-cluster", name="workspaceCluster", type="text",
+              required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"..."
+            )
             .invalid-feedback Please provide a valid url for the cluster.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -73,7 +88,10 @@ div.modal.fade(id="editWorkspaceModal", role="dialog")
             .invalid-feedback Please provide a name for the workspace.
           div.form-group
             label.col-form-label(for="edit-workspace-cluster") Cluster:
-            input.form-control(id="edit-workspace-cluster", name="workspaceCluster", type="text", required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"...")
+            input.form-control(
+              id="edit-workspace-cluster", name="workspaceCluster", type="text",
+              required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"..."
+            )
             .invalid-feedback Please provide a valid url for the cluster.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -103,7 +121,10 @@ div.modal.fade.workspaceShareModal(id="shareWorkspaceModal", role="dialog")
       div.modal-body
         nav
         div.nav.nav-tabs(id="share-workspace-nav-tab", role="tablist")
-          a.nav-item.nav-link.active.show(id="nav-share-url-tab", data-toggle="tab", href="#nav-share-url", role="tab", aria-controls="nav-share-url", aria-selected="false") via Url
+          a.nav-item.nav-link.active.show(
+            id="nav-share-url-tab", data-toggle="tab", href="#nav-share-url",
+            role="tab", aria-controls="nav-share-url", aria-selected="false"
+          ) via Url
         div.tab-content.pt-3(id="nav-share-workspace-tabContent")
           div.tab-pane.fade.active.show(id="nav-share-url", role="tabpanel", aria-labelledby="nav-share-url-tab")
             form

@@ -3,10 +3,16 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
 
     div.px-3.py-3(id="datasets-wrapper")
       h6.sidebar-heading.justify-content-between.align-items-center.mt-1.mb-1.text-light
-        a#dataset-collapser.text-light.js-collapser(data-toggle="collapse", href="#datasets", role="button", aria-expanded="false")
+        a#dataset-collapser.text-light.js-collapser(
+          data-toggle="collapse", href="#datasets", role="button",
+          aria-expanded="false"
+        )
           span Datasets
             i.fa.fa-chevron-right.ml-1
-        a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Dataset...", data-toggle="modal", data-target="#newDatasetModal") New
+        a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(
+          href='#', title="New Dataset...", data-toggle="modal",
+          data-target="#newDatasetModal"
+        ) New
           i.fa.fa-plus.ml-1.float-right
 
       div.flex-column.datasets.collapse.folder-root(id="datasets")
@@ -22,10 +28,16 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
 
     div.px-3.py-3(id="scripts-wrapper")
       h6.sidebar-heading.justify-content-between.align-items-center.mt-4.mb-1.text-light
-        a#script-collapser.text-light.js-collapser(data-toggle="collapse", href="#scripts", role="button", aria-expanded="false")
+        a#script-collapser.text-light.js-collapser(
+          data-toggle="collapse", href="#scripts", role="button",
+          aria-expanded="false"
+        )
           span Scripts
             i.fa.fa-chevron-right.ml-1
-        a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(href='#', title="New Script...", data-toggle="modal", data-target="#newScriptModal") New
+        a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(
+          href='#', title="New Script...", data-toggle="modal",
+          data-target="#newScriptModal"
+        ) New
           i.fa.fa-plus.ml-1.float-right
 
       div.flex-column.scripts.collapse.folder-root(id="scripts")
@@ -35,7 +47,10 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
           i.float-right.fa.fa-close.delete.d-none(title="Delete script")
           i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-1(title="Edit script")
 
-    a#new-folder.d-none(href='#', title="New Folder...", data-toggle="modal", data-target="#newFolderModal") New
+    a#new-folder.d-none(
+      href='#', title="New Folder...", data-toggle="modal",
+      data-target="#newFolderModal"
+    ) New
     li.d-none
       a.folder.cloner.text-light
         span.foldername Name
@@ -157,13 +172,19 @@ div.modal.fade(id="newDatasetModal", role="dialog")
       div.modal-body
         nav
         div.nav.nav-tabs(id="nav-tab", role="tablist")
-          a.nav-item.nav-link.active.show(id="nav-upload-tab", data-toggle="tab", href="#nav-upload", role="tab", aria-controls="nav-upload", aria-selected="true") Upload
+          a.nav-item.nav-link.active.show(
+            id="nav-upload-tab", data-toggle="tab", href="#nav-upload",
+            role="tab", aria-controls="nav-upload", aria-selected="true"
+          ) Upload
         div.tab-content(id="nav-tabContent")
           div.tab-pane.fade.active.show(id="nav-upload", role="tabpanel", aria-labelledby="nav-upload-tab")
             form
               div.form-group.form-group-file
                 label.col-form-label(for="dataset-file") File:
-                input.form-control-file(id="dataset-file", name="datasetFile", type="file", required="required", accept=".csv,.txt")
+                input.form-control-file(
+                  id="dataset-file", name="datasetFile", type="file",
+                  required="required", accept=".csv,.txt"
+                )
                 .invalid-feedback Please select a CSV file to upload.
               div.form-group
                 label.col-form-label(for="dataset-name") Name:
