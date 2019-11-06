@@ -60,7 +60,10 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="workspace-name") Name:
-            input.form-control(id="workspace-name", name="workspaceName", type="text", required="required", placeholder="MyWorkspace...")
+            input.form-control(
+              id="workspace-name", name="workspaceName", type="text",
+              required="required", placeholder="MyWorkspace..."
+            )
             .invalid-feedback Please provide a name for the workspace.
           div.form-group
             label.col-form-label(for="workspace-cluster") Cluster:
@@ -84,7 +87,10 @@ div.modal.fade(id="editWorkspaceModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="edit-workspace-name") Name:
-            input.form-control(id="edit-workspace-name", name="workspaceName", type="text", required="required", placeholder="MyWorkspace...")
+            input.form-control(
+              id="edit-workspace-name", name="workspaceName", type="text",
+              required="required", placeholder="MyWorkspace..."
+            )
             .invalid-feedback Please provide a name for the workspace.
           div.form-group
             label.col-form-label(for="edit-workspace-cluster") Cluster:

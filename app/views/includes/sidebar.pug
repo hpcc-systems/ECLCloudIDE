@@ -79,7 +79,10 @@ div.modal.fade(id="newFolderModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="new-folder-name") Name:
-            input.form-control(id="new-folder-name", name="folderName", type="text", required="required", placeholder="MyNewFolder...")
+            input.form-control(
+              id="new-folder-name", name="folderName", type="text",
+              required="required", placeholder="MyNewFolder..."
+            )
             .invalid-feedback Please provide a name for the folder.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -96,7 +99,10 @@ div.modal.fade(id="editFolderModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="edit-folder-name") Name:
-            input.form-control(id="edit-folder-name", name="folderName", type="text", required="required")
+            input.form-control(
+              id="edit-folder-name", name="folderName", type="text",
+              required="required"
+            )
             .invalid-feedback Please provide a name for the folder.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -126,7 +132,10 @@ div.modal.fade(id="newScriptModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="new-script-name") Name:
-            input.form-control(id="new-script-name", name="scriptName", type="text", required="required", placeholder="MyNewScript...")
+            input.form-control(
+              id="new-script-name", name="scriptName", type="text",
+              required="required", placeholder="MyNewScript..."
+            )
             .invalid-feedback Please provide a name for the script.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -143,7 +152,10 @@ div.modal.fade(id="editScriptModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="edit-script-name") Name:
-            input.form-control(id="edit-script-name", name="name", type="text", required="required")
+            input.form-control(
+              id="edit-script-name", name="name", type="text",
+              required="required"
+            )
             .invalid-feedback Please provide a name for the script.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -188,7 +200,10 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                 .invalid-feedback Please select a CSV file to upload.
               div.form-group
                 label.col-form-label(for="dataset-name") Name:
-                input.form-control(id="dataset-name", name="datasetName", type="text", required="required", placeholder="MyNewDataset...")
+                input.form-control(
+                  id="dataset-name", name="datasetName", type="text",
+                  required="required", placeholder="MyNewDataset..."
+                )
                 .invalid-feedback Please provide a name for the dataset.
               div.file-details
       div.modal-footer
@@ -207,7 +222,10 @@ div.modal.fade(id="editDatasetModal", role="dialog")
         form
           div.form-group
             label.col-form-label(for="edit-dataset-name") Name:
-            input.form-control(id="edit-dataset-name", name="name", type="text", required="required")
+            input.form-control(
+              id="edit-dataset-name", name="name", type="text",
+              required="required"
+            )
             .invalid-feedback Please provide a name for the dataset.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
