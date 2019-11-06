@@ -81,9 +81,10 @@ div.modal.fade(id="newFolderModal", role="dialog")
             label.col-form-label(for="new-folder-name") Name:
             input.form-control(
               id="new-folder-name", name="folderName", type="text",
-              required="required", placeholder="MyNewFolder..."
+              required="required", placeholder="MyNewFolder...",
+              pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
             )
-            .invalid-feedback Please provide a name for the folder.
+            .invalid-feedback Please provide a valid name for the folder.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
@@ -101,9 +102,9 @@ div.modal.fade(id="editFolderModal", role="dialog")
             label.col-form-label(for="edit-folder-name") Name:
             input.form-control(
               id="edit-folder-name", name="folderName", type="text",
-              required="required"
+              required="required", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
             )
-            .invalid-feedback Please provide a name for the folder.
+            .invalid-feedback Please provide a valid name for the folder.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
@@ -134,9 +135,10 @@ div.modal.fade(id="newScriptModal", role="dialog")
             label.col-form-label(for="new-script-name") Name:
             input.form-control(
               id="new-script-name", name="scriptName", type="text",
-              required="required", placeholder="MyNewScript..."
+              required="required", placeholder="MyNewScript...",
+              pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
             )
-            .invalid-feedback Please provide a name for the script.
+            .invalid-feedback Please provide a valid name for the script.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
@@ -154,9 +156,9 @@ div.modal.fade(id="editScriptModal", role="dialog")
             label.col-form-label(for="edit-script-name") Name:
             input.form-control(
               id="edit-script-name", name="name", type="text",
-              required="required"
+              required="required", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
             )
-            .invalid-feedback Please provide a name for the script.
+            .invalid-feedback Please provide a valid name for the script.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
@@ -202,9 +204,10 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                 label.col-form-label(for="dataset-name") Name:
                 input.form-control(
                   id="dataset-name", name="datasetName", type="text",
-                  required="required", placeholder="MyNewDataset..."
+                  required="required", placeholder="MyNewDataset...",
+                  pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
                 )
-                .invalid-feedback Please provide a name for the dataset.
+                .invalid-feedback Please provide a valid name for the dataset.
               div.file-details
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
@@ -224,9 +227,9 @@ div.modal.fade(id="editDatasetModal", role="dialog")
             label.col-form-label(for="edit-dataset-name") Name:
             input.form-control(
               id="edit-dataset-name", name="name", type="text",
-              required="required"
+              required="required", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
             )
-            .invalid-feedback Please provide a name for the dataset.
+            .invalid-feedback Please provide a valid name for the dataset.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
