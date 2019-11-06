@@ -30,9 +30,6 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
           a.dropdown-item(href="/files/ECL_Cheat_Sheet.pdf", target="_blank")
             span.align-middle ECL Cheatsheet
             i.fa.fa-life-ring.float-left.mr-2.mt-1
-          //- a.dropdown-item(href="#", data-toggle="modal", data-target="#feedbackModal")
-          //-   span.align-middle Feedback
-          //-   i.fa.fa-bullhorn.float-left.mr-2.mt-1
       li.nav-item
         a.nav-link(href='/users/account') #{user.username}
           i.fa.fa-lg.fa-user.float-left.mr-2
@@ -106,44 +103,17 @@ div.modal.fade.workspaceShareModal(id="shareWorkspaceModal", role="dialog")
       div.modal-body
         nav
         div.nav.nav-tabs(id="share-workspace-nav-tab", role="tablist")
-          //- a.nav-item.nav-link.active.show(id="nav-share-users-tab", data-toggle="tab", href="#nav-share-users", role="tab", aria-controls="nav-share-users", aria-selected="true") with Users
           a.nav-item.nav-link.active.show(id="nav-share-url-tab", data-toggle="tab", href="#nav-share-url", role="tab", aria-controls="nav-share-url", aria-selected="false") via Url
         div.tab-content.pt-3(id="nav-share-workspace-tabContent")
-          //- div.tab-pane.fade(id="nav-share-users", role="tabpanel", aria-labelledby="nav-share-users-tab")
-            form
-              div.form-group.d-flex
-                label.col-form-label(for="search-for-users") Search:
-                input.form-control.user-search.mx-3(id="search-for-users", name="workspaceUsers", type="text", placeholder="by username...")
-                .invalid-feedback Please provide a username.
-            table.table.user-list
-              thead
-                tr.header
-                  th User
-                  //- th Permission
-                  th
-              tbody
-                tr.cloner.d-none
-                  td.username Name
-                  //- td.permission
-                    select.form-control
-                      option(value="read") Read
-                      option(value="write") Write
-                  td.d-flex.justify-content-center
-                    button.btn.btn-danger Remove
           div.tab-pane.fade.active.show(id="nav-share-url", role="tabpanel", aria-labelledby="nav-share-url-tab")
             form
-              //- div.custom-control.custom-switch
-              //-   input.custom-control-input(type="checkbox", id="shareViaUrl")
-              //-   label.custom-control-label(for="shareViaUrl") Share via a url
               p Copy the url below to share this workspace with any users.
               div.form-group.d-flex
-                //- label.col-form-label(for="shareUrl") Url:
                 input.form-control.mr-3(id="shareUrl", name="shareUrl", type="text", readonly)
                 button.btn.btn-outline-info.share-url-btn(id="copyUrl", title="Copy Url")
                   i.fa.fa-clipboard
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Close
-        //- button.btn.btn-primary Share
 
 div.modal.fade(id="feedbackModal", role="dialog")
   div.modal-dialog

@@ -158,7 +158,6 @@ div.modal.fade(id="newDatasetModal", role="dialog")
         nav
         div.nav.nav-tabs(id="nav-tab", role="tablist")
           a.nav-item.nav-link.active.show(id="nav-upload-tab", data-toggle="tab", href="#nav-upload", role="tab", aria-controls="nav-upload", aria-selected="true") Upload
-          //- a.nav-item.nav-link(id="nav-import-tab", data-toggle="tab", href="#nav-import", role="tab", aria-controls="nav-import", aria-selected="false") Import
         div.tab-content(id="nav-tabContent")
           div.tab-pane.fade.active.show(id="nav-upload", role="tabpanel", aria-labelledby="nav-upload-tab")
             form
@@ -171,12 +170,6 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                 input.form-control(id="dataset-name", name="datasetName", type="text", required="required", placeholder="MyNewDataset...")
                 .invalid-feedback Please provide a name for the dataset.
               div.file-details
-          //- div.tab-pane.fade(id="nav-import", role="tabpanel", aria-labelledby="nav-import-tab")
-          //-   form
-          //-     div.form-group
-          //-       label.col-form-label(for="dataset-name") Name:
-          //-       input.form-control(id="dataset-name", name="datasetName", type="text", required="required", placeholder="MyNewDataset...")
-          //-       .invalid-feedback Please provide a name for the dataset.
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save
