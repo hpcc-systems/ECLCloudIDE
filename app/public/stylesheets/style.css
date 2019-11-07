@@ -331,6 +331,13 @@ a.script:hover {
   margin-left: 20px;
 }
 
+.modal .foldername,
+.modal .scriptname,
+.modal .datasetname {
+  width: initial;
+  margin: 0;
+}
+
 .dataset .status,
 .script .status {
   margin-left: 0.33em;
