@@ -52,73 +52,58 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
         a.nav-link(href='/auth/logout') Logout
           i.fa.fa-lg.fa-sign-out.float-left.mr-2
 
-div.modal.fade(id="newWorkspaceModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title New Workspace
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        form
-          div.form-group
-            label.col-form-label(for="workspace-name") Name:
-            input.form-control(
-              id="workspace-name", name="workspaceName", type="text",
-              required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
-            )
-            .invalid-feedback Please provide a valid name for the workspace.
-          div.form-group
-            label.col-form-label(for="workspace-cluster") Cluster:
-            input.form-control(
-              id="workspace-cluster", name="workspaceCluster", type="text",
-              required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"..."
-            )
-            .invalid-feedback Please provide a valid url for the cluster.
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-primary Save
++modal('newWorkspaceModal', 'New Workspace', {
+    text: 'Save', class: 'btn btn-primary'
+  }, 'Cancel', '', [{
+    label: 'Name:',
+    tag: 'input',
+    id: 'workspace-name',
+    name: 'workspaceName',
+    type: 'text',
+    required: 'required',
+    placeholder: 'MyWorkspace...',
+    pattern: '[a-zA-Z]{1}[a-zA-Z0-9_]*',
+    invalidMsg: 'Please provide a valid name for the workspace.'
+  }, {
+    label: 'Cluster:',
+    tag: 'input',
+    id: 'workspace-cluster',
+    name: 'workspaceCluster',
+    type: 'text',
+    required: 'required',
+    placeholder: 'URL or IP:port, such as &ldquo;10.173.147.1:8010&rdquo;...',
+    invalidMsg: 'Please provide a valid url for the cluster.'
+  }
+])
 
-div.modal.fade(id="editWorkspaceModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title Edit Workspace
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        form
-          div.form-group
-            label.col-form-label(for="edit-workspace-name") Name:
-            input.form-control(
-              id="edit-workspace-name", name="workspaceName", type="text",
-              required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
-            )
-            .invalid-feedback Please provide a valid name for the workspace.
-          div.form-group
-            label.col-form-label(for="edit-workspace-cluster") Cluster:
-            input.form-control(
-              id="edit-workspace-cluster", name="workspaceCluster", type="text",
-              required="required", placeholder="URL or IP:port, such as \"10.173.147.1:8010\"..."
-            )
-            .invalid-feedback Please provide a valid url for the cluster.
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-primary Save
++modal('editWorkspaceModal', 'Edit Workspace', {
+    text: 'Save', class: 'btn btn-primary'
+  }, 'Cancel', '', [{
+    label: 'Name:',
+    tag: 'input',
+    id: 'edit-workspace-name',
+    name: 'workspaceName',
+    type: 'text',
+    required: 'required',
+    placeholder: 'MyWorkspace...',
+    pattern: '[a-zA-Z]{1}[a-zA-Z0-9_]*',
+    invalidMsg: 'Please provide a valid name for the workspace.'
+  }, {
+    label: 'Cluster:',
+    tag: 'input',
+    id: 'edit-workspace-cluster',
+    name: 'workspaceCluster',
+    type: 'text',
+    required: 'required',
+    placeholder: 'URL or IP:port, such as &ldquo;10.173.147.1:8010&rdquo;...',
+    invalidMsg: 'Please provide a valid url for the cluster.'
+  }
+])
 
-div.modal.fade(id="removeWorkspaceModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title Delete Workspace
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        p Delete the workspace "#[span.workspacename workspace]"?
-
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-danger Delete
++modal('removeWorkspaceModal', 'Delete Workspace', {
+    text: 'Delete', class: 'btn btn-danger'
+  }, 'Cancel', 'Delete the workspace "<span class="workspacename">workspace</span>"?'
+)
 
 div.modal.fade.workspaceShareModal(id="shareWorkspaceModal", role="dialog")
   div.modal-dialog
@@ -139,19 +124,14 @@ div.modal.fade.workspaceShareModal(id="shareWorkspaceModal", role="dialog")
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Close
 
-div.modal.fade(id="feedbackModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title Submit Feedback
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        form
-          div.form-group
-            label.col-form-label(for="feedback-msg") Message:
-            textarea.form-control(id="feedback-msg", name="feedbackMsg", required="required", placeholder="")
-            .invalid-feedback Please provide a valid url for the cluster.
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Close
-        button.btn.btn-primary Send
++modal('feedbackModal', 'Submit Feedback', {
+    text: 'Send', class: 'btn btn-primary'
+  }, 'Close', '', [{
+    label: 'Message:',
+    tag: 'textarea',
+    id: 'feedback-msg',
+    Name: 'feedbackMsg',
+    required: 'required',
+    invalidMsg: 'Please provide a valid url for the cluster.'
+  }
+])
