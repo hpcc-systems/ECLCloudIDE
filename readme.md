@@ -93,6 +93,7 @@ the `./nginx/Dockerfile` should be modified accordingly.
   * ~~share with a user~~ _both of these methods (user & group) replaced by url_
   * ~~share with a group~~
   * ~~generate a url to share a workspace, rather than specifically assigning to users / groups~~
+  * need to do something about sharing deleted workspaces
 
 * ~~change datasets/scripts left nav to more closely resemble a file explorer in a text-editor / ide~~
 
