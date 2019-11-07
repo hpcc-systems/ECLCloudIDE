@@ -1,0 +1,18 @@
+mixin modal(id, title, primaryBtn, secondaryBtn, message, formElements)
+  div.modal.fade(id!=id, role="dialog")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          h5.modal-title= title
+          button.close(data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+        div.modal-body
+          if formElements && formElements.length > 0
+            form
+              each element in formElements
+                +form-group(element)
+          else if message != ''
+            p !{message}
+        div.modal-footer
+          button.btn.btn-secondary(data-dismiss="modal")= secondaryBtn
+          button(class!=primaryBtn.class, type="submit")= primaryBtn.text

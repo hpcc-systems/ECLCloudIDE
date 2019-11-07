@@ -1,0 +1,8 @@
+mixin form-group(input)
+  div.form-group
+    label.col-form-label(for!=input.id)= input.label
+    #{input.tag}.form-control(
+      id!=input.id, name!=input.name, type!=input.type, required!=input.required,
+      placeholder!=input.placeholder, pattern!=input.pattern
+    )
+    .invalid-feedback= input.invalidMsg
