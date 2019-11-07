@@ -433,6 +433,31 @@ require([
     $('#editWorkspaceModal form')[0].reset();
   });
 
+  $('#shareWorkspaceModal').on('click', '.share-url-btn', function(evt) {
+    let $this = $(this),
+        $shareUrl = $('#shareUrl');
+
+    evt.preventDefault();
+    try {
+      $shareUrl.select();
+      document.execCommand('copy');
+      $shareUrl.blur();
+      $this.attr('title', 'Copied');
+      $this.tooltip('enable');
+      $this.tooltip('show', {
+        placement: 'top'
+      });
+
+      let t = window.setTimeout(function() {
+        $this.tooltip('disable');
+        $this.attr('title', 'Copy Url');
+        window.clearTimeout(t);
+      }, 500);
+    } catch(err) {
+      alert('This browser doesn\'t support programmatic copy/paste. Please select the url and copy manually.');
+    }
+  });
+
   /* SHOW DELETE WORKSPACE CONFIRMATION */
   $('.navbar-nav').on('click', '.delete-workspace', function(evt) {
     let $this = $(this),
