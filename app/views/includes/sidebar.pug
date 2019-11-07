@@ -68,59 +68,42 @@ div.context-menu(id="datasets-context-menu")
     li(data-action="create_folder") New Folder
     li(data-action="create_dataset") New Dataset
 
-div.modal.fade(id="newFolderModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title New Folder
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        form
-          div.form-group
-            label.col-form-label(for="new-folder-name") Name:
-            input.form-control(
-              id="new-folder-name", name="folderName", type="text",
-              required="required", placeholder="MyNewFolder...",
-              pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
-            )
-            .invalid-feedback Please provide a valid name for the folder.
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-primary(type="submit") Save
++modal('newFolderModal', 'New Folder', {
+    text: 'Save', class: 'btn btn-primary'
+  }, 'Close', '', [{
+    label: 'Name:',
+    tag: 'input',
+    id: 'new-folder-name',
+    name: 'folderName',
+    type: 'text',
+    required: 'required',
+    placeholder: 'MyNewFolder...',
+    pattern: '[a-zA-Z]{1}[a-zA-Z0-9_]*',
+    invalidMsg: 'Please provide a valid name for the folder.'
+  }
+])
 
-div.modal.fade(id="editFolderModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title Edit Folder
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        form
-          div.form-group
-            label.col-form-label(for="edit-folder-name") Name:
-            input.form-control(
-              id="edit-folder-name", name="folderName", type="text",
-              required="required", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
-            )
-            .invalid-feedback Please provide a valid name for the folder.
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-primary(type="submit") Save
++modal('editFolderModal', 'Edit Folder', {
+    text: 'Save', class: 'btn btn-primary'
+  }, 'Close', '', [{
+    label: 'Name:',
+    tag: 'input',
+    id: 'edit-folder-name',
+    name: 'folderName',
+    type: 'text',
+    required: 'required',
+    placeholder: 'MyNewFolder...',
+    pattern: '[a-zA-Z]{1}[a-zA-Z0-9_]*',
+    invalidMsg: 'Please provide a valid name for the folder.'
+  }
+])
 
-div.modal.fade(id="removeFolderModal", role="dialog")
-  div.modal-dialog
-    div.modal-content
-      div.modal-header
-        h5.modal-title Remove Folder
-        button.close(data-dismiss="modal", aria-label="Close")
-          span(aria-hidden="true") &times;
-      div.modal-body
-        p Delete the folder "#[span.foldername folder]" (and all of its contents) from this workspace?
-      div.modal-footer
-        button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-danger Delete
++modal('removeFolderModal', 'Remove Folder', {
+    text: 'Delete', class: 'btn btn-danger'
+  }, 'Cancel',
+  'Delete the folder "<span class="foldername">folder</span>" ' +
+  '(and its contents) from this workspace?'
+)
 
 div.modal.fade(id="newScriptModal", role="dialog")
   div.modal-dialog
