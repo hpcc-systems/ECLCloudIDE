@@ -5,6 +5,8 @@ const db = require('../models/index');
 
 const fs = require('fs-extra');
 
+const crypt = require('../utils/crypt');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
@@ -24,7 +26,9 @@ router.post('/', (req, res, next) => {
   console.log('request body', req.body);
   Workspace.create({
     name: req.body.workspaceName,
-    cluster: req.body.workspaceCluster
+    cluster: req.body.workspaceCluster,
+    clusterUser: req.body.clusterUsername,
+    clusterPwd: crypt.encrypt(req.body.clusterPassword)
   }).then((workspace) => {
     let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
     if (!fs.existsSync(workspaceDirPath)) {
@@ -51,11 +55,14 @@ router.put('/', (req, res, next) => {
   if (req.body.workspaceName) workspace.name = req.body.workspaceName;
   if (req.body.directoryTree) workspace.directoryTree = JSON.stringify(req.body.directoryTree);
   if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
+  if (req.body.clusterUsername) workspace.clusterUser = req.body.clusterUsername;
+  if (req.body.clusterPassword) workspace.clusterPwd = crypt.encrypt(req.body.clusterPassword);
   Workspace.update(workspace, {
     where: {
       id: req.body.id
     }
   }).then((result) => {
+    workspace.clusterPwd = req.body.clusterPassword;
     return res.json({ success: true, data: workspace });
   }).catch((err) => {
     console.log(err);

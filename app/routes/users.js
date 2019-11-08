@@ -3,6 +3,8 @@ const router = express.Router();
 
 const bcrypt = require('bcrypt');
 
+const crypt = require('../utils/crypt');
+
 const db = require('../models/index');
 const User = db.User;
 const Workspace = db.Workspace;
@@ -28,6 +30,12 @@ router.get('/workspaces', (req, res, next) => {
       }
     }]
   }).then((user) => {
+    user.Workspaces.forEach((workspace) => {
+      console.log(workspace.dataValues.clusterPwd);
+      if (workspace.dataValues.clusterPwd !== null) {
+        workspace.dataValues.clusterPwd = crypt.decrypt(workspace.dataValues.clusterPwd);
+      }
+    });
     res.json(user.Workspaces);
   }).catch((err) => {
     console.log(err);

@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: DataTypes.STRING,
     cluster: DataTypes.STRING,
+    clusterUser: DataTypes.STRING,
+    clusterPwd: DataTypes.STRING,
     directoryTree: {
       type: DataTypes.STRING(4098),
       defaultValue: '{ "datasets": {}, "scripts": {} }',

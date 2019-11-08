@@ -87,6 +87,8 @@ let populateWorkspaces = () => {
           $newWorkspace.removeClass('d-none cloner');
           $newWorkspace.data('name', workspace.name || '');
           $newWorkspace.data('cluster', workspace.cluster || '');
+          $newWorkspace.data('clusterUsername', workspace.clusterUser || '');
+          $newWorkspace.data('clusterPassword', workspace.clusterPwd || '');
           $newWorkspace.data('id', workspace.id || '');
           $newWorkspace.data('directoryTree', workspace.directoryTree || '');
           $newWorkspace.text($newWorkspace.data('name'));

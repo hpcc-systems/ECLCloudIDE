@@ -388,6 +388,8 @@ require([
     //link.parentElement.removeChild(link);
     $modal.find('#edit-workspace-name').val($workspace.data('name'));
     $modal.find('#edit-workspace-cluster').val($workspace.data('cluster'));
+    $modal.find('#edit-cluster-username').val($workspace.data('clusterUsername'));
+    $modal.find('#edit-cluster-password').val($workspace.data('clusterPassword'));
     $modal.modal('show');
   });
 
@@ -429,6 +431,8 @@ require([
         '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
       );
       $workspace.data('cluster', workspace.data.cluster);
+      $workspace.data('clusterUsername', workspace.data.clusterUser);
+      $workspace.data('clusterPassword', workspace.data.clusterPwd);
       $modal.find('#edit-workspace-name').val('');
       $form.removeClass('was-validated');
     });
