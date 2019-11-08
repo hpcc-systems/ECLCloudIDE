@@ -345,11 +345,16 @@ require([
     populateDatasets();
     populateScripts();
 
-    if ($this.data('cluster').lastIndexOf(':') > 4) {
-      setClusterHost($this.data('cluster').substring(0, $this.data('cluster').lastIndexOf(':')));
-      setClusterPort($this.data('cluster').substring($this.data('cluster').lastIndexOf(':') + 1));
+    if ($this.data('cluster')) {
+      if ($this.data('cluster').lastIndexOf(':') > 4) {
+        setClusterHost($this.data('cluster').substring(0, $this.data('cluster').lastIndexOf(':')));
+        setClusterPort($this.data('cluster').substring($this.data('cluster').lastIndexOf(':') + 1));
+      } else {
+        setClusterHost($this.data('cluster'));
+        setClusterPort(null);
+      }
     } else {
-      setClusterHost($this.data('cluster'));
+      setClusterHost(null);
       setClusterPort(null);
     }
 
@@ -417,11 +422,13 @@ require([
     .then((workspace) => {
       $modal.modal('hide');
       $workspace.data('name', workspace.data.name);
+      $workspace.text($workspace.data('name'));
       $selected.text($workspace.data('name'));
       $selected.append(
         '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
         '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
       );
+      $workspace.data('cluster', workspace.data.cluster);
       $modal.find('#edit-workspace-name').val('');
       $form.removeClass('was-validated');
     });
