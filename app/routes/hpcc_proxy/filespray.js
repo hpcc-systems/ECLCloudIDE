@@ -135,7 +135,7 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId, dropzoneIp = '
     method: 'POST',
     uri: clusterAddr + '/FileSpray/SprayVariable.json',
     formData: {
-      destGroup: (router.clusters.length > 0) ?
+      destGroup: (router.clusters && router.clusters.length > 0) ?
         router.clusters[Math.floor(Math.random() * Math.floor(router.clusters.length))] :
         'mythor',
       DFUServerQueue: 'dfuserver_queue',

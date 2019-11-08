@@ -99,14 +99,20 @@ let shareWorkspace = async (workspaceId, user) => {
   return new Promise((resolve, reject) => {
     Workspace.findOne({
       where: { id: workspaceId },
-      include: {
+      include: [{
         model: User,
         through: {
           where: { role: WorkspaceUser.roles.OWNER }
         }
-      }
+      }, {
+        model: Script
+      }, {
+        model: Dataset
+      }]
     }).then((workspaceToClone) => {
-      console.log(workspaceToClone.Users[0].username);
+      // console.log(workspaceToClone.Users[0].username);
+      // console.log(workspaceToClone.Scripts.length + ' Scripts');
+      // console.log(workspaceToClone.Datasets.length + ' Datasets');
       _directoryTree = workspaceToClone.directoryTree;
 
       Workspace.create({
@@ -119,22 +125,18 @@ let shareWorkspace = async (workspaceId, user) => {
         let oldWorkspaceScope = workspaceToClone.Users[0].username + '::' + workspaceToClone.name,
             newWorkspaceScope = user.name + '::' + newWorkspace.name;
 
+        let _promises = [];
+
         WorkspaceUser.create({
           userId: user.id,
           workspaceId: newWorkspace.id,
           role: WorkspaceUser.roles.OWNER
         });
         console.log(workspaceToClone.name);
-        Script.findAll({
-          where: {
-            [db.Sequelize.Op.and]: {
-              workspaceId: workspaceToClone.id,
-              deletedAt: null
-            }
-          }
-        }).then((scripts) => {
-          scripts.forEach((scriptToClone) => {
-            console.log('scriptToClone', scriptToClone);
+
+        let _createScripts = (scriptToClone) => {
+          return new Promise((resolve) => {
+            console.log('scriptToClone', scriptToClone.name);
             ScriptRevision.findOne({
               where: {
                 [db.Sequelize.Op.and]: {
@@ -169,35 +171,18 @@ let shareWorkspace = async (workspaceId, user) => {
                 if (!fs.existsSync(_scriptDirPath)) { fs.mkdirpSync(_scriptDirPath); }
                 console.log('creating ECL file: ' + _scriptFilePath);
                 fs.writeFileSync(_scriptFilePath, _content);
+                resolve();
               });
             });
           });
-        });
+        };
+        _promises = _promises.concat(workspaceToClone.Scripts.map(_createScripts));
+        // console.log(_promises.length + ' PROMISES!!!!!!!!!!!!!!!! ---- Scripts');
 
-        Dataset.findAll({
-          where: {
-            [db.Sequelize.Op.and]: {
-              workspaceId: workspaceToClone.id,
-              deletedAt: null
-            }
-          }
-        }).then((datasets) => {
-          if (!datasets || datasets.length == 0) {
-            let _workspace = {
-              directoryTree: _directoryTree
-            };
-            console.log('new workspace');
-            console.log(_workspace);
-            Workspace.update(_workspace, {
-              where: {
-                id: newWorkspaceId
-              }
-            }).then(() => {
-               return resolve({ success: true, message: 'Workspace shared' });
-            });
-          }
 
-          datasets.forEach((datasetToClone) => {
+        let _createDatasets = (datasetToClone) => {
+          return new Promise((resolve) => {
+            console.log('cloning ' + datasetToClone.filename);
             let filename = datasetToClone.filename,
                 clusterAddr = newWorkspace.cluster,
                 clusterPort = null,
@@ -252,18 +237,7 @@ let shareWorkspace = async (workspaceId, user) => {
                           });
                           hpccWorkunitsRouter.updateWorkunit(clusterAddr, wuid, newDataset.eclQuery);
                           hpccWorkunitsRouter.submitWorkunit(clusterAddr, wuid);
-                          let _workspace = {
-                            directoryTree: _directoryTree
-                          };
-                          console.log('new workspace');
-                          console.log(_workspace);
-                          Workspace.update(_workspace, {
-                            where: {
-                              id: newWorkspaceId
-                            }
-                          }).then(() => {
-                             return resolve({ success: true, message: 'Workspace shared' });
-                          });
+                          resolve();
                         }).catch((err) => {
                           console.log(err);
                           return reject(err);
@@ -275,6 +249,24 @@ let shareWorkspace = async (workspaceId, user) => {
                   return reject(err);
                 });
             });
+          });
+        };
+        _promises = _promises.concat(workspaceToClone.Datasets.map(_createDatasets));
+        // console.log(_promises.length + ' PROMISES!!!!!!!!!!!!!!!! ---- DataSets');
+
+        Promise.all(_promises).then(() => {
+          // console.log(_promises.length + ' PROMISES!!!!!!!!!!!!!!!! ---- ALL');
+          let _workspace = {
+            directoryTree: _directoryTree
+          };
+          console.log('new workspace???');
+          console.log(_workspace);
+          Workspace.update(_workspace, {
+            where: {
+              id: newWorkspaceId
+            }
+          }).then(() => {
+             return resolve({ success: true, message: 'Workspace shared' });
           });
         });
       });
