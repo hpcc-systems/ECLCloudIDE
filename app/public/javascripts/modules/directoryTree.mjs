@@ -85,10 +85,10 @@ let populateWorkspaces = () => {
           console.log(workspace);
           let $newWorkspace = $workspaces.find('.cloner').clone();
           $newWorkspace.removeClass('d-none cloner');
-          $newWorkspace.data('name', workspace.name);
-          $newWorkspace.data('cluster', workspace.cluster);
-          $newWorkspace.data('id', workspace.id);
-          $newWorkspace.data('directoryTree', workspace.directoryTree);
+          $newWorkspace.data('name', workspace.name || '');
+          $newWorkspace.data('cluster', workspace.cluster || '');
+          $newWorkspace.data('id', workspace.id || '');
+          $newWorkspace.data('directoryTree', workspace.directoryTree || '');
           $newWorkspace.text($newWorkspace.data('name'));
           $workspaces.append($newWorkspace);
         });
