@@ -99,6 +99,35 @@ router.delete('/', (req, res, next) => {
   });
 });
 
+let getUniqueWorkspaceName = async (workspaceToClone, user) => {
+  let clonedWorkspaceName = workspaceToClone.name;
+  //check workspaces with same name and determine a unique name for the cloned workspace
+  return new Promise((resolve, reject) => {
+    User.findByPk(user.id, {
+      include: [{
+        model: Workspace,
+        through: {
+          where: {
+            [db.Sequelize.Op.or]: [{
+              '$Workspaces.name$': workspaceToClone.name
+            }, {
+              '$Workspaces.name$': {
+                [db.Sequelize.Op.like]: workspaceToClone.name + ' (Copy%'
+              }
+            }]
+          },
+        }
+      }]
+    }).then((cloningUser) => {
+      console.log(cloningUser.Workspaces.length);
+      if (cloningUser.Workspaces.length > 0) {
+        clonedWorkspaceName += ' (Copy-' + cloningUser.Workspaces.length + ')';
+      }
+      return resolve(clonedWorkspaceName);
+    });
+  })
+};
+
 let shareWorkspace = async (workspaceId, user) => {
   let _directoryTree = null,
       newWorkspaceId = null;
@@ -116,14 +145,16 @@ let shareWorkspace = async (workspaceId, user) => {
       }, {
         model: Dataset
       }]
-    }).then((workspaceToClone) => {
+    }).then(async (workspaceToClone) => {
       // console.log(workspaceToClone.Users[0].username);
       // console.log(workspaceToClone.Scripts.length + ' Scripts');
       // console.log(workspaceToClone.Datasets.length + ' Datasets');
+      let clonedWorkspaceName = await getUniqueWorkspaceName(workspaceToClone, user);
+
       _directoryTree = workspaceToClone.directoryTree;
 
       Workspace.create({
-        name: workspaceToClone.name,
+        name: clonedWorkspaceName,
         cluster: workspaceToClone.cluster,
         directoryTree: workspaceToClone.directoryTree
       }).then((newWorkspace) => {
