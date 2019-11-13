@@ -15,7 +15,9 @@ let currentDatasetFile = {};
 
 let cluster = {
   host: 'http://10.173.147.1',
-  port: '8010'
+  port: '8010',
+  user: '',
+  pass: ''
 };
 let setClusterHost = (host) => {
   cluster.host = host;
@@ -23,11 +25,18 @@ let setClusterHost = (host) => {
 let setClusterPort = (port) => {
   cluster.port = port;
 };
+let setClusterUser = (user) => {
+  cluster.user = user;
+};
+let setClusterPass = (pass) => {
+  cluster.pass = pass;
+};
 
 let csrfToken = document.querySelector('[name="csrf-token"]').content;
 
 export {
   hostname, NO_WORKSPACE, NEW_SCRIPT, NEW_DATASET, FILE_LIMIT,
   DEFAULT_FILE_FEEDBACK, currentDatasetFile, cluster,
-  setClusterHost, setClusterPort, csrfToken,
+  setClusterHost, setClusterPort, setClusterUser, setClusterPass,
+  csrfToken,
 };

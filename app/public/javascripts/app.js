@@ -3,7 +3,8 @@
 import {
   hostname, NO_WORKSPACE, NEW_SCRIPT, NEW_DATASET, FILE_LIMIT,
   DEFAULT_FILE_FEEDBACK, currentDatasetFile, cluster,
-  setClusterHost, setClusterPort, csrfToken,
+  setClusterHost, setClusterPort, setClusterUser, setClusterPass,
+  csrfToken,
 } from './modules/consts.mjs';
 
 import { tour } from './modules/featureTour.mjs';
@@ -356,6 +357,14 @@ require([
     } else {
       setClusterHost(null);
       setClusterPort(null);
+    }
+
+    if ($this.data('clusterUsername') && $this.data('clusterUsername') !== '') {
+      setClusterUser($this.data('clusterUsername'));
+    }
+
+    if ($this.data('clusterPassword') && $this.data('clusterPassword') !== '') {
+      setClusterPass($this.data('clusterPassword'));
     }
 
     toggleNewScriptPopover();
