@@ -253,6 +253,10 @@ require([
     $(evt.target).find('input:first').focus();
   });
 
+  $(".workspace-load-msg").fadeTo(1000, 300).slideUp(300, function(){
+    $(".workspace-load-msg").slideUp(300);
+  });
+
   /*==========================================================================*
    *  WORKSPACES                                                              *
    *==========================================================================*/

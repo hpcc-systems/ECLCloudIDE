@@ -25,6 +25,16 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
           href='#', title="Delete Workspace...", data-toggle="modal",
           data-target="#removeWorkspaceModal"
         ) DELETE
+
+    if errors.length > 0
+      div.workspace-load-msg.alert.alert-danger.alert-dismissible #{errors[0]}
+        button.close(type='button', data-dismiss='alert', aria-label='Close')
+          span(aria-hidden='true') &times;
+    else if info.length > 0
+      div.workspace-load-msg.alert.alert-info.alert-dismissible(data-workspaceid=info[1].workspaceId) #{info[0]}
+        button.close(type='button', data-dismiss='alert', aria-label='Close')
+          span(aria-hidden='true') &times;
+
     ul.navbar-nav.ml-md-auto
       li.nav-item.dropdown
         a.nav-link.dropdown-toggle(href="#", data-toggle="dropdown") Help

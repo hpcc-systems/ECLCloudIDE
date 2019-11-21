@@ -146,7 +146,7 @@ let shareWorkspace = async (workspaceId, user) => {
         model: Dataset
       }]
     }).then(async (workspaceToClone) => {
-      // console.log(workspaceToClone.Users[0].username);
+       //console.log(workspaceToClone.Users[0].username);
       // console.log(workspaceToClone.Scripts.length + ' Scripts');
       // console.log(workspaceToClone.Datasets.length + ' Datasets');
       let clonedWorkspaceName = await getUniqueWorkspaceName(workspaceToClone, user);
@@ -304,21 +304,30 @@ let shareWorkspace = async (workspaceId, user) => {
               id: newWorkspaceId
             }
           }).then(() => {
-             return resolve({ success: true, message: 'Workspace shared' });
+             return resolve({ success: true, message: 'Workspace shared', workspaceId: newWorkspaceId });
           });
         });
       });
+    }).catch((err) => {
+      return reject({ success: false, message: err.message });
     });
-  }); //end new Promise(...)
+  }) //end new Promise(...)
 };
 
 router.get('/share/:id', async (req, res, next) => {
   let workspaceId = req.params.id,
       user = { id: req.session.user.id, name: req.session.user.username };
   console.log(workspaceId, user);
-  let result = await shareWorkspace(workspaceId, user);
-  console.log(result);
-  return res.redirect('/');
+  try {
+    let result = await shareWorkspace(workspaceId, user);
+    console.log('result: '+result);
+    req.flash('info', 'Workspace imported succesfully.');
+    req.flash('info', result);
+    return res.redirect('/');
+  }catch(err) {
+    req.flash('error', 'There was an error importing the workspace. ');
+    return res.redirect('/');
+  }
 });
 
 module.exports = router;

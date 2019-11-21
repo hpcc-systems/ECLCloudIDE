@@ -547,3 +547,13 @@ main .loader p {
     width: 65%;
   }
 }
+
+.workspace-load-msg.alert {
+  margin-bottom: 0px;
+  padding: .50rem 4rem;
+}
+
+.workspace-load-msg.alert-dismissible .close {
+  padding: .50rem 1.25rem;
+}
+

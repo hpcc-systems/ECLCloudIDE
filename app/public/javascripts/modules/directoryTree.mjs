@@ -94,6 +94,8 @@ let populateWorkspaces = () => {
           $newWorkspace.text($newWorkspace.data('name'));
           $workspaces.append($newWorkspace);
         });
+
+        loadWorkspace();
       }
     });
 };
@@ -196,6 +198,17 @@ let showScripts = () => {
     $scriptCollapser.trigger('click');
   }
 };
+
+let loadWorkspace = () => {
+  if( $('.workspace-load-msg.alert-info').length > 0) {
+    let $loadedWorkspaceId = $('.workspace-load-msg.alert-info').data('workspaceid');
+    let $newlySharedWorkspaces = $('.workspaces .dropdown-item').filter(function() {
+      return ($(this).data("id") == $loadedWorkspaceId ? true : false)
+    });
+    $($newlySharedWorkspaces[0]).addClass('active');
+    $('.workspaces .dropdown-item.active').trigger("click");
+  }
+}
 
 export {
   renderTree, addScript, addDataset, addFolder, populateWorkspaces,
