@@ -21,61 +21,49 @@ const upload = multer({ storage: _storage });
 const fs = require('fs');
 
 let request = require('request-promise');
+let crypt = require('../../utils/crypt');
+
+const db = require('../../models/index');
+const Workspace = db.Workspace;
+const WorkspaceUser = db.WorkspaceUser;
 
 let buildClusterAddr = (req, res, next) => {
-  console.log('in buildClusterAddr middleware ', req.body, req.params, req.file);
-  if (req.body.clusterAddr) {
-    router.clusterAddr = req.body.clusterAddr;
-    console.log('router.clusterAddr: ' + router.clusterAddr, 'first 4: ' + router.clusterAddr.substring(0, 4));
-    if (router.clusterAddr.substring(0, 4) != 'http') {
-      router.clusterAddrAndPort = 'http://' + router.clusterAddr;
+  let workspaceId = req.body.workspaceId || req.query.workspaceId;
+  Workspace.findOne({
+    where: { id: workspaceId },
+    through: {
+      where: { role: WorkspaceUser.roles.OWNER }
+    }
+  }).then(workspace => {
+    let cluster = workspace.cluster;
+    if (cluster.indexOf(':') == 4) {
+      let addr = cluster.substr(7).split(':');
+      req.clusterAddr = addr[0];
+      req.clusterPort = addr[1];
+    } else if (cluster.lastIndexOf(':') > -1) {
+      let addr = cluster.split(':');
+      req.clusterAddr = addr[0];
+      req.clusterPort = addr[1];
+    }
+    req.clusterAddrAndPort = cluster;
+    if (req.clusterAddrAndPort.substring(0, 4) != 'http') {
+      req.clusterAddrAndPort = 'http://' + req.clusterAddrAndPort;
+    }
+    if (workspace.clusterUser && workspace.clusterPwd) {
+      let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
+      let auth = Buffer.from(creds).toString('base64');
+      req.headers.Authorization = 'Basic ' + auth;
+    }
+    if (ipRegex.test(req.clusterAddr)) {
+      req.clusterIp = req.clusterAddr;
+      next();
     } else {
-      router.clusterAddrAndPort = router.clusterAddr;
-    }
-    if (req.body.clusterPort) {
-      router.clusterPort = req.body.clusterPort;
-      router.clusterAddrAndPort += ':' + router.clusterPort;
-    }
-
-    let dropZoneJson = request({
-      uri: router.clusterAddrAndPort + '/WsTopology/TpDropZoneQuery.json',
-      json: true
-    });
-    let clusterJson = request({
-      uri: router.clusterAddrAndPort + '/WsTopology/TpTargetClusterQuery.json',
-      json: true
-    });
-
-    Promise.all([
-      dropZoneJson.catch((err) => { console.log(err); }),
-      clusterJson.catch((err) => { console.log(err); })
-    ])
-    .then((values) => {
-      if (values[1] instanceof Error !== true) {
-        router.clusters = values[1].TpTargetClusterQueryResponse.TpTargetClusters.TpTargetCluster
-          .filter((cluster) => cluster.Type === 'ThorCluster')[0].TpClusters.TpCluster
-          .map((cluster) => cluster.Name);
-      } else {
-        router.clusters = [];
-      }
-
-      let dropzone = values[0].TpDropZoneQueryResponse.TpDropZones.TpDropZone[0];
-
-      router.dropzoneIp = dropzone.TpMachines.TpMachine[0].Netaddress;
-
-      if (ipRegex.test(router.clusterAddr)) {
-        console.log('clusterAddr is an IP');
-        router.clusterIp = router.clusterAddr;
+      dns.lookup(req.clusterAddr, {}, (err, address, family) => {
+        req.clusterIp = address;
         next();
-      } else {
-        dns.lookup(router.clusterAddr, {}, (err, address, family) => {
-          console.log('dns lookup for ' + router.clusterAddr + ': ' + address);
-          router.clusterIp = address;
-          next();
-        });
-      }
-    });
-  }
+      });
+    }
+  });
 }
 
 router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, next) => {
@@ -88,8 +76,8 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
 
   request({
     method: 'POST',
-    uri: router.clusterAddrAndPort + '/Filespray/UploadFile.json?upload_' +
-      '&NetAddress=' + router.dropzoneIp + '&rawxml_=1&OS=2&' +
+    uri: req.clusterAddrAndPort + '/Filespray/UploadFile.json?upload_' +
+      '&NetAddress=' + req.clusterIp + '&rawxml_=1&OS=2&' +
       'Path=/var/lib/HPCCSystems/mydropzone/',
     formData: {
       'UploadedFiles[]': {
@@ -116,7 +104,7 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
 router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
   console.log('in /spray ', req.body, req.params, req.file, router.clusters);
 
-  router.sprayFile(router.clusterAddrAndPort, req.body.filename, req.session.user.username, req.body.workspaceId)
+  router.sprayFile(req.clusterAddrAndPort, req.body.filename, req.session.user.username, req.body.workspaceName, req.clusterIp)
     .then((response) => {
       console.log(response.body);
       let json = JSON.parse(response.body);
@@ -127,7 +115,7 @@ router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
     });
 });
 
-router.sprayFile = (clusterAddr, filename, username, workspaceId, dropzoneIp = '') => {
+router.sprayFile = (clusterAddr, filename, username, workspaceName, dropzoneIp = '') => {
   if (dropzoneIp == '' && router && router.dropzoneIp) {
     dropzoneIp = router.dropzoneIp;
   }
@@ -139,7 +127,7 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId, dropzoneIp = '
         router.clusters[Math.floor(Math.random() * Math.floor(router.clusters.length))] :
         'mythor',
       DFUServerQueue: 'dfuserver_queue',
-      namePrefix: username + '::' + workspaceId,
+      namePrefix: username + '::' + workspaceName,
       targetName: filename,
       sourceFormat: 1,
       sourceCsvSeparate: '\,',
@@ -148,7 +136,7 @@ router.sprayFile = (clusterAddr, filename, username, workspaceId, dropzoneIp = '
       overwrite: 'on',
       sourceIP: dropzoneIp,
       sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
-      destLogicalName: username + '::' + workspaceId + '::' + filename,
+      destLogicalName: username + '::' + workspaceName + '::' + filename,
       rawxml_: 1
     },
     resolveWithFullResponse: true

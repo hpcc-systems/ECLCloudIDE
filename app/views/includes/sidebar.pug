@@ -166,6 +166,11 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                 )
                 .invalid-feedback Please select a CSV file to upload.
               div.form-group
+                label.col-form-label(for="dataset-dropzone") Dropzone:
+                select.custom-select(id="dataset-dropzone", name="dropzone", required="required")
+                  option(value="") Select...
+                .invalid-feedback Please select a dropzone to upload the file.
+              div.form-group
                 label.col-form-label(for="dataset-name") Name:
                 input.form-control(
                   id="dataset-name", name="datasetName", type="text",

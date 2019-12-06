@@ -2,8 +2,8 @@
 
 import {
   hostname, NO_WORKSPACE, NEW_SCRIPT, NEW_DATASET, FILE_LIMIT,
-  DEFAULT_FILE_FEEDBACK, currentDatasetFile, cluster,
-  setClusterHost, setClusterPort, setClusterUser, setClusterPass,
+  DEFAULT_FILE_FEEDBACK, currentDatasetFile, setCurrentDatasetFile,
+  cluster, setClusterHost, setClusterPort, setClusterUser, setClusterPass,
   csrfToken,
 } from './modules/consts.mjs';
 
@@ -59,8 +59,60 @@ let generateUUIDv4 = () => {
   );
 };
 
-let getDropzones = () => {
+let getDropzones = async (url, usr, pwd) => {
+  let workspaceId = $('.workspaces .active').data('id');
+  return new Promise((resolve) => {
+    fetch('/workspaces/dropzones/' + workspaceId)
+      .then(resp => resp.json())
+      .then(json => resolve(json.dropzones))
+  });
+};
 
+let getThors = async (url, usr, pwd) => {
+  let workspaceId = $('.workspaces .active').data('id');
+  return new Promise((resolve) => {
+    fetch('/workspaces/clusters/' + workspaceId)
+      .then(resp => resp.json())
+      .then(json => resolve(json.clusters))
+  });
+};
+
+let getDefaultTargetCluster = async (url, usr, pwd) => {
+  return new Promise((resolve) => {
+    url = ((cluster.host.indexOf('http') < 0) ? 'http://' : '') + cluster.host + ':' + cluster.port + url;
+    fetch(url)
+      .then(resp => resp.json())
+      .then(json => {
+        let _clusters = json.TpListTargetClustersResponse.TargetClusters.TpClusterNameType,
+            target = _clusters.filter(cluster => cluster.IsDefault);
+
+        if (target.length === 1) {
+          resolve(target[0].Name);
+        }
+      })
+  })
+};
+
+let populateScriptTargets = async () => {
+  let clusterUrl = cluster.host + (cluster.port != '' ? ':' + cluster.port : '');
+  if (clusterUrl.indexOf('http') < 0) {
+    clusterUrl = 'http://' + clusterUrl;
+  }
+  let clusters = await getThors(clusterUrl, cluster.user, cluster.pass);
+  let $selectTarget = $('#selectTarget'),
+      $thors = $('.thors'),
+      $clusters = $thors.find('.dropdown-item:not(.cloner)');
+
+  $selectTarget.text('Select...');
+  $clusters.remove();
+
+  clusters.forEach(cluster => {
+    let $newTarget = $thors.find('.cloner').clone();
+    $newTarget.removeClass('d-none cloner');
+    $newTarget.data('name', cluster);
+    $newTarget.text(cluster);
+    $thors.append($newTarget);
+  });
 };
 
 let getFormData = ($form) => {
@@ -236,6 +288,8 @@ require([
     populateWorkspaces();
   }
 
+  $('[data-toggle="popover"]').popover();
+
   $('.js-collapser').on('click', function(evt) {
     let $this = $(this),
         $chevron = $this.find('.fa');
@@ -253,6 +307,10 @@ require([
     $(evt.target).find('input:first').focus();
   });
 
+  $('body').on('animationend', '.shake', function(evt) {
+    $(this).removeClass('shake');
+  });
+  
   $(".workspace-load-msg").fadeTo(1000, 300).slideUp(300, function(){
     $(".workspace-load-msg").slideUp(300);
   });
@@ -372,6 +430,7 @@ require([
     }
 
     toggleNewScriptPopover();
+    populateScriptTargets();
   });
 
   /* SHOW WORKSPACE MEMBERS MODAL */
@@ -542,6 +601,24 @@ require([
 
   $('#newDatasetModal label[for="dataset-file"]').text('File (limit ' + (FILE_LIMIT / (1024 * 1024)) + 'MB):');
 
+  /* ON NEW DATASET MODAL SHOWN */
+  $('#newDatasetModal').on('shown.bs.modal', async function(evt) {
+    let $modal = $('#newDatasetModal'),
+        $dropzones = $modal.find('[name="dropzone"]'),
+        workspaceId = $('.workspaces .active').data('id'),
+        dropzones = await getDropzones(workspaceId);
+
+    $dropzones.html('');
+
+    for (var i in dropzones) {
+      let optgroup = $('<optgroup label="' + i + '"></optgroup>');
+      dropzones[i].forEach((addr) => {
+        optgroup.append('<option value="' + addr + '">' + addr + '</option>');
+      });
+      $dropzones.append(optgroup);
+    }
+  });
+
   /* CREATE NEW DATASET */
   $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
     let $this = $(this),
@@ -622,7 +699,7 @@ require([
         .then(json => {
           console.log(json);
           dataset.file = json.file;
-          sprayFile(json.file, $workspaceName)
+          sprayFile(json.file, $workspaceName, $workspaceId)
           .then(response => response.json(), (err) => { console.log(err) })
           .then((json) => {
             console.log('sprayed file', json.wuid);
@@ -735,9 +812,14 @@ require([
                   let response = await createWorkunit();
                   let dpJson = await response.json();
                   let dpWuid = dpJson.wuid;
+                  let defaultClusterTarget = await getDefaultTargetCluster(
+                    '/WsTopology/TpListTargetClusters.json',
+                    $activeWorkspace.data('clusterUsername'),
+                    $activeWorkspace.data('clusterPassword')
+                  );
 
                   updateWorkunit(dpWuid, null, dataset.name + '-profile.ecl', null, dataset.id, $workspaceId).then(() => {
-                    submitWorkunit(dpWuid).then(() => {
+                    submitWorkunit(dpWuid, defaultClusterTarget).then(() => {
                       console.log('check status of DataPatterns workunit');
                       $datasetStatus.addClass('fa-spin');
                       awaitWorkunitStatusComplete(dpWuid, function(json) {
@@ -745,11 +827,11 @@ require([
                         .then(response => response.json())
                         .then((wuResult) => {
                           if (!wuResult.WUResultResponse) {
-                            throw 'No Workunit Response available for ' + wuid;
+                            throw 'No Workunit Response available for ' + dpWuid;
                           }
                           let dpResults = wuResult.WUResultResponse.Result.Row;
                           if (dpResults.length < 1) {
-                            throw 'No results for Workunit ' + wuid;
+                            throw 'No results for Workunit ' + dpWuid;
                           }
                           console.log(dpResults);
 
@@ -780,8 +862,8 @@ require([
 
                           console.log(_query);
 
-                          updateWorkunit(_wuid, _query, null, null, null, null).then(() => {
-                            submitWorkunit(_wuid).then(() => {
+                          updateWorkunit(_wuid, _query, null, null, null, $workspaceId).then(() => {
+                            submitWorkunit(_wuid, defaultClusterTarget).then(() => {
                               dataset.wuid = _wuid;
                               console.log('check status of workunit');
                               $datasetStatus.addClass('fa-spin');
@@ -938,12 +1020,14 @@ require([
             headingsEl = '<label data-toggle="popover" data-placement="right" ' +
               'title="Headings" data-content="This is the first row from your file, ' +
               'which are being shown here as column headings. If you would like to ' +
-              'override these column headings, change the values below.">Headings</label>',
+              'override these column headings, change the values below.">Headings' +
+              '<i class="fa fa-question-circle ml-1 text-secondary"></i></label>',
             valuesEl = '<label data-toggle="popover" data-placement="right" ' +
               'title="Sample Row" data-content="This is the second row from your file, ' +
               'which are being shown as an example for the fields that correspond to ' +
               'the column headings to the left. Changing these values will have no impact ' +
-              'on the import process of your file.">Values</label>';
+              'on the import process of your file.">Values' +
+              '<i class="fa fa-question-circle ml-1 text-secondary"></i></label>';
 
         if (idx == 0) {
           $newFormRow.append('<span>' + headingsEl + '</span>');
@@ -952,7 +1036,7 @@ require([
         }
 
         $newFormRow.append('<input type="text" class="form-control" value="' + label.replace(/ /g, '') + '" />');
-        $newFormRow.append('<input type="text" class="form-control" value="' + values[idx] + '" />');
+        $newFormRow.append('<input type="text" class="form-control" value="' + values[idx] + '" disabled="disabled" />');
 
         $fileDetails.append($newFormRow);
 
@@ -985,7 +1069,7 @@ require([
         }
       }
 
-      currentDatasetFile = averages;
+      setCurrentDatasetFile(averages);
     });
     $saveBtn.removeAttr('disabled').removeClass('disabled');
   });
@@ -1183,7 +1267,10 @@ require([
   $('.scripts').on('click', '.script', function(evt) {
     let $this = $(this),
         _wuid = $this.data('wuid') ? $this.data('wuid') : '',
-        $scriptControls = $('.script-controls');
+        _cluster = $this.data('cluster') ? $this.data('cluster') : '',
+        $scriptControls = $('.script-controls'),
+        $clusters = $('.thors'),
+        $selectedCluster = $('#selectTarget');
 
     $('#scripts').find('.script').removeClass('active');
     $this.addClass('active');
@@ -1209,6 +1296,16 @@ require([
       $scriptControls.find('.show-results').addClass('d-none');
     } else {
       $scriptControls.find('.show-results').removeClass('d-none');
+    }
+
+    $clusters.find('.dropdown-item').removeClass('active');
+    if (_cluster == '') {
+      $selectedCluster.text('Select...');
+    } else {
+      $selectedCluster.text(_cluster);
+      $clusters.find('.dropdown-item').filter((idx, el) => {
+        return $(el).data('name') == _cluster;
+      }).addClass('active');
     }
   });
 
@@ -2068,6 +2165,9 @@ require([
         _wuid = '',
         _filename = $script.data('name') + '.ecl',
         $activeWorkspace = $('.workspaces .active'),
+        $selectCluster = $('#selectTarget'),
+        $clusterPopoverTarget = $('.target-popover'),
+        $cluster = $('.thors .active').data('name'),
         $main = $('.dataset-content').parents('main'),
         revisionId = 0,
         script = {
@@ -2077,6 +2177,15 @@ require([
     $(this).blur();
     evt.preventDefault();
 
+    if (!$cluster) {
+      $clusterPopoverTarget.trigger('focusin');
+      let _t = window.setTimeout(() => {
+        $clusterPopoverTarget.trigger('focusout');
+        window.clearTimeout(_t);
+      }, 2000);
+      return false;
+    }
+
     changeRunButtonState($runButton, 'running');
 
     fetch('/scripts/revision/', {
@@ -2085,7 +2194,8 @@ require([
         scriptId: $script.data('id'),
         name: $script.data('name'),
         path: $script.data('parentPathNames'),
-        content: editor.getValue()
+        content: editor.getValue(),
+        cluster: $cluster
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -2115,6 +2225,7 @@ require([
       }
 
       $script.data('revisionId', json.data.id);
+      $script.data('cluster', $cluster);
 
       createWorkunit()
       .then(response => response.json())
@@ -2127,7 +2238,7 @@ require([
       .then(() => {
         console.log(_filename);
         updateWorkunit(_wuid, null, _filename, $script.data('parentPathNames'), null, $activeWorkspace.data('id')).then(() => {
-          submitWorkunit(_wuid).then(() => {
+          submitWorkunit(_wuid, $cluster).then(() => {
             console.log('check status of workunit');
 
             let t = null;
@@ -2198,6 +2309,16 @@ require([
         });
       });
     });
+  });
+
+  $('.thors').on('click', '.dropdown-item', function(evt) {
+    let $this = $(this),
+        $options = $('.thors .dropdown-item:not(.cloner)'),
+        $selected = $('#selectTarget');
+
+    $selected.text($this.text());
+    $options.removeClass('active');
+    $this.addClass('active');
   });
 
   $scriptControls.on('click', '.show-results', function(evt) {

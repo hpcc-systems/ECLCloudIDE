@@ -180,6 +180,7 @@ let populateScripts = () => {
           if (_script) {
             $script.data('revisionId', _script.revisionId);
             $script.data('content', _script.content);
+            $script.data('cluster', _script.cluster);
             $script.data('parentPathNames', _script.parentPathNames);
             $script.data('wuid', _script.workunitId);
           }

@@ -21,6 +21,7 @@ router.get('/account', (req, res, next) => {
   res.render('users/account', { title: 'ECL IDE', user: user });
 });
 
+/* GET user workspaces */
 router.get('/workspaces', (req, res, next) => {
   User.findByPk(req.session.user.id, {
     include: [{
@@ -43,24 +44,7 @@ router.get('/workspaces', (req, res, next) => {
   });
 });
 
-router.get('/search', (req, res, next) => {
-  User.findAll({
-    attributes: ['id', 'username'],
-    where: {
-      [db.Sequelize.Op.and]: {
-        id: { [db.Sequelize.Op.ne]: req.session.user.id },
-        username: { [db.Sequelize.Op.like]: '%' + req.query.username + '%' },
-        deletedAt: null
-      }
-    }
-  }).then((users) => {
-    res.json(users);
-  }).catch((err) => {
-    console.log(err);
-    res.json(err);
-  });
-});
-
+/* GET password change form */
 router.get('/password/change', (req, res, next) => {
   let user = {
     id: req.session.user.id,
@@ -73,6 +57,7 @@ router.get('/password/change', (req, res, next) => {
   res.render('users/change_password', { title: 'ECL IDE', user: user, csrfToken: req.csrfToken() });
 });
 
+/* POST password change */
 router.post('/password/change', (req, res, next) => {
   User.findByPk(req.session.user.id, {
   }).then((user) => {
