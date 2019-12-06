@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: DataTypes.STRING,
     eclFilePath: DataTypes.STRING,
+    cluster: DataTypes.STRING,
     workspaceId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

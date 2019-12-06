@@ -3,139 +3,153 @@
 import { cluster, csrfToken, } from './consts.mjs';
 
 let createWorkunit = () => {
+  let _headers = {
+    'Content-Type': 'application/json',
+    'CSRF-Token': csrfToken
+  };
+  let workspaceId = $('.workspaces .active').data('id');
   return fetch('/hpcc/workunits', {
     method: 'POST',
     body: JSON.stringify({
-      clusterAddr: cluster.host,
-      clusterPort: cluster.port
+      workspaceId: workspaceId
     }),
-    headers: {
-      'Content-Type': 'application/json',
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
 let updateWorkunit = (wuid, query, scriptName, scriptPath = null, datasetId = null, workspaceId) => {
+  let _headers = {
+    'Content-Type': 'application/json',
+    'CSRF-Token': csrfToken
+  };
   return fetch('/hpcc/workunits', {
     method: 'PUT',
     body: JSON.stringify({
-      clusterAddr: cluster.host,
-      clusterPort: cluster.port,
       wuid: wuid,
       query: query,
       filename: scriptName,
       scriptPath: scriptPath,
       datasetId: datasetId,
-      workspace: workspaceId
+      workspaceId: workspaceId
     }),
-    headers: {
-      'Content-Type': 'application/json',
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
-let submitWorkunit = (wuid) => {
+let submitWorkunit = (wuid, selectedCluster) => {
+  let _headers = {
+    'Content-Type': 'application/json',
+    'CSRF-Token': csrfToken
+  };
+  let workspaceId = $('.workspaces .active').data('id');
   return fetch('/hpcc/workunits/submit', {
     method: 'POST',
     body: JSON.stringify({
+      workspaceId: workspaceId,
       clusterAddr: cluster.host,
       clusterPort: cluster.port,
       wuid: wuid,
-      cluster: 'thor'
+      cluster: selectedCluster
     }),
-    headers: {
-      'Content-Type': 'application/json',
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
 let sendFileToLandingZone = (file) => {
+  let _headers = {
+    'CSRF-Token': csrfToken
+  };
   console.log(file);
+  let workspaceId = $('.workspaces .active').data('id');
   let formData = new FormData();
   formData.append('file', file);
-  formData.append('clusterAddr', cluster.host);
-  formData.append('clusterPort', cluster.port);
+  formData.append('workspaceId', workspaceId);
 
   return fetch('/hpcc/filespray/upload', {
     method: 'POST',
     body: formData,
-    headers: {
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
-let sprayFile = (clusterFilename, workspaceId) => {
+let sprayFile = (clusterFilename, workspaceName, workspaceId) => {
   console.log(clusterFilename);
+  let _headers = {
+    'CSRF-Token': csrfToken
+  };
   let formData = new FormData();
   formData.append('filename', clusterFilename);
-  formData.append('clusterAddr', cluster.host);
-  formData.append('clusterPort', cluster.port);
+  formData.append('workspaceName', workspaceName);
   formData.append('workspaceId', workspaceId);
 
   return fetch('/hpcc/filespray/spray', {
     method: 'POST',
     body: formData,
-    headers: {
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
 let getDfuWorkunit = (wuid) => {
+  let _headers = {
+    'CSRF-Token': csrfToken
+  };
+  let workspaceId = $('.workspaces .active').data('id');
   let formData = new FormData();
   formData.append('wuid', wuid);
-  formData.append('clusterAddr', cluster.host);
-  formData.append('clusterPort', cluster.port);
+  formData.append('workspaceId', workspaceId);
 
   return fetch('/hpcc/filespray/getDfuWorkunit', {
     method: 'POST',
     body: formData,
-    headers: {
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
 let saveWorkunit = (objectId, workunitId) => {
+  let _headers = {
+    'Content-Type': 'application/json',
+    'CSRF-Token': csrfToken
+  };
   return fetch('/workunits/', {
     method: 'POST',
     body: JSON.stringify({
       objectId: objectId,
       workunitId: workunitId
     }),
-    headers: {
-      'Content-Type': 'application/json',
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 
 let checkWorkunitStatus = (wuid) => {
-  return fetch('/hpcc/workunits?wuid=' + wuid +
-    '&clusterAddr=' + encodeURIComponent(cluster.host) +
-    encodeURIComponent(':') + cluster.port);
+  let _headers = {
+    'Content-Type': 'application/json'
+  };
+  let workspaceId = $('.workspaces .active').data('id');
+
+  return fetch('/hpcc/workunits?wuid=' + wuid + '&workspaceId=' + workspaceId, {
+    method: 'GET',
+    headers: _headers
+  });
 };
 
 let getWorkunitResults = (wuid, count, sequence) => {
   console.log('request /hpcc/workunits/results', wuid, count);
 
+  let _headers = {
+    'Content-Type': 'application/json',
+    'CSRF-Token': csrfToken
+  };
+  let workspaceId = $('.workspaces .active').data('id');
+
   return fetch('/hpcc/workunits/results', {
     method: 'POST',
     body: JSON.stringify({
-      clusterAddr: cluster.host,
-      clusterPort: cluster.port,
+      workspaceId: workspaceId,
       wuid: wuid,
       count: ((count) ? count : 1000),
       sequence: ((sequence) ? sequence : 0)
     }),
-    headers: {
-      'Content-Type': 'application/json',
-      'CSRF-Token': csrfToken
-    }
+    headers: _headers
   });
 };
 

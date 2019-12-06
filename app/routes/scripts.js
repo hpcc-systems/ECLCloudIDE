@@ -47,7 +47,7 @@ let eclccCmd = (args, cwd) => {
 router.get('/', (req, res, next) => {
   console.log('request query', req.query);
   const query = `SELECT s.id, s.name, sr.id AS revisionId, sr.content, \
-    sr.createdAt, sr.updatedAt, w.workunitId \
+    s.cluster, sr.createdAt, sr.updatedAt, w.workunitId \
     FROM Scripts AS s \
     LEFT JOIN ( \
       SELECT sr1.* FROM ScriptRevisions sr1 \
@@ -115,6 +115,7 @@ router.post('/revision', (req, res, next) => {
   let path = req.body.path || '',
       args = [],
       workspaceDirPath = '',
+      scriptDirPath = '',
       scriptFilePath = '';
 
   ScriptRevision.create({
@@ -127,12 +128,15 @@ router.post('/revision', (req, res, next) => {
         id: req.body.scriptId,
       }
     }).then((script) => {
+      script.cluster = req.body.cluster;
+      script.save({ fields: ['cluster'] });
       console.log('update contents of script file');
       workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
-      scriptFilePath = workspaceDirPath + ( (path != '') ? path + '/' : '' ) + script.name + '.ecl';
+      scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
+      scriptFilePath = scriptDirPath + script.name + '.ecl';
 
-      if (!fs.existsSync(workspaceDirPath)) {
-        fs.mkdirpSync(workspaceDirPath);
+      if (!fs.existsSync(scriptDirPath)) {
+        fs.mkdirpSync(scriptDirPath);
       }
 
       console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));

@@ -20,6 +20,7 @@ const hpccFilesprayRouter = require('./hpcc_proxy/filespray');
 const hpccWorkunitsRouter = require('./hpcc_proxy/workunits');
 
 let request = require('request-promise');
+let _ = require('lodash');
 
 /* Create workspace */
 router.post('/', (req, res, next) => {
@@ -314,6 +315,7 @@ let shareWorkspace = async (workspaceId, user) => {
   }) //end new Promise(...)
 };
 
+/* Share workspace */
 router.get('/share/:id', async (req, res, next) => {
   let workspaceId = req.params.id,
       user = { id: req.session.user.id, name: req.session.user.username };
@@ -328,6 +330,87 @@ router.get('/share/:id', async (req, res, next) => {
     req.flash('error', 'There was an error importing the workspace. ');
     return res.redirect('/');
   }
+});
+
+let getClusterInfo = async (workspaceId) => {
+  return new Promise((resolve) => {
+    Workspace.findOne({
+      where: { id: workspaceId },
+      through: {
+        where: { role: WorkspaceUser.roles.OWNER }
+      }
+    }).then(workspace => {
+      let url = workspace.cluster;
+      if (url.indexOf('http') < 0) {
+        url = 'http://' + url
+      }
+        let _headers = {};
+        if (workspace.clusterUser && workspace.clusterPwd) {
+          let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
+          _headers.Authorization = 'Basic ' + Buffer.from(creds).toString('base64');
+        }
+        request(url + '/WsTopology/TpListTargetClusters.json', {
+          headers: _headers,
+          json: true
+        })
+        .then(json => json.TpListTargetClustersResponse.TargetClusters.TpClusterNameType)
+        .then(clusters => {
+          let _clusters = clusters
+            .map((cluster) => cluster.Name)
+            .sort();
+
+          resolve(_clusters);
+        })
+    });
+  });
+};
+
+/* Fetch cluster info (name of thors, etc) */
+router.get('/clusters/:id', async (req, res, next) => {
+  let clusters = await getClusterInfo(req.params.id);
+  return res.json({ clusters: clusters });
+});
+
+let getDropzoneInfo = async (workspaceId) => {
+  return new Promise((resolve) => {
+    Workspace.findOne({
+      where: { id: workspaceId },
+      through: {
+        where: { role: WorkspaceUser.roles.OWNER }
+      }
+    }).then(workspace => {
+      let url = workspace.cluster;
+      if (url.indexOf('http') < 0) {
+        url = 'http://' + url
+      }
+        let _headers = {};
+        if (workspace.clusterUser && workspace.clusterPwd) {
+          let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
+          _headers.Authorization = 'Basic ' + Buffer.from(creds).toString('base64');
+        }
+        request(url + '/WsTopology/TpDropZoneQuery.json', {
+          headers: _headers,
+          json: true
+        })
+        .then(json => json.TpDropZoneQueryResponse.TpDropZones.TpDropZone)
+        .then(dropzones => {
+          let _dropzones = {};
+          dropzones.map(dropzone => {
+            _dropzones[dropzone.Name] = [];
+            _.flatMap(dropzone.TpMachines.TpMachine, (tpMachine) => {
+              _dropzones[dropzone.Name] = _dropzones[dropzone.Name].concat([tpMachine.Netaddress]);
+            })
+          });
+
+          resolve(_dropzones);
+        })
+    });
+  });
+}
+
+router.get('/dropzones/:id', async (req, res, next) => {
+  let dropzones = await getDropzoneInfo(req.params.id);
+  return res.json({ dropzones: dropzones });
 });
 
 module.exports = router;

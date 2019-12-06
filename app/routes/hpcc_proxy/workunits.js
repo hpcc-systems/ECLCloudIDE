@@ -12,16 +12,38 @@ const ipRegex = new RegExp(`(?:^${ipv4}$)`);
 
 let request = require('request-promise');
 
+let crypt = require('../../utils/crypt');
+
+const db = require('../../models/index');
+const Workspace = db.Workspace;
+const WorkspaceUser = db.WorkspaceUser;
+
 let buildClusterAddr = (req, res, next) => {
-  if (req.body.clusterAddr) {
-    req.clusterAddr = req.body.clusterAddr;
-    req.clusterAddrAndPort = req.clusterAddr;
+  let workspaceId = req.body.workspaceId || req.query.workspaceId;
+  Workspace.findOne({
+    where: { id: workspaceId },
+    through: {
+      where: { role: WorkspaceUser.roles.OWNER }
+    }
+  }).then(workspace => {
+    let cluster = workspace.cluster;
+    if (cluster.indexOf(':') == 4) {
+      let addr = cluster.substr(7).split(':');
+      req.clusterAddr = addr[0];
+      req.clusterPort = addr[1];
+    } else if (cluster.lastIndexOf(':') > -1) {
+      let addr = cluster.split(':');
+      req.clusterAddr = addr[0];
+      req.clusterPort = addr[1];
+    }
+    req.clusterAddrAndPort = cluster;
     if (req.clusterAddrAndPort.substring(0, 4) != 'http') {
       req.clusterAddrAndPort = 'http://' + req.clusterAddrAndPort;
     }
-    if (req.body.clusterPort) {
-      req.clusterPort = req.body.clusterPort;
-      req.clusterAddrAndPort += ':' + req.clusterPort;
+    if (workspace.clusterUser && workspace.clusterPwd) {
+      let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
+      let auth = Buffer.from(creds).toString('base64');
+      req.headers.Authorization = 'Basic ' + auth;
     }
     if (ipRegex.test(req.clusterAddr)) {
       req.clusterIp = req.clusterAddr;
@@ -32,7 +54,7 @@ let buildClusterAddr = (req, res, next) => {
         next();
       });
     }
-  }
+  });
 }
 
 let createEclArchive = (args, cwd) => {
@@ -57,17 +79,19 @@ let createEclArchive = (args, cwd) => {
   });
 }
 
-router.get('/', (req, res, next) => {
-  let clusterAddr = req.query.clusterAddr;
-  if (clusterAddr.substring(0, 4) != 'http') {
-    clusterAddr = 'http://' + clusterAddr;
+router.get('/', buildClusterAddr, (req, res, next) => {
+  let clusterAddr = req.clusterAddrAndPort;
+  let _headers = {};
+  if (req.headers.authorization) {
+    _headers.authorization = req.headers.authorization;
   }
   console.log('workunit status', req.query);
   request({
     method: 'POST',
     uri: clusterAddr + '/WsWorkunits/WUInfo.json',
     form: { rawxml_: true, Wuid: req.query.wuid },
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    headers: _headers
   }).then((response) => {
     let json = JSON.parse(response.body);
     console.log(json.WUInfoResponse.Workunit);
@@ -83,7 +107,8 @@ router.get('/', (req, res, next) => {
         method: 'POST',
         uri: clusterAddr + '/WsWorkunits/WUAction.json',
         form: { rawxml_: true, Wuids_i0: req.query.wuid, WUActionType: 'Restore' },
-        resolveWithFullResponse: true
+        resolveWithFullResponse: true,
+        headers: _headers
       }).then((response) => {
         let _json = JSON.parse(response.body);
         console.log(_json);
@@ -92,7 +117,8 @@ router.get('/', (req, res, next) => {
           method: 'POST',
           uri: clusterAddr + '/WsWorkunits/WUInfo.json',
           form: { rawxml_: true, Wuid: req.query.wuid },
-          resolveWithFullResponse: true
+          resolveWithFullResponse: true,
+          headers: _headers
         }).then((response) => {
           console.log('restored workunit info');
           json = JSON.parse(response.body);
@@ -127,7 +153,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', buildClusterAddr, (req, res, next) => {
-  router.createWorkunit(req.clusterAddrAndPort, req.session.user.username)
+  router.createWorkunit(req.clusterAddrAndPort, req.headers.Authorization)
     .then((response) => {
       let json = JSON.parse(response.body);
       res.json({ wuid: json.WUCreateResponse.Workunit.Wuid });
@@ -137,13 +163,15 @@ router.post('/', buildClusterAddr, (req, res, next) => {
     });
 });
 
-router.createWorkunit = (clusterAddr, clusterUser, clusterPwd="") => {
+router.createWorkunit = (clusterAddr, authHeader) => {
+  let _headers = {};
+  if (authHeader !== '') {
+    _headers.authorization = authHeader;
+  }
   return request({
     method: 'POST',
     uri: clusterAddr + '/WsWorkunits/WUCreate.json',
-    headers: {
-      Authorization: 'Basic ' + Buffer.from(clusterUser + ':' + clusterPwd).toString('base64')
-    },
+    headers: _headers,
     form: { rawxml_: true },
     resolveWithFullResponse: true
   });
@@ -154,7 +182,7 @@ router.put('/', buildClusterAddr, (req, res, next) => {
       _filename = req.body.filename,
       _scriptPath = req.body.scriptPath || null,
       _datasetId = req.body.datasetId || null,
-      _workspaceId = req.body.workspace,
+      _workspaceId = req.body.workspaceId,
       workspacePath = process.cwd() + '/workspaces/' + _workspaceId,
       scriptPath = process.cwd() + '/workspaces/' + _workspaceId;
 
@@ -198,15 +226,17 @@ router.put('/', buildClusterAddr, (req, res, next) => {
       //console.log(response);
       //console.log('ecl archive: ' + _query);
 
-      router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query, _filename)
-        .then((response) => {
-          console.log('response to WUUpdate', response.body);
-          let json = JSON.parse(response.body);
-          res.json(json);
-        }).catch((err) => {
-          console.log(err);
-          res.json(err);
-        });
+      router.updateWorkunit(
+        req.clusterAddrAndPort, req.body.wuid, _query, _filename,
+        (req.headers.authorization || '')
+      ).then((response) => {
+        console.log('response to WUUpdate', response.body);
+        let json = JSON.parse(response.body);
+        res.json(json);
+      }).catch((err) => {
+        console.log(err);
+        res.json(err);
+      });
     }).catch((err) => {
       console.log(err);
       res.json(err);
@@ -215,56 +245,77 @@ router.put('/', buildClusterAddr, (req, res, next) => {
     _query = _query.replace(/\#USERNAME\#/g, req.session.user.username)
     console.log('replaced #USERNAME#', _query);
 
-    router.updateWorkunit(req.clusterAddrAndPort, req.body.wuid, _query, _filename)
-      .then((response) => {
-        console.log('response to WUUpdate', response.body);
-        let json = JSON.parse(response.body);
-        res.json(json);
-      }).catch((err) => {
-        console.log(err);
-        res.json(err);
-      });
-
-  }
-});
-
-router.updateWorkunit = (clusterAddr, wuid, query, filename="") => {
-  return request({
-    method: 'POST',
-    uri: clusterAddr + '/WsWorkunits/WUUpdate.json',
-    form: { Wuid: wuid, QueryText: query, Jobname: filename },
-    resolveWithFullResponse: true
-  });
-};
-
-router.post('/submit', buildClusterAddr, (req, res, next) => {
-  router.submitWorkunit(req.clusterAddrAndPort, req.body.wuid)
-    .then((response) => {
-      console.log('response to WUSubmit', response.body);
+    router.updateWorkunit(
+      req.clusterAddrAndPort, req.body.wuid, _query,
+      _filename, (req.headers.authorization || '')
+    ).then((response) => {
+      console.log('response to WUUpdate', response.body);
       let json = JSON.parse(response.body);
       res.json(json);
     }).catch((err) => {
       console.log(err);
       res.json(err);
     });
+
+  }
 });
 
-router.submitWorkunit = (clusterAddr, wuid) => {
+router.updateWorkunit = (clusterAddr, wuid, query, filename="", authHeader="") => {
+  let _headers = {};
+  if (authHeader !== '') {
+    _headers.authorization = authHeader;
+  }
+  return request({
+    method: 'POST',
+    uri: clusterAddr + '/WsWorkunits/WUUpdate.json',
+    form: { Wuid: wuid, QueryText: query, Jobname: filename },
+    resolveWithFullResponse: true,
+    headers: _headers
+  });
+};
+
+router.post('/submit', buildClusterAddr, (req, res, next) => {
+  router.submitWorkunit(
+    req.clusterAddrAndPort,
+    req.body.wuid,
+    (req.headers.authorization || ''),
+    req.body.cluster
+  ).then((response) => {
+    console.log('response to WUSubmit', response.body);
+    let json = JSON.parse(response.body);
+    res.json(json);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
+router.submitWorkunit = (clusterAddr, wuid, authHeader="", cluster) => {
+  let _headers = {};
+  if (authHeader !== '') {
+    _headers.authorization = authHeader;
+  }
   return request({
     method: 'POST',
     uri: clusterAddr + '/WsWorkunits/WUSubmit.json',
-    form: { Wuid: wuid, Cluster: 'thor' },
-    resolveWithFullResponse: true
+    form: { Wuid: wuid, Cluster: cluster },
+    resolveWithFullResponse: true,
+    headers: _headers
   });
 };
 
 router.post('/results', buildClusterAddr, (req, res, next) => {
+  let _headers = {};
+  if (req.headers.authorization) {
+    _headers.authorization = req.headers.authorization;
+  }
   console.log('requesting /WsWorkunits/WUResult.json');
   request({
     method: 'POST',
     uri: req.clusterAddrAndPort + '/WsWorkunits/WUResult.json',
     form: { Wuid: req.body.wuid, Count: req.body.count, Sequence: req.body.sequence },
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    headers: _headers
   }).then((response) => {
     console.log('response to WUResult');
     let json = JSON.parse(response.body);

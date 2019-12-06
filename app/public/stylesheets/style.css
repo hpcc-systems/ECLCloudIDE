@@ -485,6 +485,29 @@ main .loader p {
   cursor: not-allowed;
 }
 
+#selectTarget {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.5);
+  padding: .15rem .5rem;
+}
+
+#selectTarget:hover {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#selectTarget.shake {
+  color: rgba(255, 0, 0, 0.66);
+  border-color: rgba(255, 0, 0, 0.66);
+}
+
+.thors {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
 .script-panel.minimized {
   height: 38px !important;
   transition: height 0.33s;
@@ -530,6 +553,26 @@ main .loader p {
 
 .shepherd-button-secondary {
   color: #666 !important;
+}
+
+.shake {
+  animation: shake 0.55s cubic-bezier(0.37, -0.39, 0.03, 1.57) both;
+  transform: translate3d(0, 0, 0);
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  10%, 40%, 70% {
+    transform: translate3d(-2px, 0, 0);
+  }
+
+  25%, 55%, 85% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @media (min-width: 576px) {
