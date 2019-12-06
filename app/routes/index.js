@@ -5,6 +5,8 @@ const request = require('request-promise');
 
 /* GET home page. */
 router.get('/', (req, res, next) => {
+  res.locals.errors = req.flash('error');
+  res.locals.info = req.flash('info');
   let user = {
     id: req.session.user.id,
     username: req.session.user.username,
