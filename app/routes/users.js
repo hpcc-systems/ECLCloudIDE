@@ -24,6 +24,9 @@ router.get('/account', (req, res, next) => {
 /* GET user workspaces */
 router.get('/workspaces', (req, res, next) => {
   User.findByPk(req.session.user.id, {
+    order: [
+        [db.Workspace, 'name', 'ASC']
+    ],
     include: [{
       model: Workspace,
       through: {
