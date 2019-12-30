@@ -15,7 +15,13 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
       allowNull: false
     },
-    password: DataTypes.STRING
+    password: DataTypes.STRING,
+    lastLoginAt: DataTypes.DATE,
+    loginAttempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
+    }
   }, {
     paranoid: true
   });

@@ -96,7 +96,7 @@ router.post('/login', (req, res, next) => {
   passport.authenticate('local', { session: true }, (err, user, info) => {
     if (err || !user) {
       req.flash('error', (info ? info.message : 'Login failed'));
-      res.redirect('/auth/login');
+      return res.redirect('/auth/login');
     }
 
     console.log('set session user & go to index');
@@ -105,9 +105,9 @@ router.post('/login', (req, res, next) => {
       let url = req.session.goToUrl;
       delete req.session.goToUrl;
       console.log(url, req.session.goToUrl);
-      res.redirect(url);
+      return res.redirect(url);
     } else {
-      res.redirect('/');
+      return res.redirect('/');
     }
   })(req, res);
 });
