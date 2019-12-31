@@ -14,6 +14,7 @@ const passport = require('passport');
 const csrf = require('csurf');
 
 const session = require('express-session');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const flash = require('express-flash');
 
 const indexRouter = require('./routes/index');
@@ -28,6 +29,7 @@ const hpccWorkunitsRouter = require('./routes/hpcc_proxy/workunits');
 const hpccFilesprayRouter = require('./routes/hpcc_proxy/filespray');
 
 const app = express();
+const db = require('./models/index.js');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -48,7 +50,10 @@ app.use(session({
   secret: process.env.SECRET,
   resave: false,
   name: 'sessionId',
-  store: new session.MemoryStore,
+  store: new SequelizeStore({
+    db: db.sequelize
+  }),
+  //store: new session.MemoryStore,
   saveUninitialized: true,
   cookie: {
     secure: (process.env.NODE_ENV === 'production'),
