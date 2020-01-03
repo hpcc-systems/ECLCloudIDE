@@ -310,7 +310,7 @@ require([
   $('body').on('animationend', '.shake', function(evt) {
     $(this).removeClass('shake');
   });
-  
+
   $(".workspace-load-msg").fadeTo(1000, 300).slideUp(300, function(){
     $(".workspace-load-msg").slideUp(300);
   });
@@ -1336,6 +1336,7 @@ require([
     console.log(data);
     data.workspaceId = workspaceId;
     data.parentPathNames = parentPathNames.join('/');
+    $this.data('parentPathNames', data.parentPathNames);
     console.log(JSON.stringify(data));
 
     fetch('/scripts/', {
@@ -1750,7 +1751,7 @@ require([
             $parent = $parent.parents('li');
           } while ($parent.length > 0);
 
-          $target.data('parentPathNames', parentPathNames);
+          $target.data('parentPathNames', parentPathNames.join('/'));
         }
 
         console.log($target);

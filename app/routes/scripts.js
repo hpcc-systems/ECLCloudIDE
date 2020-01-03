@@ -142,7 +142,7 @@ router.post('/revision', (req, res, next) => {
       console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
       fs.writeFileSync(scriptFilePath, revision.content);
 
-      args = ['-syntax', scriptFilePath];
+      args.push('-I', workspaceDirPath, '-syntax', scriptFilePath);
     }).then(() => {
       eclccCmd(args, workspaceDirPath).then((response) => {
         return res.json({ success: true, data: revision });
