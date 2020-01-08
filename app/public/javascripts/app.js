@@ -431,6 +431,8 @@ require([
 
     toggleNewScriptPopover();
     populateScriptTargets();
+
+    localStorage.setItem('_lastUsedWorkspace', $('.workspaces .active').data('id'));
   });
 
   /* SHOW WORKSPACE MEMBERS MODAL */
@@ -592,6 +594,8 @@ require([
       $scriptPanelClose.trigger('click');
 
       toggleNewScriptPopover();
+
+      localStorage.removeItem('_lastUsedWorkspace');
     });
   });
 

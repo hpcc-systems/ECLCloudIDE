@@ -201,12 +201,18 @@ let showScripts = () => {
 };
 
 let loadWorkspace = () => {
+  let $workspaceId;
   if( $('.workspace-load-msg.alert-info').length > 0) {
-    let $loadedWorkspaceId = $('.workspace-load-msg.alert-info').data('workspaceid');
-    let $newlySharedWorkspaces = $('.workspaces .dropdown-item').filter(function() {
-      return ($(this).data("id") == $loadedWorkspaceId ? true : false)
+    $workspaceId = $('.workspace-load-msg.alert-info').data('workspaceid');
+  } else if(localStorage.getItem('_lastUsedWorkspace') != undefined) {
+    $workspaceId = localStorage.getItem('_lastUsedWorkspace');
+  }
+  if($workspaceId != undefined) {
+    let $workspace = $('.workspaces .dropdown-item').filter(function() {
+      return ($(this).data("id") == $workspaceId ? true : false)
     });
-    $($newlySharedWorkspaces[0]).addClass('active');
+
+    $($workspace[0]).addClass('active');
     $('.workspaces .dropdown-item.active').trigger("click");
   }
 }
