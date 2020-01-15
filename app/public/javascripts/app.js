@@ -1141,6 +1141,20 @@ require([
       $dataset.find('.datasetname').text($dataset.data('name'));
       $modal.find('#edit-dataset-name').val('');
       $form.removeClass('was-validated');
+      let dirTree = JSON.parse($('.workspaces .dropdown-item.active').data('directoryTree'));
+      dirTree.datasets[$dataset.data('id')].name = dataset.data.name;
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: $workspaceId,
+          directoryTree: dirTree
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        }
+      })
+      .then(response => response.json())
     });
   });
 
