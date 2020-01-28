@@ -6,6 +6,7 @@ const db = require('../models/index');
 const fs = require('fs-extra');
 
 const crypt = require('../utils/crypt');
+const clusterWhitelist = require('../cluster-whitelist')[process.env.NODE_ENV];
 
 const User = db.User;
 const Workspace = db.Workspace;
@@ -25,6 +26,11 @@ let _ = require('lodash');
 /* Create workspace */
 router.post('/', (req, res, next) => {
   console.log('request body', req.body);
+
+  if (!clusterWhitelist.includes(req.body.workspaceCluster)) {
+    return res.json({ success: false, message: 'Please select a valid cluster' });
+  }
+
   Workspace.create({
     name: req.body.workspaceName,
     cluster: req.body.workspaceCluster,
@@ -52,6 +58,11 @@ router.post('/', (req, res, next) => {
 /* Update workspace */
 router.put('/', (req, res, next) => {
   console.log('request body', req.body);
+
+  if (!clusterWhitelist.includes(req.body.workspaceCluster)) {
+    return res.json({ success: false, message: 'Please select a valid cluster' });
+  }
+
   let workspace = {};
   if (req.body.workspaceName) workspace.name = req.body.workspaceName;
   if (req.body.directoryTree) workspace.directoryTree = JSON.stringify(req.body.directoryTree);
