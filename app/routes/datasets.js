@@ -5,6 +5,8 @@ const db = require('../models/index');
 
 const fs = require('fs-extra');
 
+const { body, validationResult } = require('express-validator/check');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
@@ -38,7 +40,19 @@ router.get('/', (req, res, next) => {
 });
 
 /* Create dataset */
-router.post('/', (req, res, next) => {
+router.post('/', [
+  body('workspaceId')
+    .isUUID(4).withMessage('Invalid workspace id'),
+  body('name')
+    .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid dataset name'),
+  body('filename')
+    .not().isEmpty().withMessage('Dataset filename cannot be empty'),
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   console.log('request body', req.body);
   Dataset.findAll({
     where: {
@@ -100,7 +114,20 @@ router.post('/', (req, res, next) => {
 });
 
 /* Update dataset */
-router.put('/', (req, res, next) => {
+router.put('/', [
+  body('id')
+    .isUUID(4).withMessage('Invalid dataset id'),
+  body('workspaceId')
+    .isUUID(4).withMessage('Invalid workspace id'),
+  body('name')
+    .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid dataset name'),
+  body('filename')
+    .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid dataset file name'),
+  body('logicalfile')
+    .matches(/^[-a-zA-Z0-9\._:]+$/).withMessage('Invalid logical file name'),
+  body('rowCount')
+    .isInt().withMessage('Invalid row count'),
+], (req, res, next) => {
   let dataset = {};
   if (req.body.name) dataset.name = req.body.name;
   if (req.body.filename) dataset.filename = req.body.filename;
