@@ -1340,7 +1340,7 @@ require([
         parentPathNames = $this.data('parentPathNames') || [],
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $parentEl = $this.data('parentToReceiveChild') || $('.scripts').children('ul').first(),
-        $newScript = $scripts.find('.cloner').clone(),
+        $newScript = null,
         $form = $modal.find('form'),
         data = getFormData($form);
 
@@ -1405,8 +1405,6 @@ require([
 
       console.log(directoryTree);
 
-      $modal.modal('hide');
-
       fetch('/workspaces/', {
         method: 'PUT',
         body: JSON.stringify({
@@ -1421,32 +1419,30 @@ require([
       .then(response => response.json())
       .then((workspace) => {
         newFile.parentPathNames = data.parentPathNames;
-        $modal.modal('hide');
 
         $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+        $newScript = $(addScript(newFile));
 
         if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
-          $parentEl.append(addScript(newFile));
+          $parentEl.append($newScript);
         } else {
           if ($parentEl.find('ul').first().length == 0) {
             $parentEl.append('<ul>');
           }
-          $parentEl.find('ul').first().append(addScript(newFile));
+          $parentEl.find('ul').first().append($newScript);
         }
 
+        toggleNewScriptPopover();
+
+        $modal.modal('hide');
+
+        $modal.find('#new-script-name').val('');
         $form.removeClass('was-validated');
 
-        toggleNewScriptPopover();
+        showScripts();
+
+        $newScript.find('.script').trigger('click');
       });
-
-      $modal.modal('hide');
-
-      $modal.find('#new-script-name').val('');
-      $form.removeClass('was-validated');
-
-      showScripts();
-
-      $newScript.trigger('click');
     });
   });
 
