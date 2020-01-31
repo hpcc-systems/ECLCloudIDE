@@ -461,7 +461,9 @@ require([
 
     //link.parentElement.removeChild(link);
     $modal.find('#edit-workspace-name').val($workspace.data('name'));
-    $modal.find('#edit-workspace-cluster').val($workspace.data('cluster'));
+    $modal.find('#edit-workspace-cluster')
+          .find('[value="' + $workspace.data('cluster') + '"]')
+          .attr('selected', true);
     $modal.find('#edit-cluster-username').val($workspace.data('clusterUsername'));
     $modal.find('#edit-cluster-password').val($workspace.data('clusterPassword'));
     $modal.modal('show');
@@ -474,6 +476,7 @@ require([
         $workspace = $('.workspaces .active'),
         $workspaceId = $workspace.data('id'),
         $form = $modal.find('form'),
+        $cluster = $('#edit-workspace-cluster'),
         data = getFormData($form);
 
     if ($form[0].checkValidity() === false) {
@@ -495,20 +498,28 @@ require([
       }
     })
     .then(response => response.json())
-    .then((workspace) => {
-      $modal.modal('hide');
-      $workspace.data('name', workspace.data.name);
-      $workspace.text($workspace.data('name'));
-      $selected.text($workspace.data('name'));
-      $selected.append(
-        '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
-        '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
-      );
-      $workspace.data('cluster', workspace.data.cluster);
-      $workspace.data('clusterUsername', workspace.data.clusterUser);
-      $workspace.data('clusterPassword', workspace.data.clusterPwd);
-      $modal.find('#edit-workspace-name').val('');
-      $form.removeClass('was-validated');
+    .then((json) => {
+      if (json.success === false) {
+        $cluster.siblings('.invalid-feedback').text(json.message);
+        $cluster.addClass('is-invalid');
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+      } else {
+        $modal.modal('hide');
+        $workspace.data('name', json.data.name);
+        $workspace.text($workspace.data('name'));
+        $selected.text($workspace.data('name'));
+        $selected.append(
+          '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
+          '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
+        );
+        $workspace.data('cluster', json.data.cluster);
+        $workspace.data('clusterUsername', json.data.clusterUser);
+        $workspace.data('clusterPassword', json.data.clusterPwd);
+        $modal.find('#edit-workspace-name').val('');
+        $form.removeClass('was-validated');
+      }
     });
   });
 
@@ -516,6 +527,8 @@ require([
   $('#editWorkspaceModal').on('hide.bs.modal', function(evt) {
     $('#editWorkspaceModal form').removeClass('was-validated');
     $('#editWorkspaceModal form')[0].reset();
+    $('#edit-workspace-cluster').removeClass('is-invalid')
+      .find('option').attr('selected', false);
   });
 
   $('#shareWorkspaceModal').on('click', '.share-url-btn', function(evt) {

@@ -62,77 +62,79 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
         a.nav-link(href='/auth/logout') Logout
           i.fa.fa-lg.fa-sign-out.float-left.mr-2
 
-+modal('newWorkspaceModal', 'New Workspace', {
-    text: 'Save', class: 'btn btn-primary'
-  }, 'Cancel', '', [{
-    label: 'Name:',
-    tag: 'input',
-    id: 'workspace-name',
-    name: 'workspaceName',
-    type: 'text',
-    required: 'required',
-    placeholder: 'MyWorkspace...',
-    pattern: '[a-zA-Z]{1}[-a-zA-Z0-9_]*',
-    invalidMsg: 'Please provide a valid name for the workspace.'
-  }, {
-    label: 'Cluster:',
-    tag: 'input',
-    id: 'workspace-cluster',
-    name: 'workspaceCluster',
-    type: 'text',
-    required: 'required',
-    placeholder: 'URL or IP:port, such as &ldquo;10.173.147.1:8010&rdquo;...',
-    invalidMsg: 'Please provide a valid url for the cluster.'
-  }, {
-    label: 'Cluster Username:',
-    tag: 'input',
-    id: 'cluster-username',
-    name: 'clusterUsername',
-    type: 'text',
-  }, {
-    label: 'Cluster Password:',
-    tag: 'input',
-    id: 'cluster-password',
-    name: 'clusterPassword',
-    type: 'text',
-  }
-])
+div.modal.fade(id="newWorkspaceModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title New Workspace
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="workspace-name") Name:
+            input.form-control(
+              id="workspace-name", name="workspaceName", type="text",
+              required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
+            )
+            .invalid-feedback Please provide a valid name for the workspace.
+          div.form-group
+            label.col-form-label(for="workspace-cluster") Cluster:
+            select.custom-select(id="workspace-cluster", name="workspaceCluster", required="required")
+              option(value="") Select...
+              each cluster in clusterList
+                option(value=cluster) #{cluster}
+            .invalid-feedback Please select a cluster.
+          div.form-group
+            label.col-form-label(for="cluster-username") Cluster Username:
+            input.form-control(
+              id="cluster-username", name="clusterUsername", type="text"
+            )
+          div.form-group
+            label.col-form-label(for="cluster-password") Cluster Password:
+            input.form-control(
+              id="cluster-password", name="clusterPassword", type="text"
+            )
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary Save
 
-+modal('editWorkspaceModal', 'Edit Workspace', {
-    text: 'Save', class: 'btn btn-primary'
-  }, 'Cancel', '', [{
-    label: 'Name:',
-    tag: 'input',
-    id: 'edit-workspace-name',
-    name: 'workspaceName',
-    type: 'text',
-    required: 'required',
-    placeholder: 'MyWorkspace...',
-    pattern: '[a-zA-Z]{1}[-a-zA-Z0-9_]*',
-    invalidMsg: 'Please provide a valid name for the workspace.'
-  }, {
-    label: 'Cluster:',
-    tag: 'input',
-    id: 'edit-workspace-cluster',
-    name: 'workspaceCluster',
-    type: 'text',
-    required: 'required',
-    placeholder: 'URL or IP:port, such as &ldquo;10.173.147.1:8010&rdquo;...',
-    invalidMsg: 'Please provide a valid url for the cluster.'
-  }, {
-    label: 'Cluster Username:',
-    tag: 'input',
-    id: 'edit-cluster-username',
-    name: 'clusterUsername',
-    type: 'text',
-  }, {
-    label: 'Cluster Password:',
-    tag: 'input',
-    id: 'edit-cluster-password',
-    name: 'clusterPassword',
-    type: 'text',
-  }
-])
+div.modal.fade(id="editWorkspaceModal", role="dialog")
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title Edit Workspace
+        button.close(data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &times;
+      div.modal-body
+        form
+          div.form-group
+            label.col-form-label(for="edit-workspace-name") Name:
+            input.form-control(
+              id="edit-workspace-name", name="workspaceName", type="text",
+              required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
+            )
+            .invalid-feedback Please provide a valid name for the workspace.
+          div.form-group
+            label.col-form-label(for="edit-workspace-cluster") Cluster:
+            select.custom-select(id="edit-workspace-cluster", name="workspaceCluster", required="required")
+              option(value="") Select...
+              each cluster in clusterList
+                option(value=cluster) #{cluster}
+            .invalid-feedback Please select a cluster.
+          div.form-group
+            label.col-form-label(for="edit-cluster-username") Cluster Username:
+            input.form-control(
+              id="edit-cluster-username", name="clusterUsername", type="text"
+            )
+          div.form-group
+            label.col-form-label(for="edit-cluster-password") Cluster Password:
+            input.form-control(
+              id="edit-cluster-password", name="clusterPassword", type="text"
+            )
+      div.modal-footer
+        button.btn.btn-secondary(data-dismiss="modal") Cancel
+        button.btn.btn-primary Save
 
 +modal('removeWorkspaceModal', 'Delete Workspace', {
     text: 'Delete', class: 'btn btn-danger'
