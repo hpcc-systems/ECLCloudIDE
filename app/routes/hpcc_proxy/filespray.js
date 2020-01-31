@@ -20,6 +20,8 @@ const upload = multer({ storage: _storage });
 
 const fs = require('fs');
 
+const { query, body, validationResult } = require('express-validator/check');
+
 let request = require('request-promise');
 let crypt = require('../../utils/crypt');
 
@@ -28,6 +30,11 @@ const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
 
 let buildClusterAddr = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   let workspaceId = req.body.workspaceId || req.query.workspaceId;
   Workspace.findOne({
     where: { id: workspaceId },
@@ -66,7 +73,11 @@ let buildClusterAddr = (req, res, next) => {
   });
 }
 
-router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, next) => {
+router.post('/upload', [
+  upload.single('file'),
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   console.log('in /upload ', req.body, req.params, req.file);
 
   let _filename = req.file.filename,
@@ -101,7 +112,11 @@ router.post('/upload', [upload.single('file'), buildClusterAddr], (req, res, nex
   });
 });
 
-router.post('/spray', [upload.none(), buildClusterAddr], (req, res, next) => {
+router.post('/spray', [
+  upload.none(),
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   console.log('in /spray ', req.body, req.params, req.file, router.clusters);
 
   router.sprayFile(req.clusterAddrAndPort, req.body.filename, req.session.user.username, req.body.workspaceName, req.clusterIp)
@@ -143,7 +158,11 @@ router.sprayFile = (clusterAddr, filename, username, workspaceName, dropzoneIp =
   });
 };
 
-router.post('/getDfuWorkunit', [upload.none(), buildClusterAddr], (req, res, next) => {
+router.post('/getDfuWorkunit', [
+  upload.none(),
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   request({
     method: 'POST',
     uri: router.clusterAddrAndPort + '/FileSpray/GetDFUWorkunit.json',
@@ -165,7 +184,10 @@ router.post('/getDfuWorkunit', [upload.none(), buildClusterAddr], (req, res, nex
   });
 });
 
-router.post('/DfuQuery', (req, res, next) => {
+router.post('/DfuQuery', [
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   request({
     method: 'POST',
     uri: router.clusterAddrAndPort + '/WsDfu/DFUQuery.json',

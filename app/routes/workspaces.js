@@ -5,6 +5,8 @@ const db = require('../models/index');
 
 const fs = require('fs-extra');
 
+const { body, validationResult } = require('express-validator/check');
+
 const crypt = require('../utils/crypt');
 const clusterWhitelist = require('../cluster-whitelist')[process.env.NODE_ENV];
 
@@ -24,7 +26,17 @@ let request = require('request-promise');
 let _ = require('lodash');
 
 /* Create workspace */
-router.post('/', (req, res, next) => {
+router.post('/', [
+  body('workspaceName')
+    .isAlphanumeric().withMessage('Invalid workspace name'),
+  body('workspaceCluster')
+    .isIn(clusterWhitelist).withMessage('Invalid cluster')
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   console.log('request body', req.body);
 
   if (!clusterWhitelist.includes(req.body.workspaceCluster)) {
@@ -56,7 +68,27 @@ router.post('/', (req, res, next) => {
 });
 
 /* Update workspace */
-router.put('/', (req, res, next) => {
+router.put('/', [
+  body('workspaceName')
+    .optional({ checkFalsy: true })
+    .isAlphanumeric().withMessage('Invalid workspace name')
+    .escape(),
+  // a weird issue with the isJSON() validator... evidently the first thing it does
+  // is test that the value is a string, and then tries to use JSON.parse(...),
+  // but a JSON parameter of the req object is already an object, so must be stringified
+  function(req, res, next) { req.body.directoryTree = JSON.stringify(req.body.directoryTree); next(); },
+  body('directoryTree')
+    .optional({ checkFalsy: true})
+    .isJSON().withMessage('Directory tree should be valid JSON'),
+  body('workspaceCluster')
+    .optional({ checkFalsy: true })
+    .isIn(clusterWhitelist).withMessage('Invalid cluster')
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   console.log('request body', req.body);
 
   if (!clusterWhitelist.includes(req.body.workspaceCluster)) {
@@ -65,7 +97,7 @@ router.put('/', (req, res, next) => {
 
   let workspace = {};
   if (req.body.workspaceName) workspace.name = req.body.workspaceName;
-  if (req.body.directoryTree) workspace.directoryTree = JSON.stringify(req.body.directoryTree);
+  if (req.body.directoryTree) workspace.directoryTree = req.body.directoryTree;
   if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
   if (req.body.clusterUsername) workspace.clusterUser = req.body.clusterUsername;
   if (req.body.clusterPassword) workspace.clusterPwd = crypt.encrypt(req.body.clusterPassword);

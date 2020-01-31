@@ -7,6 +7,8 @@ const cp = require('child_process');
 
 const fs = require('fs-extra');
 
+const { body, validationResult } = require('express-validator/check');
+
 const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
@@ -77,7 +79,21 @@ router.get('/', (req, res, next) => {
 });
 
 /* Create script */
-router.post('/', (req, res, next) => {
+router.post('/', [
+    body('scriptName')
+      .isAlphanumeric().withMessage('Invalid script name')
+      .escape(),
+    body('workspaceId')
+      .isUUID(4).withMessage('Invalid workspace id'),
+    body('parentPathNames')
+      .optional({ checkFalsy: true})
+      .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script')
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   console.log('request body', req.body);
   Script.create({
     name: req.body.scriptName,
@@ -110,7 +126,18 @@ router.post('/', (req, res, next) => {
 });
 
 /* Create script revision */
-router.post('/revision', (req, res, next) => {
+router.post('/revision', [
+    body('scriptId')
+      .isUUID(4).withMessage('Invalid script id'),
+    body('path')
+      .optional({ checkFalsy: true})
+      .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   // console.log('request body', req.body);
   let path = req.body.path || '',
       args = [],
@@ -173,7 +200,20 @@ router.post('/revision', (req, res, next) => {
 });
 
 /* Update script */
-router.put('/', (req, res, next) => {
+router.put('/', [
+    body('id')
+      .isUUID(4).withMessage('Invalid script id'),
+    body('name')
+      .isAlphanumeric().withMessage('Invalid script name')
+      .escape(),
+    body('workspaceId')
+      .isUUID(4).withMessage('Invalid workspace id'),
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   let script = {};
   if (req.body.name) script.name = req.body.name;
   if (req.body.filename) script.filename = req.body.filename;

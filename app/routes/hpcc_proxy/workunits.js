@@ -5,6 +5,8 @@ const cp = require('child_process');
 
 const fs = require('fs-extra');
 
+const { query, body, validationResult } = require('express-validator/check');
+
 const dns = require('dns');
 
 const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}';
@@ -19,6 +21,11 @@ const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
 
 let buildClusterAddr = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
   let workspaceId = req.body.workspaceId || req.query.workspaceId;
   Workspace.findOne({
     where: { id: workspaceId },
@@ -79,7 +86,10 @@ let createEclArchive = (args, cwd) => {
   });
 }
 
-router.get('/', buildClusterAddr, (req, res, next) => {
+router.get('/', [
+  query('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   let clusterAddr = req.clusterAddrAndPort;
   let _headers = {};
   if (req.headers.authorization) {
@@ -152,7 +162,10 @@ router.get('/', buildClusterAddr, (req, res, next) => {
   });
 });
 
-router.post('/', buildClusterAddr, (req, res, next) => {
+router.post('/', [
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   router.createWorkunit(req.clusterAddrAndPort, req.headers.Authorization)
     .then((response) => {
       let json = JSON.parse(response.body);
@@ -177,7 +190,21 @@ router.createWorkunit = (clusterAddr, authHeader) => {
   });
 };
 
-router.put('/', buildClusterAddr, (req, res, next) => {
+router.put('/', [
+  body('workspaceId')
+    .isUUID(4).withMessage('Invalid workspace id'),
+  body('datasetId')
+    .optional({ checkFalsy: true })
+    .isUUID(4).withMessage('Invalid dataset id'),
+  body('filename')
+    .optional({ checkFalsy: true })
+    .matches(/^[-a-zA-Z0-9]+\.ecl$/).withMessage('Invalid script filename'),
+  body('scriptPath')
+    .optional({ checkFalsy: true })
+    .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
+  buildClusterAddr,
+], (req, res, next) => {
+
   let _query = req.body.query,
       _filename = req.body.filename,
       _scriptPath = req.body.scriptPath || null,
@@ -274,7 +301,10 @@ router.updateWorkunit = (clusterAddr, wuid, query, filename="", authHeader="") =
   });
 };
 
-router.post('/submit', buildClusterAddr, (req, res, next) => {
+router.post('/submit', [
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
   router.submitWorkunit(
     req.clusterAddrAndPort,
     req.body.wuid,
@@ -304,7 +334,11 @@ router.submitWorkunit = (clusterAddr, wuid, authHeader="", cluster) => {
   });
 };
 
-router.post('/results', buildClusterAddr, (req, res, next) => {
+router.post('/results', [
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  body('count').isNumeric().withMessage('Count must be numeric'),
+  buildClusterAddr,
+], (req, res, next) => {
   let _headers = {};
   if (req.headers.authorization) {
     _headers.authorization = req.headers.authorization;
