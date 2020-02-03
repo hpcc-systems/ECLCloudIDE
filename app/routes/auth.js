@@ -94,9 +94,9 @@ router.get('/login', (req, res, next) => {
 
 router.post('/login', (req, res, next) => {
   passport.authenticate('local', { session: true }, (err, user, info) => {
-    if (err || !user) {
+    if (!user || err) {
       req.flash('error', (info ? info.message : 'Login failed'));
-      res.redirect('/auth/login');
+      return req.session.save(() => { res.redirect('/auth/login'); });
     }
 
     console.log('set session user & go to index');
@@ -105,9 +105,9 @@ router.post('/login', (req, res, next) => {
       let url = req.session.goToUrl;
       delete req.session.goToUrl;
       console.log(url, req.session.goToUrl);
-      res.redirect(url);
+      return req.session.save(() => { res.redirect(url); });
     } else {
-      res.redirect('/');
+      return req.session.save(() => { res.redirect('/'); });
     }
   })(req, res);
 });
@@ -364,8 +364,7 @@ router.get('/email/verify/:iv/:hash', (req, res, next) => {
 });
 
 router.get('/logout', (req, res, next) => {
-  req.session.destroy();
-  res.redirect('/');
+  return req.session.destroy(() => { res.redirect('/auth/login'); });
 });
 
 module.exports = router;
