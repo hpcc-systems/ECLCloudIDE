@@ -82,8 +82,9 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
             label.col-form-label(for="workspace-cluster") Cluster:
             select.custom-select(id="workspace-cluster", name="workspaceCluster", required="required")
               option(value="") Select...
-              each cluster in clusterList
-                option(value=cluster) #{cluster}
+              if clusterList
+                each cluster in clusterList
+                  option(value=cluster) #{cluster}
             .invalid-feedback Please select a cluster.
           div.form-group
             label.col-form-label(for="cluster-username") Cluster Username:
@@ -119,8 +120,9 @@ div.modal.fade(id="editWorkspaceModal", role="dialog")
             label.col-form-label(for="edit-workspace-cluster") Cluster:
             select.custom-select(id="edit-workspace-cluster", name="workspaceCluster", required="required")
               option(value="") Select...
-              each cluster in clusterList
-                option(value=cluster) #{cluster}
+              if clusterList
+                each cluster in clusterList
+                  option(value=cluster) #{cluster}
             .invalid-feedback Please select a cluster.
           div.form-group
             label.col-form-label(for="edit-cluster-username") Cluster Username:

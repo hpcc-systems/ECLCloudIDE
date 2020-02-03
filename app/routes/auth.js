@@ -215,7 +215,7 @@ router.get('/reset/:id', (req, res, next) => {
       req.flash('error', msg);
       res.redirect('/auth/login');
     } else {
-      res.render('auth/reset', { title: 'ECL IDE', id: req.params.id });
+      res.render('auth/reset', { title: 'ECL IDE', id: req.params.id, csrfToken: req.csrfToken() });
     }
   });
 });
