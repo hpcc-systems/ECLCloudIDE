@@ -12,6 +12,7 @@ const WorkspaceUser = db.WorkspaceUser;
 
 /* GET users listing. */
 router.get('/account', (req, res, next) => {
+  res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
   let user = {
     id: req.session.user.id,
