@@ -81,7 +81,7 @@ router.get('/', (req, res, next) => {
 /* Create script */
 router.post('/', [
     body('scriptName')
-      .isAlphanumeric().withMessage('Invalid script name')
+      .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid script name')
       .escape(),
     body('workspaceId')
       .isUUID(4).withMessage('Invalid workspace id'),
@@ -204,7 +204,7 @@ router.put('/', [
     body('id')
       .isUUID(4).withMessage('Invalid script id'),
     body('name')
-      .isAlphanumeric().withMessage('Invalid script name')
+      .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid script name')
       .escape(),
     body('workspaceId')
       .isUUID(4).withMessage('Invalid workspace id'),
