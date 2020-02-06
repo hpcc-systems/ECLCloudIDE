@@ -2412,8 +2412,9 @@ require([
     $saveButton.blur();
     evt.preventDefault();
 
-    $saveButton.contents()[0].nodeValue = 'SAVING';
-    $saveButton.removeClass('badge-info').addClass('badge-secondary');
+    //$saveButton.contents()[0].nodeValue = 'SAVING';
+    //$saveButton.removeClass('badge-info').addClass('badge-secondary');
+    $script.data('content', editor.getValue());
 
     fetch('/scripts/revision/', {
       method: 'POST',
