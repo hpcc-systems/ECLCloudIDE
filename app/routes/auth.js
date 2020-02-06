@@ -4,6 +4,7 @@ const passport = require('passport');
 const validator = require('express-validator');
 
 const nodemailer = require('nodemailer');
+const ONE_HOUR_MS = 60 * 60 * 1000;
 let AWS = require('aws-sdk');
 
 const crypto = require('crypto');
@@ -54,15 +55,21 @@ router.post('/register', (req, res, next) => {
             emailAddress: req.body.emailaddress,
             password: hash
           }).then((user) => {
-            req.session.user = user;
+            //req.session.user = user;
             router.sendVerifyEmail(req, user.emailAddress);
+            let msg = `An email has been sent to the address "${user.emailAddress}".
+              When the email arrives, please use the link provided to complete
+              registration of your account.`;
+            req.flash('info', msg);
+            user.verifyLastSentAt = new Date();
+            user.save();
             if (req.session.goToUrl) {
               let url = req.session.goToUrl;
               delete req.session.goToUrl;
               console.log(url, req.session.goToUrl);
-              res.redirect(url);
+              return req.session.save(() => { res.redirect(url); });
             } else {
-              res.redirect('/');
+              return req.session.save(() => { res.redirect('/'); });
             }
           }).catch((err) => {
             console.log(err);
@@ -74,7 +81,7 @@ router.post('/register', (req, res, next) => {
         let msg = 'An account using this email address already exists. Perhaps try ' +
           'using the <a href="/auth/forgot">forgot password</a> form.'
         req.flash('error', msg);
-        res.redirect('/auth/register');
+        return req.session.save(() => { res.redirect('/auth/register'); });
       }
     });
   }
@@ -99,7 +106,22 @@ router.post('/login', (req, res, next) => {
       return req.session.save(() => { res.redirect('/auth/login'); });
     }
 
-    console.log('set session user & go to index');
+    if (!user.emailVerified) {
+      req.session.emailAddress = user.emailAddress;
+      let msg = `The email address for this account has not yet been verified.`,
+          now = new Date();
+
+      if (user.verifyLastSentAt == null || (
+        user.verifyLastSentAt &&
+        now.getTime() > new Date(user.verifyLastSentAt).getTime() + ONE_HOUR_MS
+      )) {
+        msg += ` If you need to resend this verification email,
+          <a href="/auth/email/verify">click here</a>.`;
+      }
+      req.flash('info', msg);
+      return req.session.save(() => { res.redirect('/auth/login'); });
+    }
+
     req.session.user = user;
     if (req.session.goToUrl) {
       let url = req.session.goToUrl;
@@ -258,15 +280,30 @@ router.post('/reset/:id', (req, res, next) => {
 });
 
 router.get('/email/verify', (req, res, next) => {
-  User.findByPk(req.session.user.id, {
+  User.findOne({
+    where: {
+      emailAddress: req.session.emailAddress
+    }
   }).then((user) => {
-    console.log(user.dataValues.emailAddress);
+    let now = new Date();
 
-    router.sendVerifyEmail(req, user.dataValues.emailAddress);
+    if (user.verifyLastSentAt == null || (
+      user.verifyLastSentAt &&
+      now.getTime() > new Date(user.verifyLastSentAt).getTime() + ONE_HOUR_MS
+    )) {
+      console.log(user.dataValues.emailAddress);
 
-    let msg = 'A verification email has been sent to your registered address.';
-    req.flash('info', msg);
-    return res.redirect('/users/account');
+      router.sendVerifyEmail(req, user.dataValues.emailAddress);
+
+      user.verifyLastSentAt = Date.now();
+      user.save();
+
+      let msg = 'A verification email has been sent to your registered address.';
+      req.flash('info', msg);
+    }
+
+    delete req.session.emailAddress;
+    return req.session.save(() => { res.redirect('/auth/login'); });
   });
 });
 
@@ -358,8 +395,9 @@ router.get('/email/verify/:iv/:hash', (req, res, next) => {
       });
 
       req.session.user = userParams;
+      req.flash('info', 'Email address verified');
 
-      return res.redirect('/users/account');
+      return req.session.save(() => { res.redirect('/'); });
     });
 });
 

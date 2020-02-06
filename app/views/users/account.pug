@@ -16,7 +16,4 @@ block content
         if info.length > 0
           div.alert.alert-info.login-error #{info[0]}
 
-        unless user.emailVerified
-          p #[a(href="/auth/email/verify") Verify your email address]
-
         p #[a(href="/users/password/change") Change password]

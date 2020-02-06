@@ -14,7 +14,7 @@ block content
         if errors.length > 0
           div.alert.alert-danger.login-error #{errors[0]}
         else if info.length > 0
-          div.alert.alert-info.login-error #{info[0]}
+          div.alert.alert-info.login-error !{info[0]}
         input.form-control(type='text', name="username", placeholder='Username or Email Address')
       .form-group
         input.form-control(type='password', name='password', placeholder='Password', autocomplete='off')
