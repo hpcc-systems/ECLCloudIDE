@@ -156,7 +156,7 @@ let getUniqueWorkspaceName = async (workspaceToClone, user) => {
               '$Workspaces.name$': workspaceToClone.name
             }, {
               '$Workspaces.name$': {
-                [db.Sequelize.Op.like]: workspaceToClone.name + ' (Copy%'
+                [db.Sequelize.Op.like]: workspaceToClone.name + '_Copy%'
               }
             }]
           },
@@ -165,7 +165,7 @@ let getUniqueWorkspaceName = async (workspaceToClone, user) => {
     }).then((cloningUser) => {
       console.log(cloningUser.Workspaces.length);
       if (cloningUser.Workspaces.length > 0) {
-        clonedWorkspaceName += ' (Copy-' + cloningUser.Workspaces.length + ')';
+        clonedWorkspaceName += '_Copy_' + cloningUser.Workspaces.length;
       }
       return resolve(clonedWorkspaceName);
     });
