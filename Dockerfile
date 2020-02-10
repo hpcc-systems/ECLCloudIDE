@@ -25,7 +25,7 @@ RUN apt-get install -y openssh-client openssh-server \
     libpython2.7 libpython3.6 libxslt1.1 netcat git
 
 ARG cdnUrl=https://d2wulyp08c6njk.cloudfront.net
-ARG hpccVersion=7.4.8
+ARG hpccVersion=7.6.22
 
 ARG clientToolsUrl=$cdnUrl/releases/CE-Candidate-$hpccVersion/bin/clienttools/hpccsystems-clienttools-community_$hpccVersion-1bionic_amd64.deb
 
