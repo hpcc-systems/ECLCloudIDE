@@ -91,11 +91,13 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
             input.form-control(
               id="cluster-username", name="clusterUsername", type="text"
             )
-          div.form-group
+          div.form-group.position-relative
             label.col-form-label(for="cluster-password") Cluster Password:
             input.form-control(
-              id="cluster-password", name="clusterPassword", type="text"
+              id="cluster-password", name="clusterPassword", type="password",
+              data-changed="false"
             )
+            i.fa.fa-lg.fa-eye-slash.text-secondary.toggle-password(title="Show Password")
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary Save
@@ -129,11 +131,13 @@ div.modal.fade(id="editWorkspaceModal", role="dialog")
             input.form-control(
               id="edit-cluster-username", name="clusterUsername", type="text"
             )
-          div.form-group
+          div.form-group.position-relative
             label.col-form-label(for="edit-cluster-password") Cluster Password:
             input.form-control(
-              id="edit-cluster-password", name="clusterPassword", type="text"
+              id="edit-cluster-password", name="clusterPassword", type="password",
+              placeholder="Enter value to change password...", data-changed="false"
             )
+            i.fa.fa-lg.fa-eye-slash.text-secondary.toggle-password(title="Show Password")
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary Save

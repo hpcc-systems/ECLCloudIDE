@@ -177,6 +177,13 @@ a {
   vertical-align: inherit;
 }
 
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 48px;
+  cursor: pointer;
+}
+
 .sidebar {
   position: fixed !important;
   top: 0;

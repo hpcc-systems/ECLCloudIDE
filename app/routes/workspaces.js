@@ -99,8 +99,16 @@ router.put('/', [
   if (req.body.workspaceName) workspace.name = req.body.workspaceName;
   if (req.body.directoryTree) workspace.directoryTree = req.body.directoryTree;
   if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
-  if (req.body.clusterUsername) workspace.clusterUser = req.body.clusterUsername;
-  if (req.body.clusterPassword) workspace.clusterPwd = crypt.encrypt(req.body.clusterPassword);
+  if (req.body.clusterUsername) {
+    workspace.clusterUser = req.body.clusterUsername;
+  } else if (req.body.clusterUsername === '') {
+    workspace.clusterUser = null;
+  }
+  if (req.body.clusterPassword) {
+    workspace.clusterPwd = crypt.encrypt(req.body.clusterPassword);
+  } else if (req.body.clusterPassword === '') {
+    workspace.clusterPwd = null;
+  }
   Workspace.update(workspace, {
     where: {
       id: req.body.id
@@ -376,7 +384,7 @@ router.get('/share/:id', async (req, res, next) => {
 });
 
 let getClusterInfo = async (workspaceId) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     Workspace.findOne({
       where: { id: workspaceId },
       through: {
@@ -404,14 +412,23 @@ let getClusterInfo = async (workspaceId) => {
 
           resolve(_clusters);
         })
+        .catch(error => {
+          reject({ message: 'The cluster targets for scripts in this workspace could not ' +
+            'be retrieved. The credentials you provided for this cluster may be incorrect.' });
+        });
     });
   });
 };
 
 /* Fetch cluster info (name of thors, etc) */
 router.get('/clusters/:id', async (req, res, next) => {
-  let clusters = await getClusterInfo(req.params.id);
-  return res.json({ clusters: clusters });
+  try {
+    let clusters = await getClusterInfo(req.params.id);
+    return res.json({ success: true, clusters: clusters });
+  } catch(err) {
+    console.log(err);
+    return res.json({ success: false, message: err.message });
+  }
 });
 
 let getDropzoneInfo = async (workspaceId) => {
