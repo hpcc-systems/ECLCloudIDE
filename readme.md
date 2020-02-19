@@ -33,4 +33,4 @@ generate such a string, assuming you have NodeJS installed on your host system:
 The application should be run with TLS, and by default this project assumes that will be
 handled outside of the application layer, e.g. via an AWS elastic load balancer. This
 could perhaps be changed to have the TLS configured at the nginx reverse proxy level; if so,
-the `./nginx/Dockerfile` should be modified accordingly.
+the `./nginx/Dockerfile` and `./nginx/conf.d/eclide.conf.template` files should be modified accordingly.
