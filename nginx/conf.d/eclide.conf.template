@@ -17,7 +17,7 @@ server {
   add_header X-Permitted-Cross-Domain-Policies "none";
   add_header X-Frame-Options "deny";
   add_header X-Content-Type-Options "nosniff";
-  add_header Content-Security-Policy "script-src 'self' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.datatables.net; object-src 'self'";
+  add_header Content-Security-Policy "script-src 'self' stackpath.bootstrapcdn.com code.jquery.com cdnjs.cloudflare.com cdn.jsdelivr.net cdn.datatables.net; object-src 'self'";
 
   location / {
     #proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
