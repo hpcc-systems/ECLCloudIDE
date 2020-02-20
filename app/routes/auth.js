@@ -45,7 +45,10 @@ router.post('/register', (req, res, next) => {
   } else {
     User.findOne({
       where: {
-        emailAddress: req.body.emailaddress
+        [db.Sequelize.Op.or]: {
+          emailAddress: req.body.emailaddress,
+          username: req.body.username,
+        }
       }
     }).then((user) => {
       if (user == null) { // no user account exists using this email address
@@ -78,8 +81,13 @@ router.post('/register', (req, res, next) => {
           console.log(err);
         });
       } else {
-        let msg = 'An account using this email address already exists. Perhaps try ' +
-          'using the <a href="/auth/forgot">forgot password</a> form.'
+        let msg = 'Account registration failed.';
+        if (req.body.emailaddress == user.emailAddress) {
+          msg = 'An account using this email address already exists. Perhaps try ' +
+            'using the <a href="/auth/forgot">forgot password</a> form.';
+        } else if (req.body.username == user.username) {
+          msg = 'An account with this username already exists.';
+        }
         req.flash('error', msg);
         return req.session.save(() => { res.redirect('/auth/register'); });
       }
