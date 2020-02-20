@@ -17,7 +17,7 @@ services:
       - node_web
     networks:
       - ecl-ide-network
-    command: /etc/nginx/run_nginx.sh
+    entrypoint: [/etc/nginx/run_nginx.sh, "${HOSTNAME}"]
   node_web:
     #restart: always
     entrypoint: [/home/eclide/app/docker-entry.sh, "mysql_db", "${DB_PORT}"]
