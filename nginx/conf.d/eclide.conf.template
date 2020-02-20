@@ -8,7 +8,7 @@ upstream eclide {
 }
 
 server {
-  listen 80;
+  listen $NGINX_HTTP_PORT;
 
   server_name $HOSTNAME;
 
@@ -37,7 +37,7 @@ server {
 }
 
 #server {
-  #listen 443 ssl;
+  #listen $NGINX_HTTPS_PORT ssl;
 
   #server_name $HOSTNAME;
 
