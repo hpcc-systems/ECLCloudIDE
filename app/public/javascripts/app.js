@@ -241,15 +241,22 @@ require([
   let editor = null,
       $draggedObject = null,
       $scriptPanel = $('.script-panel'),
+      $scriptPanelPlaceholder = $('.script-panel-placeholder'),
       $main = $('[role="main"]'),
       $sidebar = $('.sidebar'),
       $outputsPanel = $('.outputs-panel');
 
-  $scriptPanel.resizable({ handles: 'n' });
+  $scriptPanel.resizable({
+    handles: 'n',
+    resize: function(evt, ui) {
+      $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
+    }
+  });
   $main.css('margin-left', $sidebar.css('width'));
   $outputsPanel.css('left', $sidebar.css('width'));
   $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
   $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+  $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
 
   $sidebar.resizable({
     handles: 'e',
@@ -1300,14 +1307,17 @@ require([
         _wuid = $this.data('wuid') ? $this.data('wuid') : '',
         _cluster = $this.data('cluster') ? $this.data('cluster') : '',
         $scriptControls = $('.script-controls'),
+        $scriptPanel = $('.script-panel'),
+        $scriptPanelPlaceholder = $('.script-panel-placeholder'),
         $clusters = $('.thors'),
         $selectedCluster = $('#selectTarget');
 
     $('#scripts').find('.script').removeClass('active');
     $this.addClass('active');
 
-    $('.script-panel-placeholder').removeClass('d-none');
-    $('.script-panel').removeClass('d-none');
+    $scriptPanelPlaceholder.removeClass('d-none');
+    $scriptPanel.removeClass('d-none');
+    $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
     $('#editor').removeClass('cmReady');
     $('.save-script').removeClass('badge-info').addClass('badge-secondary');
     changeRunButtonState($('.run-script'), 'ready');
