@@ -16,7 +16,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     verifyLastSentAt: DataTypes.DATE,
-    password: DataTypes.STRING
+    password: DataTypes.STRING,
+    lastLoginAt: DataTypes.DATE,
+    loginAttempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
+    }
   }, {
     paranoid: true
   });
