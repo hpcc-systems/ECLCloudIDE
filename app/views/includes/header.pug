@@ -27,15 +27,15 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
         ) DELETE
 
     if errors && errors.length > 0
-      div.workspace-load-msg.alert.alert-danger.alert-dismissible #{errors[0]}
+      div.workspace-load-msg.alert.alert-danger.alert-dismissible.fade.show #{errors[0]}
         button.close(type='button', data-dismiss='alert', aria-label='Close')
           span(aria-hidden='true') &times;
     else if info && info.length > 1 && info[1].workspaceId
-      div.workspace-load-msg.alert.alert-info.alert-dismissible(data-workspaceid=info[1].workspaceId) #{info[0]}
+      div.workspace-load-msg.alert.alert-info.alert-dismissible.fade.show(data-workspaceid=info[1].workspaceId) #{info[0]}
         button.close(type='button', data-dismiss='alert', aria-label='Close')
           span(aria-hidden='true') &times;
     else if info && info.length > 0
-      div.workspace-load-msg.alert.alert-info.alert-dismissible #{info[0]}
+      div.workspace-load-msg.alert.alert-info.alert-dismissible.fade.show #{info[0]}
         button.close(type='button', data-dismiss='alert', aria-label='Close')
           span(aria-hidden='true') &times;
 
