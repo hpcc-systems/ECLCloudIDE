@@ -592,6 +592,10 @@ main .loader p {
   padding: .50rem 4rem;
 }
 
-.workspace-load-msg.alert-dismissible .close {
-  padding: .50rem 1.25rem;
+.workspace-load-msg .close {
+  margin: 0;
+  padding: 0;
+  top: 0;
+  bottom: 0;
+  right: 0.66rem;
 }

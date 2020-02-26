@@ -318,9 +318,10 @@ require([
     $(this).removeClass('shake');
   });
 
-  $(".workspace-load-msg").fadeTo(1000, 300).slideUp(300, function(){
-    $(".workspace-load-msg").slideUp(300);
-  });
+  let clearLoadMsgTimeout = window.setTimeout(function() {
+    $(".workspace-load-msg").find('.close').trigger('click');
+    window.clearTimeout(clearLoadMsgTimeout);
+  }, 3000);
 
   /*==========================================================================*
    *  WORKSPACES                                                              *

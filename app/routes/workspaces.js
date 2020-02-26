@@ -362,17 +362,17 @@ let shareWorkspace = async (workspaceId, user) => {
 router.get('/share/:id', async (req, res, next) => {
   let workspaceId = req.params.id,
       user = { id: req.session.user.id, name: req.session.user.username };
-  console.log(workspaceId, user);
+  // console.log(workspaceId, user);
   try {
     let result = await shareWorkspace(workspaceId, user);
-    console.log('result: '+result);
+    // console.log('result: '+result);
     req.flash('info', 'Workspace imported succesfully.');
     req.flash('info', result);
-    return res.redirect('/');
   }catch(err) {
     req.flash('error', 'There was an error importing the workspace. ');
-    return res.redirect('/');
   }
+
+  return req.session.save(() => { res.redirect('/'); });
 });
 
 let getClusterInfo = async (workspaceId) => {
