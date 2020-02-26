@@ -47,11 +47,14 @@ let buildClusterAddr = (req, res, next) => {
     if (req.clusterAddrAndPort.substring(0, 4) != 'http') {
       req.clusterAddrAndPort = 'http://' + req.clusterAddrAndPort;
     }
+    let creds = '';
     if (workspace.clusterUser && workspace.clusterPwd) {
-      let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
-      let auth = Buffer.from(creds).toString('base64');
-      req.headers.Authorization = 'Basic ' + auth;
+      creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
+    } else {
+      creds = req.session.user.username + ':' + 'pass';
     }
+    let auth = Buffer.from(creds).toString('base64');
+    req.headers.Authorization = 'Basic ' + auth;
     if (ipRegex.test(req.clusterAddr)) {
       req.clusterIp = req.clusterAddr;
       next();

@@ -36,10 +36,7 @@ router.get('/workspaces', (req, res, next) => {
     }]
   }).then((user) => {
     user.Workspaces.forEach((workspace) => {
-      console.log(workspace.dataValues.clusterPwd);
-      if (workspace.dataValues.clusterPwd !== null) {
-        workspace.dataValues.clusterPwd = crypt.decrypt(workspace.dataValues.clusterPwd);
-      }
+      delete workspace.dataValues.clusterPwd;
     });
     res.json(user.Workspaces);
   }).catch((err) => {

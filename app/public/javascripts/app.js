@@ -68,12 +68,17 @@ let getDropzones = async (url, usr, pwd) => {
   });
 };
 
-let getThors = async (url, usr, pwd) => {
-  let workspaceId = $('.workspaces .active').data('id');
-  return new Promise((resolve) => {
+let getThors = async (workspaceId) => {
+  return new Promise((resolve, reject) => {
     fetch('/workspaces/clusters/' + workspaceId)
       .then(resp => resp.json())
-      .then(json => resolve(json.clusters))
+      .then(json => {
+        if (json.success) {
+          resolve(json.clusters);
+        } else {
+          reject(json);
+        }
+      })
   });
 };
 
@@ -94,11 +99,19 @@ let getDefaultTargetCluster = async (url, usr, pwd) => {
 };
 
 let populateScriptTargets = async () => {
-  let clusterUrl = cluster.host + (cluster.port != '' ? ':' + cluster.port : '');
+  let clusterUrl = cluster.host + (cluster.port != '' ? ':' + cluster.port : ''),
+      clusters = [],
+      workspaceId = $('.workspaces .active').data('id');
+
   if (clusterUrl.indexOf('http') < 0) {
     clusterUrl = 'http://' + clusterUrl;
   }
-  let clusters = await getThors(clusterUrl, cluster.user, cluster.pass);
+  try {
+    clusters = await getThors(workspaceId);
+  } catch (err) {
+    alert(err.message);
+    return false;
+  }
   let $selectTarget = $('#selectTarget'),
       $thors = $('.thors'),
       $clusters = $thors.find('.dropdown-item:not(.cloner)');
@@ -382,6 +395,7 @@ require([
   $('#newWorkspaceModal').on('hide.bs.modal', function(evt) {
     $('#newWorkspaceModal form').removeClass('was-validated');
     $('#newWorkspaceModal form')[0].reset();
+    $('#cluster-password').data('changed', false);
   });
 
   /* CHANGE SELECTED WORKSPACE */
@@ -477,6 +491,21 @@ require([
     $modal.modal('show');
   });
 
+  $('.toggle-password').on('click', function(evt) {
+    let $this = $(this), $password = $this.prev();
+    if ($this.hasClass('fa-eye-slash')) {
+      $this.removeClass('fa-eye-slash').addClass('fa-eye').attr('title', 'Hide Password');
+      $password.attr('type', 'text');
+    } else {
+      $this.removeClass('fa-eye').addClass('fa-eye-slash').attr('title', 'Show Password');
+      $password.attr('type', 'password');
+    }
+  });
+
+  $('#edit-cluster-password, #cluster-password').on('keyup', _.debounce(function(evt) {
+    $(this).data('changed', true);
+  }, 500));
+
   /* EDIT WORKSPACE */
   $('#editWorkspaceModal').on('click', '.btn-primary', function(evt) {
     let $modal = $('#editWorkspaceModal'),
@@ -485,6 +514,7 @@ require([
         $workspaceId = $workspace.data('id'),
         $form = $modal.find('form'),
         $cluster = $('#edit-workspace-cluster'),
+        $password = $('#edit-cluster-password'),
         data = getFormData($form);
 
     if ($form[0].checkValidity() === false) {
@@ -492,6 +522,10 @@ require([
       evt.stopPropagation();
       $form.addClass('was-validated');
       return false;
+    }
+
+    if (false === $password.data('changed')) {
+      delete data.clusterPassword;
     }
 
     data.id = $workspace.data('id');
@@ -506,7 +540,7 @@ require([
       }
     })
     .then(response => response.json())
-    .then((json) => {
+    .then(async (json) => {
       if (json.success === false) {
         $cluster.siblings('.invalid-feedback').text(json.message);
         $cluster.addClass('is-invalid');
@@ -514,19 +548,23 @@ require([
         $saveBtnStatus.addClass('d-none');
         $saveBtn.removeAttr('disabled').removeClass('disabled');
       } else {
-        $modal.modal('hide');
-        $workspace.data('name', json.data.name);
-        $workspace.text($workspace.data('name'));
-        $selected.text($workspace.data('name'));
-        $selected.append(
-          '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
-          '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
-        );
-        $workspace.data('cluster', json.data.cluster);
-        $workspace.data('clusterUsername', json.data.clusterUser);
-        $workspace.data('clusterPassword', json.data.clusterPwd);
-        $modal.find('#edit-workspace-name').val('');
-        $form.removeClass('was-validated');
+        if (false !== await populateScriptTargets()) {
+          $modal.modal('hide');
+          $password.removeClass('is-invalid');
+          $workspace.data('name', json.data.name);
+          $workspace.text($workspace.data('name'));
+          $selected.text($workspace.data('name'));
+          $selected.append(
+            '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
+            '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
+          );
+          $workspace.data('cluster', json.data.cluster);
+          $workspace.data('clusterUsername', json.data.clusterUser);
+          $modal.find('#edit-workspace-name').val('');
+          $form.removeClass('was-validated');
+        } else {
+          $password.addClass('is-invalid');
+        }
       }
     });
   });
@@ -537,6 +575,7 @@ require([
     $('#editWorkspaceModal form')[0].reset();
     $('#edit-workspace-cluster').removeClass('is-invalid')
       .find('option').attr('selected', false);
+    $('#edit-cluster-password').val('').data('changed', false);
   });
 
   $('#shareWorkspaceModal').on('click', '.share-url-btn', function(evt) {
