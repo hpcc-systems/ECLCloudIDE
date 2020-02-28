@@ -46,8 +46,8 @@ router.post('/', [
   Workspace.create({
     name: req.body.workspaceName,
     cluster: req.body.workspaceCluster,
-    clusterUser: req.body.clusterUsername,
-    clusterPwd: crypt.encrypt(req.body.clusterPassword)
+    clusterUser: (req.body.clusterUsername != '') ? req.body.clusterUsername : null,
+    clusterPwd: (req.body.clusterPassword != '') ? crypt.encrypt(req.body.clusterPassword) : null
   }).then((workspace) => {
     let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
     if (!fs.existsSync(workspaceDirPath)) {
