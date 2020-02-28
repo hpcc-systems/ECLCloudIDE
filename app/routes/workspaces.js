@@ -173,7 +173,11 @@ let getUniqueWorkspaceName = async (workspaceToClone, user) => {
     }).then((cloningUser) => {
       console.log(cloningUser.Workspaces.length);
       if (cloningUser.Workspaces.length > 0) {
-        clonedWorkspaceName += '_Copy_' + cloningUser.Workspaces.length;
+        if (clonedWorkspaceName.indexOf('_Copy') > -1) {
+          clonedWorkspaceName.replace(/_Copy_[0-9]+/, '_Copy_' + cloningUser.Workspaces.length);
+        } else {
+          clonedWorkspaceName += '_Copy_' + cloningUser.Workspaces.length;
+        }
       }
       return resolve(clonedWorkspaceName);
     });
