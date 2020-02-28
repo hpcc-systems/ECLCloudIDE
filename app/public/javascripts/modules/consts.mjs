@@ -17,8 +17,8 @@ let setCurrentDatasetFile = (file) => {
 };
 
 let cluster = {
-  host: 'http://10.173.147.1',
-  port: '8010',
+  host: '',
+  port: '',
   user: '',
   pass: ''
 };
