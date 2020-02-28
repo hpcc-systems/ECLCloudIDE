@@ -309,7 +309,9 @@ let shareWorkspace = async (workspaceId, user) => {
                     rowCount: datasetToClone.rowCount,
                     columnCount: datasetToClone.columnCount,
                     eclSchema: datasetToClone.eclSchema,
-                    eclQuery: datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope),
+                    eclQuery: (datasetToClone.eclQuery) ?
+                      datasetToClone.eclQuery.replace(new RegExp(oldWorkspaceScope, 'g'), newWorkspaceScope) :
+                      '',
                     workspaceId: newWorkspace.id
                   }).then((newDataset) => {
                     let _regex = new RegExp(datasetToClone.id, 'g');

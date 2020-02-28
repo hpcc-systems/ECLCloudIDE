@@ -513,6 +513,8 @@ require([
         $workspace = $('.workspaces .active'),
         $workspaceId = $workspace.data('id'),
         $form = $modal.find('form'),
+        $saveBtn = $(this),
+        $saveBtnStatus = $saveBtn.find('.fa-pulse'),
         $cluster = $('#edit-workspace-cluster'),
         $password = $('#edit-cluster-password'),
         data = getFormData($form);
