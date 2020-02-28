@@ -17,7 +17,7 @@ import {
 
 import {
   createWorkunit, updateWorkunit, submitWorkunit, sendFileToLandingZone,
-  sprayFile, getDfuWorkunit, saveWorkunit, checkWorkunitStatus,
+  sprayFile, getDfuWorkunit, dfuQuery, dfuInfo, saveWorkunit, checkWorkunitStatus,
   getWorkunitResults,
 } from './modules/hpccWorkunits.mjs';
 
@@ -684,7 +684,7 @@ require([
   });
 
   /* CREATE NEW DATASET */
-  $('#newDatasetModal').on('click', '.btn-primary', function(evt) {
+  $('#newDatasetModal').on('click', '.btn-primary', async function(evt) {
     let $this = $(this),
         $saveBtn = $this,
         $saveBtnStatus = $this.find('.fa-pulse'),
@@ -699,8 +699,9 @@ require([
         $newDatasetLi = null,
         $newDataset = null,
         $datasetStatus = null,
-        $form = $modal.find('form'),
+        $form = $modal.find('.tab-pane.active').find('form'),
         $file = $('#dataset-file'),
+        $datasetSearch = $('#dataset-search'),
         $fileDetails = $('.file-details'),
         $fileFeedback = $file.siblings('.invalid-feedback'),
         file = $('#dataset-file')[0].files[0],
@@ -717,18 +718,6 @@ require([
     $saveBtnStatus.removeClass('d-none');
     $saveBtn.attr('disabled', 'disabled').addClass('disabled');
 
-    if (file === undefined) {
-      $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
-      $file.addClass('is-invalid');
-
-      $saveBtnStatus.addClass('d-none');
-      $saveBtn.removeAttr('disabled').removeClass('disabled');
-
-      return false;
-    } else {
-      dataset.filename = file.name
-    }
-
     if ($form[0].checkValidity() === false) {
       evt.preventDefault();
       evt.stopPropagation();
@@ -739,244 +728,333 @@ require([
 
       return false;
     }
-    fetch('/datasets/', {
-      method: 'POST',
+
+    if ($form.data('type') == 'upload') {
+      if (file === undefined) {
+        $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
+        $file.addClass('is-invalid');
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+
+        return false;
+      }
+
+      dataset.filename = file.name;
+
+      let datasetResp = await fetch('/datasets/', {
+        method: 'POST',
+        body: JSON.stringify(dataset),
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        }
+      });
+      let datasetJson = await datasetResp.json();
+
+      if (datasetJson.success === false) {
+        $file.siblings('.invalid-feedback').text(datasetJson.message);
+        $file.addClass('is-invalid');
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+
+        return false;
+      }
+
+      dataset.id = datasetJson.data.id;
+
+      let uploadResp = await sendFileToLandingZone(file)
+      let uploadJson = await uploadResp.json();
+
+      console.log(uploadJson);
+      dataset.file = uploadJson.file;
+
+      let sprayResp = await sprayFile(uploadJson.file, $workspaceName, $workspaceId)
+      let sprayJson = await sprayResp.json();
+
+      console.log('sprayed file', sprayJson.wuid);
+      await saveWorkunit(dataset.id, sprayJson.wuid);
+
+      let wuResp = await createWorkunit();
+      let wuJson = await wuResp.json();
+
+      let _wuid = wuJson.wuid;
+      await saveWorkunit(dataset.id, _wuid);
+
+      let response = await createWorkunit();
+      let dpJson = await response.json();
+      let dpWuid = dpJson.wuid;
+      let defaultClusterTarget = await getDefaultTargetCluster(
+        '/WsTopology/TpListTargetClusters.json',
+        $activeWorkspace.data('clusterUsername'),
+        $activeWorkspace.data('clusterPassword')
+      );
+
+      await updateWorkunit(dpWuid, null, dataset.name + '-profile.ecl', null, dataset.id, $workspaceId);
+      await submitWorkunit(dpWuid, defaultClusterTarget);
+
+      console.log('check status of DataPatterns workunit');
+
+      let dpWorkunitStatusResp = await checkWorkunitStatus(dpWuid);
+      let dpWorkunitStatusJson = await dpWorkunitStatusResp.json();
+
+      while (dpWorkunitStatusJson.state != 'completed') {
+        dpWorkunitStatusResp = await checkWorkunitStatus(dpWuid);
+        dpWorkunitStatusJson = await dpWorkunitStatusResp.json();
+      }
+
+      let dpWuResultsResp = await getWorkunitResults(dpWuid);
+      let dpWuResultsJson = await dpWuResultsResp.json();
+
+      if (!dpWuResultsJson.WUResultResponse) {
+        throw 'No Workunit Response available for ' + dpWuid;
+      }
+      let dpResults = dpWuResultsJson.WUResultResponse.Result.Row;
+      if (dpResults.length < 1) {
+        throw 'No results for Workunit ' + dpWuid;
+      }
+      console.log(dpResults);
+
+      let _query = dataset.name + ":=RECORD\n",
+          _keys = Object.keys(currentDatasetFile),
+          _avgs = Object.values(currentDatasetFile),
+          _type =
+
+      $fileDetails.find('.form-group').each((idx, group) => {
+        let _type = "STRING" + _avgs[idx];
+        if (dpResults[idx].best_attribute_type) {
+          _type = dpResults[idx].best_attribute_type;
+        }
+        _query += "\t" + _type + " " + $(group).children('input:eq(0)').val() + ";\n";
+      });
+
+      _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
+        dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
+        "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
+        ",'thor',OVERWRITE);";
+
+      console.log(_query);
+
+      await updateWorkunit(_wuid, _query, null, null, null, $workspaceId);
+      await submitWorkunit(_wuid, defaultClusterTarget);
+
+      dataset.wuid = _wuid;
+
+      let workunitStatusResp = await checkWorkunitStatus(_wuid);
+      let workunitStatusJson = await workunitStatusResp.json();
+
+      while (workunitStatusJson.state != 'completed') {
+        workunitStatusResp = await checkWorkunitStatus(_wuid);
+        workunitStatusJson = await workunitStatusResp.json();
+      }
+
+      dataset.eclQuery = workunitStatusJson.query;
+
+      if (workunitStatusJson.results[0].logicalFile) {
+        dataset.logicalfile = workunitStatusJson.results[0].logicalFile;
+      }
+
+      if (workunitStatusJson.results[0].schema) {
+        dataset.rowCount = workunitStatusJson.results[0].rows;
+        dataset.columnCount = workunitStatusJson.results[0].columns;
+        dataset.eclSchema = JSON.stringify(workunitStatusJson.results[0].schema);
+      }
+    } else if ($form.data('type') == 'import') {
+      dataset.wuid = $datasetSearch.data('wuid');
+      dataset.rowCount = $datasetSearch.data('rows');
+      dataset.columnCount = $datasetSearch.data('query').split('\n').length - 3;
+      dataset.eclQuery = $datasetSearch.data('query');
+      dataset.name = $datasetSearch.data('name');
+      dataset.filename = $datasetSearch.data('filename');
+      dataset.logicalfile = $datasetSearch.data('filename');
+
+      let datasetResp = await fetch('/datasets/', {
+        method: 'POST',
+        body: JSON.stringify(dataset),
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        }
+      });
+      let datasetJson = await datasetResp.json();
+
+      if (datasetJson.success === false) {
+        $datasetSearch.siblings('.invalid-feedback').text(datasetJson.message);
+        $datasetSearch.addClass('is-invalid');
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+
+        return false;
+      }
+
+      dataset.id = datasetJson.data.id;
+
+      await saveWorkunit(dataset.id, dataset.wuid);
+    } //end if $form.data('type')
+
+    await fetch('/datasets/', {
+      method: 'PUT',
       body: JSON.stringify(dataset),
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
       }
-    })
-    .then(response => response.json())
-    .then((json) => {
-      console.log('in .then() of POST dataset', json);
-      if (json.success === false) {
-        $file.siblings('.invalid-feedback').text(json.message);
-        $file.addClass('is-invalid');
+    });
 
-        $saveBtnStatus.addClass('d-none');
-        $saveBtn.removeAttr('disabled').removeClass('disabled');
-      } else {
-        dataset.id = json.data.id;
-        sendFileToLandingZone(file)
-        .then(response => response.json(), (err) => { console.log(err) })
-        .then(json => {
-          console.log(json);
-          dataset.file = json.file;
-          sprayFile(json.file, $workspaceName, $workspaceId)
-          .then(response => response.json(), (err) => { console.log(err) })
-          .then((json) => {
-            console.log('sprayed file', json.wuid);
-            saveWorkunit(dataset.id, json.wuid);
-          }).then(() => {
-            let _wuid = '';
+    console.log(dataset, parentPath, directoryTree);
 
-            createWorkunit()
-            .then(response => response.json())
-            .then((json) => {
-              _wuid = json.wuid;
-              saveWorkunit(dataset.id, _wuid);
-            }).then(() => {
-              console.log(dataset, parentPath, directoryTree);
+    let rootId = null,
+        nextId = null,
+        element = directoryTree['datasets'],
+        newFile = null;
 
-              let rootId = null,
-                  nextId = null,
-                  element = directoryTree['datasets'],
-                  newFile = null;
+    if (parentPath && parentPath.length > 0) {
+      rootId = parentPath.shift();
+      element = element[rootId];
 
-              if (parentPath && parentPath.length > 0) {
-                rootId = parentPath.shift();
-                element = element[rootId];
+      while (parentPath.length > 0) {
+        nextId = parentPath.shift();
+        if (element.children[nextId]) {
+          element = element.children[nextId];
+        }
+      }
 
-                while (parentPath.length > 0) {
-                  nextId = parentPath.shift();
-                  if (element.children[nextId]) {
-                    element = element.children[nextId];
-                  }
-                }
+      if (!element.children) {
+        element.children = {};
+      }
 
-                if (!element.children) {
-                  element.children = {};
-                }
+      element.children[dataset.id] = {
+        name: dataset.name,
+        id: dataset.id,
+        children: {},
+        type: 'file'
+      };
+      newFile = element.children[dataset.id];
+    } else {
+      element[dataset.id] = {
+        name: dataset.name,
+        id: dataset.id,
+        children: {},
+        type: 'file'
+      }
+      newFile = element[dataset.id];
+    }
 
-                element.children[dataset.id] = {
-                  name: dataset.name,
-                  id: dataset.id,
-                  children: {},
-                  type: 'file'
-                };
-                newFile = element.children[dataset.id];
-              } else {
-                element[dataset.id] = {
-                  name: dataset.name,
-                  id: dataset.id,
-                  children: {},
-                  type: 'file'
-                }
-                newFile = element[dataset.id];
-              }
+    console.log(directoryTree);
 
-              console.log(directoryTree);
-
-              fetch('/workspaces/', {
-                method: 'PUT',
-                body: JSON.stringify({
-                  id: $activeWorkspace.data('id'),
-                  directoryTree: directoryTree
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'CSRF-Token': csrfToken
-                }
-              })
-              .then(response => response.json())
-              .then((workspace) => {
-                $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
-
-                $newDatasetLi = addDataset(newFile);
-                $newDataset = $newDatasetLi.find('.dataset');
-                console.log($newDataset.data());
-                $newDataset.data('wuid', _wuid);
-                console.log($newDataset.data());
-
-                if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
-                  $parentEl.append($newDatasetLi);
-                } else {
-                  if ($parentEl.find('ul').first().length == 0) {
-                    $parentEl.append('<ul>');
-                  }
-                  $parentEl.find('ul').first().append($newDatasetLi);
-                }
-
-                $datasetStatus = $newDataset.find('.status');
-                $newDataset.data('wuid', _wuid);
-
-                showDatasets();
-                //$newDataset.trigger('click');
-
-                let t = null;
-                let awaitWorkunitStatusComplete = (wuid, callback) => {
-                  checkWorkunitStatus(wuid)
-                  .then(response => response.json())
-                  .then((json) => {
-                    if (json.state == 'completed') {
-                      if (typeof callback === 'function') {
-                        callback(json);
-                      }
-                    } else {
-                      window.clearTimeout(t);
-                      t = window.setTimeout(function() {
-                        awaitWorkunitStatusComplete(wuid, callback);
-                      }, 1500);
-                    }
-                  });
-                };
-
-                (async () => {
-                  let response = await createWorkunit();
-                  let dpJson = await response.json();
-                  let dpWuid = dpJson.wuid;
-                  let defaultClusterTarget = await getDefaultTargetCluster(
-                    '/WsTopology/TpListTargetClusters.json',
-                    $activeWorkspace.data('clusterUsername'),
-                    $activeWorkspace.data('clusterPassword')
-                  );
-
-                  updateWorkunit(dpWuid, null, dataset.name + '-profile.ecl', null, dataset.id, $workspaceId).then(() => {
-                    submitWorkunit(dpWuid, defaultClusterTarget).then(() => {
-                      console.log('check status of DataPatterns workunit');
-                      $datasetStatus.addClass('fa-spin');
-                      awaitWorkunitStatusComplete(dpWuid, function(json) {
-                        getWorkunitResults(dpWuid)
-                        .then(response => response.json())
-                        .then((wuResult) => {
-                          if (!wuResult.WUResultResponse) {
-                            throw 'No Workunit Response available for ' + dpWuid;
-                          }
-                          let dpResults = wuResult.WUResultResponse.Result.Row;
-                          if (dpResults.length < 1) {
-                            throw 'No results for Workunit ' + dpWuid;
-                          }
-                          console.log(dpResults);
-
-                          let _query = dataset.name + ":=RECORD\n",
-                              _keys = Object.keys(currentDatasetFile),
-                              _avgs = Object.values(currentDatasetFile),
-                              _type =
-
-                          $fileDetails.find('.form-group').each((idx, group) => {
-                            let _type = "STRING" + _avgs[idx];
-                            if (dpResults[idx].best_attribute_type) {
-                              _type = dpResults[idx].best_attribute_type;
-                            }
-                            _query += "\t" + _type + " " + $(group).children('input:eq(0)').val() + ";\n";
-                          });
-
-                          $modal.modal('hide');
-                          $saveBtnStatus.addClass('d-none');
-                          $saveBtn.removeAttr('disabled').removeClass('disabled');
-
-                          $modal.find('#dataset-name').val('');
-                          $form.removeClass('was-validated');
-
-                          _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
-                            dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
-                            "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
-                            ",'thor',OVERWRITE);";
-
-                          console.log(_query);
-
-                          updateWorkunit(_wuid, _query, null, null, null, $workspaceId).then(() => {
-                            submitWorkunit(_wuid, defaultClusterTarget).then(() => {
-                              dataset.wuid = _wuid;
-                              console.log('check status of workunit');
-                              $datasetStatus.addClass('fa-spin');
-                              awaitWorkunitStatusComplete(_wuid, function(json) {
-                                $datasetStatus.removeClass('fa-spin');
-
-                                dataset.eclQuery = json.query;
-
-                                if (json.results[0].logicalFile) {
-                                  dataset.logicalfile = json.results[0].logicalFile;
-                                }
-
-                                if (json.results[0].schema) {
-                                  dataset.rowCount = json.results[0].rows;
-                                  dataset.columnCount = json.results[0].columns;
-                                  dataset.eclSchema = JSON.stringify(json.results[0].schema);
-                                }
-
-                                fetch('/datasets/', {
-                                  method: 'PUT',
-                                  body: JSON.stringify(dataset),
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'CSRF-Token': csrfToken
-                                  }
-                                }).then(() => {
-                                  $newDataset.data('wuid', _wuid);
-                                  $newDataset.find('.rows').text('Rows: ' + dataset.rowCount);
-                                  $newDataset.find('.cols').text('Columns: ' + dataset.columnCount);
-                                  $newDataset.data('eclSchema', dataset.eclSchema);
-                                  $newDataset.data('query', dataset.eclQuery);
-                                  window.clearTimeout(t);
-                                });
-                              });
-                            });
-                          });
-                        });
-                      });
-                    });
-                  });
-
-                })(); //end async IFFE
-              });
-            });
-          });
-        });
+    let workspaceResp = await fetch('/workspaces/', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: $activeWorkspace.data('id'),
+        directoryTree: directoryTree
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
       }
     });
-  });
+    let workspaceJson = await workspaceResp.json();
+
+    $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+
+    $newDatasetLi = addDataset(newFile);
+    $newDataset = $newDatasetLi.find('.dataset');
+    $newDataset.data('wuid', dataset.wuid);
+
+    if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
+      $parentEl.append($newDatasetLi);
+    } else {
+      if ($parentEl.find('ul').first().length == 0) {
+        $parentEl.append('<ul>');
+      }
+      $parentEl.find('ul').first().append($newDatasetLi);
+    }
+
+    showDatasets();
+    //$newDataset.trigger('click');
+
+    $saveBtnStatus.addClass('d-none');
+    $saveBtn.removeAttr('disabled').removeClass('disabled');
+
+    $modal.find('#dataset-name').val('');
+    $form.removeClass('was-validated');
+    $modal.modal('hide');
+
+    $newDataset.find('.rows').text('Rows: ' + dataset.rowCount);
+    $newDataset.find('.cols').text('Columns: ' + dataset.columnCount);
+    $newDataset.data('eclSchema', dataset.eclSchema);
+    $newDataset.data('query', dataset.eclQuery);
+
+  }); //end #newDatasetModal.btn-primary click listener
+
+  if ($('#dataset-search').length > 0) {
+    let datasetSearchAuto = new autoComplete({
+      selector: '#dataset-search',
+      delay: 400,
+      source: function(term, callback) {
+        dfuQuery(term)
+          .then(response => response.json())
+          .then((data) => {
+            callback(data);
+          })
+      },
+      onSelect: function(evt, term, item) {
+        getWorkunitResults('', 5, 0, term)
+          .then(response => response.json())
+          .then((wuResult) => {
+            let results = wuResult.WUResultResponse.Result.Row,
+                $tableWrapper = $('.file-preview'),
+                $noDataMsg = $tableWrapper.find('p'),
+                $table = $tableWrapper.find('.table');
+
+            if (results.length > 0) {
+              $tableWrapper.siblings('form-group').addClass('mb-0');
+              $tableWrapper.addClass('d-none');
+              $table.removeClass('d-none');
+              $noDataMsg.addClass('d-none');
+              $table.find('thead tr').html('');
+              $table.find('tbody').html('');
+
+              Object.keys(results[0]).forEach((key) => {
+                $table.find('thead tr').append('<th scope="col">' + key + '</th>');
+              });
+              let docFrag = document.createDocumentFragment();
+              results.forEach((row) => {
+                let _tr = document.createElement('tr');
+                for (var x in row) {
+                  let _td = document.createElement('td');
+                  _td.setAttribute('scope', 'row');
+                  _td.textContent = row[x];
+                  _tr.appendChild(_td);
+                }
+                docFrag.appendChild(_tr);
+              });
+              $table.find('tbody')[0].appendChild(docFrag);
+
+              $tableWrapper.removeClass('d-none');
+            } else {
+              $tableWrapper.removeClass('d-none');
+              $noDataMsg.removeClass('d-none');
+              $table.addClass('d-none');
+            }
+
+            dfuInfo(term)
+              .then(response => response.json())
+              .then((json) => {
+                $('#dataset-search').data({
+                  filename: term,
+                  wuid: json.wuid,
+                  query: json.query,
+                  name: json.name,
+                  rows: json.rows
+                })
+              });
+          });
+      }
+    });
+  }
 
   /* UPDATE DATASET INFO */
   $('.datasets').on('click', '.dataset .status', function(evt) {
@@ -1147,6 +1225,12 @@ require([
     $('#dataset-file').removeClass('is-invalid');
     $('#newDatasetModal .btn-primary .fa-pulse').addClass('d-none');
     $('#newDatasetModal .btn-primary').removeAttr('disabled').removeClass('disabled');
+    $('#nav-upload-tab').addClass('active show').siblings().removeClass('active show');
+    $('#nav-upload').addClass('active show').siblings().removeClass('active show');
+    $('#dataset-search').val('').removeClass('is-invalid');
+    $('#nav-import').find('.file-preview .table thead tr').html('')
+      .end().find('.file-preview').addClass('d-none');
+    $('#nav-import').find('.file-preview .table tbody').html('');
   });
 
   /* SHOW EDIT DATASET MODAL */

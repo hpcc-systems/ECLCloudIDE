@@ -91,7 +91,7 @@ router.put('/', [
 
   console.log('request body', req.body);
 
-  if (!clusterWhitelist.includes(req.body.workspaceCluster)) {
+  if (req.body.workspaceCluster && !clusterWhitelist.includes(req.body.workspaceCluster)) {
     return res.json({ success: false, message: 'Please select a valid cluster' });
   }
 

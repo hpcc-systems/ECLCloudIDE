@@ -155,9 +155,13 @@ div.modal.fade(id="newDatasetModal", role="dialog")
             id="nav-upload-tab", data-toggle="tab", href="#nav-upload",
             role="tab", aria-controls="nav-upload", aria-selected="true"
           ) Upload
+          a.nav-item.nav-link(
+            id="nav-import-tab", data-toggle="tab", href="#nav-import",
+            role="tab", aria-controls="nav-import", aria-selected="true"
+          ) Import
         div.tab-content(id="nav-tabContent")
           div.tab-pane.fade.active.show(id="nav-upload", role="tabpanel", aria-labelledby="nav-upload-tab")
-            form
+            form(data-type="upload")
               div.form-group.form-group-file
                 label.col-form-label(for="dataset-file") File:
                 input.form-control-file(
@@ -179,6 +183,22 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                 )
                 .invalid-feedback Please provide a valid name for the dataset.
               div.file-details
+          div.tab-pane.fade(id="nav-import", role="tabpanel", aria-labelledby="nav-import-tab")
+            form(data-type="import")
+              div.form-group
+                label.col-form-label(for="dataset-search") Search:
+                input.form-control(
+                  id="dataset-search", name="datasetSearch", type="text",
+                  placeholder="*some_file*",
+                )
+                .invalid-feedback Please provide a valid name for the dataset.
+              div.file-preview.d-none
+                label.col-form-label Preview:
+                p This logical file contains no data.
+                table.table.table-sm.table-responsive
+                  thead
+                    tr
+                  tbody
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary(type="submit") Save

@@ -6,8 +6,6 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     objectId: DataTypes.UUID,
-  }, {
-    paranoid: true
   });
   Workunit.associate = function(models) {
     Workunit.belongsTo(models.Dataset, { foreignKey: 'objectId', targetKey: 'id' });
