@@ -347,10 +347,20 @@ router.post('/results', [
     _headers.authorization = req.headers.authorization;
   }
   console.log('requesting /WsWorkunits/WUResult.json');
+  let formData = {
+    Count: req.body.count,
+    Sequence: req.body.sequence
+  };
+  if (req.body.wuid) {
+    formData.Wuid = req.body.wuid;
+  }
+  if (req.body.logicalfile) {
+    formData.LogicalName = req.body.logicalfile;
+  }
   request({
     method: 'POST',
     uri: req.clusterAddrAndPort + '/WsWorkunits/WUResult.json',
-    form: { Wuid: req.body.wuid, Count: req.body.count, Sequence: req.body.sequence },
+    form: formData,
     resolveWithFullResponse: true,
     headers: _headers
   }).then((response) => {

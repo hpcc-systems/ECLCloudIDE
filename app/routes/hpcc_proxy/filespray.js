@@ -184,25 +184,74 @@ router.post('/getDfuWorkunit', [
   });
 });
 
-router.post('/DfuQuery', [
+router.post('/dfuQuery', [
+  upload.none(),
   body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
   buildClusterAddr,
 ], (req, res, next) => {
   request({
     method: 'POST',
-    uri: router.clusterAddrAndPort + '/WsDfu/DFUQuery.json',
-    formData: {
-      wuid: '',
+    uri: req.clusterAddrAndPort + '/WsDfu/DFUQuery.json',
+    form: {
+      LogicalName: '*' + req.body.query + '*',
+      PageSize: 25,
+      Sortby: 'Modified',
+      Descending: 1,
+      PageStartFrom: 1,
       rawxml_: 1
     },
     resolveWithFullResponse: true
   }).then((response) => {
+    console.log(response);
     let json = JSON.parse(response.body),
-        result = json.GetDFUWorkunitResponse.result;
-    res.json({
-      wuid: result.ID,
-      complete: (result.PercentDone < 100) ? 0 : 1,
-    });
+        data = [];
+
+    if (json.DFUQueryResponse.NumFiles > 0) {
+      json.DFUQueryResponse.DFULogicalFiles.DFULogicalFile.forEach((file) => {
+        data.push(file.Name);
+      });
+    }
+    res.json(data);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
+router.post('/dfuInfo', [
+  upload.none(),
+  body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
+  buildClusterAddr,
+], (req, res, next) => {
+  request({
+    method: 'POST',
+    uri: req.clusterAddrAndPort + '/WsDfu/DFUInfo.json',
+    form: {
+      Name: req.body.name,
+    },
+    resolveWithFullResponse: true
+  }).then((response) => {
+    console.log(response);
+    let json = JSON.parse(response.body),
+        data = {},
+        fileName = '';
+
+    if (json.DFUInfoResponse) {
+      data.wuid = json.DFUInfoResponse.FileDetail.Wuid;
+      data.query = json.DFUInfoResponse.FileDetail.Ecl;
+
+      let origName = json.DFUInfoResponse.FileDetail.Filename;
+      if (origName.lastIndexOf('.') > -1) {
+        origName.substr(0, origName.lastIndexOf('.')).split(/[-_]/)
+          .forEach((part) => fileName += part.charAt(0).toUpperCase() + part.substr(1));
+      } else {
+        fileName = origName;
+      }
+
+      data.name = fileName;
+      data.rows = json.DFUInfoResponse.FileDetail.RecordCountInt64;
+    }
+    res.json(data);
   }).catch((err) => {
     console.log(err);
     res.json(err);

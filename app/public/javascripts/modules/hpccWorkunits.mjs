@@ -105,6 +105,38 @@ let getDfuWorkunit = (wuid) => {
   });
 };
 
+let dfuQuery = (query) => {
+  let _headers = {
+    'CSRF-Token': csrfToken
+  };
+  let workspaceId = $('.workspaces .active').data('id');
+  let formData = new FormData();
+  formData.append('query', query);
+  formData.append('workspaceId', workspaceId);
+
+  return fetch('/hpcc/filespray/dfuQuery', {
+    method: 'POST',
+    body: formData,
+    headers: _headers
+  });
+};
+
+let dfuInfo = (filename) => {
+  let _headers = {
+    'CSRF-Token': csrfToken
+  };
+  let workspaceId = $('.workspaces .active').data('id');
+  let formData = new FormData();
+  formData.append('name', filename);
+  formData.append('workspaceId', workspaceId);
+
+  return fetch('/hpcc/filespray/dfuInfo', {
+    method: 'POST',
+    body: formData,
+    headers: _headers
+  });
+};
+
 let saveWorkunit = (objectId, workunitId) => {
   let _headers = {
     'Content-Type': 'application/json',
@@ -132,7 +164,7 @@ let checkWorkunitStatus = (wuid) => {
   });
 };
 
-let getWorkunitResults = (wuid, count, sequence) => {
+let getWorkunitResults = (wuid = '', count, sequence, logicalfile = '') => {
   console.log('request /hpcc/workunits/results', wuid, count);
 
   let _headers = {
@@ -146,6 +178,7 @@ let getWorkunitResults = (wuid, count, sequence) => {
     body: JSON.stringify({
       workspaceId: workspaceId,
       wuid: wuid,
+      logicalfile: logicalfile,
       count: ((count) ? count : 1000),
       sequence: ((sequence) ? sequence : 0)
     }),
@@ -155,6 +188,6 @@ let getWorkunitResults = (wuid, count, sequence) => {
 
 export {
   createWorkunit, updateWorkunit, submitWorkunit, sendFileToLandingZone,
-  sprayFile, getDfuWorkunit, saveWorkunit, checkWorkunitStatus,
+  sprayFile, getDfuWorkunit, dfuQuery, dfuInfo, saveWorkunit, checkWorkunitStatus,
   getWorkunitResults,
 };
