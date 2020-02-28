@@ -392,6 +392,10 @@ let getClusterInfo = async (workspaceId) => {
       }
     }).then(workspace => {
       let url = workspace.cluster;
+      if (!url) {
+        reject({ message: 'The cluster targets for scripts in this workspace could not ' +
+          'be retrieved. The url provided for this cluster may be incorrect.' });
+      }
       if (url.indexOf('http') < 0) {
         url = 'http://' + url
       }
@@ -414,7 +418,7 @@ let getClusterInfo = async (workspaceId) => {
         })
         .catch(error => {
           reject({ message: 'The cluster targets for scripts in this workspace could not ' +
-            'be retrieved. The credentials you provided for this cluster may be incorrect.' });
+            'be retrieved. The credentials provided for this cluster may be incorrect.' });
         });
     });
   });
