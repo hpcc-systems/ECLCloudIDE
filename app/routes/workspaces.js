@@ -28,7 +28,7 @@ let _ = require('lodash');
 /* Create workspace */
 router.post('/', [
   body('workspaceName')
-    .isAlphanumeric().withMessage('Invalid workspace name'),
+    .matches(/[a-zA-Z]{1}[a-zA-Z0-9_]*/).withMessage('Invalid workspace name'),
   body('workspaceCluster')
     .isIn(clusterWhitelist).withMessage('Invalid cluster')
 ], (req, res, next) => {
@@ -71,7 +71,7 @@ router.post('/', [
 router.put('/', [
   body('workspaceName')
     .optional({ checkFalsy: true })
-    .isAlphanumeric().withMessage('Invalid workspace name')
+    .matches(/[a-zA-Z]{1}[a-zA-Z0-9_]*/).withMessage('Invalid workspace name')
     .escape(),
   // a weird issue with the isJSON() validator... evidently the first thing it does
   // is test that the value is a string, and then tries to use JSON.parse(...),
