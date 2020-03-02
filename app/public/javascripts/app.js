@@ -141,6 +141,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
       $scopeDefn = $title.find('.scopename'),
+      $activeWorkspace = $('.workspaces .active'),
       query = $('.datasets .active').data('query'),
       scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.csv_thor/,
       $loader = $datasetContent.siblings('.loader'),
@@ -153,7 +154,28 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   $scopeDefn.addClass('d-none');
   $loader.removeClass('d-none');
 
-  checkWorkunitStatus(wuid).then(() => {
+  checkWorkunitStatus(wuid)
+  .then(response => response.json())
+  .then(async (status) => {
+    console.log(status);
+
+    if (status.state == 'unknown') {
+      let defaultClusterTarget = await getDefaultTargetCluster(
+        '/WsTopology/TpListTargetClusters.json',
+        $activeWorkspace.data('clusterUsername'),
+        $activeWorkspace.data('clusterPassword')
+      );
+      await submitWorkunit(wuid, defaultClusterTarget);
+
+      let statusResp = await checkWorkunitStatus(wuid);
+      status = await statusResp.json();
+
+      while (status.state != 'completed') {
+        if (status.state == 'failed') break;
+        statusResp = await checkWorkunitStatus(wuid);
+        status = await statusResp.json();
+      }
+    }
 
     getWorkunitResults(wuid, 1000, sequence)
     .then(response => response.json())
