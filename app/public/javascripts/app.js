@@ -646,6 +646,7 @@ require([
         $selectedWorkspace = $workspaces.find('.active'),
         $scripts = $('.scripts .script:not(.cloner)'),
         $scriptsUl = $('.scripts ul').first(),
+        $datasetContent = $('.dataset-content'),
         $datasets = $('.datasets .dataset:not(.cloner)'),
         $datasetsUl = $('.datasets ul').first(),
         $deleteWorkspace = $('.delete-workspace').parent(),
@@ -678,6 +679,7 @@ require([
       $scriptPanelClose.trigger('click');
 
       toggleNewScriptPopover();
+      $datasetContent.addClass('d-none');
 
       localStorage.removeItem('_lastUsedWorkspace');
     });
