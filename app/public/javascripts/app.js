@@ -369,55 +369,90 @@ require([
         $tip = $('.workspace-tip'),
         $newWorkspace = $workspaces.find('.cloner').clone(),
         $workspaceName = $modal.find('#workspace-name'),
+        $workspaceUrl = $modal.find('#workspace-url'),
         $deleteWorkspace = $('.delete-workspace').parent(),
-        $form = $modal.find('form');
+        $form = $modal.find('.tab-pane.active form');
 
-    if ($form[0].checkValidity() === false) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      $form.addClass('was-validated');
-      return false;
-    }
-
-    fetch('/workspaces/', {
-      method: 'POST',
-      body: JSON.stringify(getFormData($form)),
-      headers: {
-        'Content-Type': 'application/json',
-        'CSRF-Token': csrfToken
+    if ($form.data('type') == 'upload') {
+      if ($form[0].checkValidity() === false) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        $form.addClass('was-validated');
+        return false;
       }
-    })
-    .then(response => response.json())
-    .then((workspace) => {
-      $modal.modal('hide');
 
-      $newWorkspace.removeClass('d-none cloner');
-      $newWorkspace.data('name', workspace.name);
-      $newWorkspace.data('cluster', workspace.cluster);
-      $newWorkspace.data('id', workspace.id);
-      $newWorkspace.data('directoryTree', workspace.directoryTree);
-      $newWorkspace.text($newWorkspace.data('name'));
-      $workspaces.append($newWorkspace);
+      fetch('/workspaces/', {
+        method: 'POST',
+        body: JSON.stringify(getFormData($form)),
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then((workspace) => {
+        $modal.modal('hide');
 
-      $workspaceName.val('');
+        $newWorkspace.removeClass('d-none cloner');
+        $newWorkspace.data('name', workspace.name);
+        $newWorkspace.data('cluster', workspace.cluster);
+        $newWorkspace.data('id', workspace.id);
+        $newWorkspace.data('directoryTree', workspace.directoryTree);
+        $newWorkspace.text($newWorkspace.data('name'));
+        $workspaces.append($newWorkspace);
 
-      $form.removeClass('was-validated');
-      $tip.addClass('d-none');
-      $deleteWorkspace.removeClass('d-none');
+        $workspaceName.val('');
 
-      $workspaces.find('.dropdown-item').filter((idx, el) => {
-        return $(el).text() === $newWorkspace.data('name')
-      }).trigger('click');
+        $form.removeClass('was-validated');
+        $tip.addClass('d-none');
+        $deleteWorkspace.removeClass('d-none');
 
-      toggleNewScriptPopover();
-    });
+        $workspaces.find('.dropdown-item').filter((idx, el) => {
+          return $(el).text() === $newWorkspace.data('name')
+        }).trigger('click');
+
+        toggleNewScriptPopover();
+      });
+    } else if ($form.data('type') == 'import') {
+      window.location = '/workspaces/share/' + $workspaceUrl.data('id');
+    }
   });
+
+  $('#newWorkspaceModal').on('keyup', '#workspace-url', _.debounce(function(evt) {
+    let url = evt.target.value,
+        re = new RegExp(/.*\/workspaces\/share\/([0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12})/),
+        matches = url.match(re),
+        guid = null,
+        $workspaceSummary = $('.workspace-summary'),
+        $workspaceUrl = $('#workspace-url'),
+        $workspaceName = $workspaceSummary.find('.workspace-name'),
+        $workspaceCreator = $workspaceSummary.find('.workspace-creator'),
+        $workspaceCreated = $workspaceSummary.find('.workspace-created');
+    if (!matches) {
+      console.log('no match');
+    } else {
+      guid = (matches[1]) ? matches[1] : guid;
+      $workspaceUrl.data('id', guid);
+      fetch('/workspaces/summary/' + guid)
+        .then(response => response.json())
+        .then(json => {
+          $workspaceName.find('span').text(json.data.name);
+          $workspaceCreator.find('span').text(json.data.Users[0].username);
+          $workspaceCreated.find('span').text(new Date(json.data.createdAt).toLocaleDateString());
+          $workspaceSummary.removeClass('d-none');
+        });
+    }
+  }, 500));
 
   /* RESET NEW WORKSPACE FORM ON MODAL HIDE */
   $('#newWorkspaceModal').on('hide.bs.modal', function(evt) {
     $('#newWorkspaceModal form').removeClass('was-validated');
     $('#newWorkspaceModal form')[0].reset();
+    $('#newWorkspaceModal form')[1].reset();
     $('#cluster-password').data('changed', false);
+    $('.workspace-summary').addClass('d-none');
+    $('#nav-create-workspace-tab').addClass('active show').siblings().removeClass('active show');
+    $('#create-workspace').addClass('active show').siblings().removeClass('active show');
   });
 
   /* CHANGE SELECTED WORKSPACE */

@@ -74,34 +74,67 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
         button.close(data-dismiss="modal", aria-label="Close")
           span(aria-hidden="true") &times;
       div.modal-body
-        form
-          div.form-group
-            label.col-form-label(for="workspace-name") Name:
-            input.form-control(
-              id="workspace-name", name="workspaceName", type="text",
-              required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
-            )
-            .invalid-feedback Please provide a valid name for the workspace.
-          div.form-group
-            label.col-form-label(for="workspace-cluster") Cluster:
-            select.custom-select(id="workspace-cluster", name="workspaceCluster", required="required")
-              option(value="") Select...
-              if clusterList
-                each cluster in clusterList
-                  option(value=cluster) #{cluster}
-            .invalid-feedback Please select a cluster.
-          div.form-group
-            label.col-form-label(for="cluster-username") Cluster Username:
-            input.form-control(
-              id="cluster-username", name="clusterUsername", type="text"
-            )
-          div.form-group.position-relative
-            label.col-form-label(for="cluster-password") Cluster Password:
-            input.form-control(
-              id="cluster-password", name="clusterPassword", type="password",
-              data-changed="false"
-            )
-            i.fa.fa-lg.fa-eye-slash.text-secondary.toggle-password(title="Show Password")
+        nav
+          div.nav.nav-tabs(id="new-workspace-nav-tab", role="tablist")
+            a.nav-item.nav-link.active.show(
+              id="nav-create-workspace-tab", data-toggle="tab", href="#create-workspace",
+              role="tab", aria-controls="create-workspace", aria-selected="true"
+            ) Create
+            a.nav-item.nav-link(
+              id="nav-import-workspace-tab", data-toggle="tab", href="#import-workspace",
+              role="tab", aria-controls="import-workspace", aria-selected="true"
+            ) Import
+        div.tab-content(id="nav-new-workspace-tabContent")
+          div.tab-pane.fade.active.show(id="create-workspace", role="tabpanel", aria-labelledby="nav-create-workspace-tab")
+            form(data-type="create")
+              div.form-group
+                label.col-form-label(for="workspace-name") Name:
+                input.form-control(
+                  id="workspace-name", name="workspaceName", type="text",
+                  required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
+                )
+                .invalid-feedback Please provide a valid name for the workspace.
+              div.form-group
+                label.col-form-label(for="workspace-cluster") Cluster:
+                select.custom-select(id="workspace-cluster", name="workspaceCluster", required="required")
+                  option(value="") Select...
+                  if clusterList
+                    each cluster in clusterList
+                      option(value=cluster) #{cluster}
+                .invalid-feedback Please select a cluster.
+              div.form-group
+                label.col-form-label(for="cluster-username") Cluster Username:
+                input.form-control(
+                  id="cluster-username", name="clusterUsername", type="text"
+                )
+              div.form-group.position-relative
+                label.col-form-label(for="cluster-password") Cluster Password:
+                input.form-control(
+                  id="cluster-password", name="clusterPassword", type="password",
+                  data-changed="false"
+                )
+                i.fa.fa-lg.fa-eye-slash.text-secondary.toggle-password(title="Show Password")
+          div.tab-pane.fade(id="import-workspace", role="tabpanel", aria-labelledby="nav-import-workspace-tab")
+            form(data-type="import")
+              div.form-group
+                label.col-form-label(for="workspace-url") Url:
+                input.form-control(
+                  id="workspace-url", name="workspaceName", type="text",
+                  required="required", placeholder="Paste share workspace url..."
+                )
+                .invalid-feedback Please provide a valid name for the workspace.
+              div.workspace-summary.d-none
+                div.summary-card.d-flex.flex-column
+                  span.workspace-name
+                    label.p-0.m-0.mr-1.font-weight-bold Workspace:
+                    span Workspace
+                  span.workspace-creator
+                    label.p-0.m-0.mr-1.font-weight-bold Created by:
+                    span John Doe
+                  span.workspace-created
+                    label.p-0.m-0.mr-1.font-weight-bold Created:
+                    span 2020-01-01 12:00
+
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
         button.btn.btn-primary Save
