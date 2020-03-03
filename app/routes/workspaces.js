@@ -5,7 +5,7 @@ const db = require('../models/index');
 
 const fs = require('fs-extra');
 
-const { body, validationResult } = require('express-validator/check');
+const { param, body, validationResult } = require('express-validator/check');
 
 const crypt = require('../utils/crypt');
 const clusterWhitelist = require('../cluster-whitelist')[process.env.NODE_ENV];
@@ -24,6 +24,36 @@ const hpccWorkunitsRouter = require('./hpcc_proxy/workunits');
 
 let request = require('request-promise');
 let _ = require('lodash');
+
+/* Retrieve workspace by id */
+router.get('/summary/:workspaceId', [
+  param('workspaceId')
+    .matches(/[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}/).withMessage('Invalid workspace id')
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
+  Workspace.findOne({
+    where: { id: req.params.workspaceId },
+    attributes: [ 'id', 'name', 'cluster', 'createdAt' ],
+    include: [{
+      model: User,
+      attributes: [ 'username' ],
+      through: {
+        where: { role: WorkspaceUser.roles.OWNER },
+        attributes: []
+      }
+    }]
+  }).then((workspace) => {
+    delete workspace.dataValues.clusterPwd;
+    return res.json({ success: true, data: workspace });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Workspace could not found' });
+  });
+});
 
 /* Create workspace */
 router.post('/', [
