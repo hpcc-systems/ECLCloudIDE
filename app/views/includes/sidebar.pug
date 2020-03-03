@@ -150,16 +150,16 @@ div.modal.fade(id="newDatasetModal", role="dialog")
           span(aria-hidden="true") &times;
       div.modal-body
         nav
-        div.nav.nav-tabs(id="nav-tab", role="tablist")
-          a.nav-item.nav-link.active.show(
-            id="nav-upload-tab", data-toggle="tab", href="#nav-upload",
-            role="tab", aria-controls="nav-upload", aria-selected="true"
-          ) Upload
-          a.nav-item.nav-link(
-            id="nav-import-tab", data-toggle="tab", href="#nav-import",
-            role="tab", aria-controls="nav-import", aria-selected="true"
-          ) Import
-        div.tab-content(id="nav-tabContent")
+          div.nav.nav-tabs(id="new-dataset-nav-tab", role="tablist")
+            a.nav-item.nav-link.active.show(
+              id="nav-upload-tab", data-toggle="tab", href="#nav-upload",
+              role="tab", aria-controls="nav-upload", aria-selected="true"
+            ) Upload
+            a.nav-item.nav-link(
+              id="nav-import-tab", data-toggle="tab", href="#nav-import",
+              role="tab", aria-controls="nav-import", aria-selected="true"
+            ) Import
+        div.tab-content(id="nav-new-dataset-tabContent")
           div.tab-pane.fade.active.show(id="nav-upload", role="tabpanel", aria-labelledby="nav-upload-tab")
             form(data-type="upload")
               div.form-group.form-group-file
