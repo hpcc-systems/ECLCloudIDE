@@ -2663,8 +2663,14 @@ require([
       let dataPatternsReportUrl = ((cluster.host.indexOf('http') < 0) ? 'http://' : '') +
         cluster.host + ':' + cluster.port + '/WsWorkunits/res/' + $script.data('wuid') +
         '/report/res/index.html';
-      $tableWrapper.html('<iframe src="' + dataPatternsReportUrl + '" />');
-      $tableWrapper.css({ height: '770px' });
+      fetch(dataPatternsReportUrl).then(response => response.text()).then(body => {
+        if (body.indexOf('Cannot open resource') > -1) {
+          displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.index(), true);
+        } else {
+          $tableWrapper.html('<iframe src="' + dataPatternsReportUrl + '" />');
+          $tableWrapper.css({ height: '770px' });
+        }
+      });
     } else if ( $output.hasClass('visualization')) {
       let visualizationUrl = ((cluster.host.indexOf('http') < 0) ? 'http://' : '') +
         cluster.host + ':' + cluster.port + '/WsWorkunits/res/' + $script.data('wuid') +
