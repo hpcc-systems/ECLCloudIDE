@@ -373,7 +373,7 @@ require([
         $deleteWorkspace = $('.delete-workspace').parent(),
         $form = $modal.find('.tab-pane.active form');
 
-    if ($form.data('type') == 'upload') {
+    if ($form.data('type') == 'create') {
       if ($form[0].checkValidity() === false) {
         evt.preventDefault();
         evt.stopPropagation();
