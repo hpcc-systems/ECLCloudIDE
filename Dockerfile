@@ -42,7 +42,8 @@ RUN ecl bundle install https://github.com/hpcc-systems/ML_Core.git \
     && ecl bundle install https://github.com/hpcc-systems/SupportVectorMachines.git \
     && ecl bundle install https://github.com/hpcc-systems/DataPatterns.git \
     && ecl bundle install https://github.com/hpcc-systems/PerformanceTesting.git \
-    && ecl bundle install https://github.com/hpcc-systems/Visualizer.git
+    && ecl bundle install https://github.com/hpcc-systems/Visualizer.git \
+    && ecl bundle install https://github.com/OdinProAgrica/dapper.git
 
 COPY ./app/package.json $appDir/
 
