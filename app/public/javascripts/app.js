@@ -137,6 +137,78 @@ let getFormData = ($form) => {
   return result;
 };
 
+let isDataPatternProfile = (schema) => {
+  let matchThreshold = 4,
+      matches = 0,
+      knownProfileField = (column) => {
+        return ([
+          'attribute', 'given_attribute_type', 'best_attribute_type',
+          'rec_count', 'fill_count', 'fill_rate', 'cardinality',
+          'cardinality_breakdown', 'modes', 'min_length', 'max_length',
+          'ave_length', 'popular_patterns', 'rare_patterns', 'is_numeric',
+          'numeric_min', 'numeric_max', 'numeric_mean', 'numeric_std_dev',
+          'numeric_lower_quartile', 'numeric_median', 'numeric_upper_quartile',
+          'numeric_correlations'
+        ].indexOf(column.ColumnName) > -1);
+      };
+
+  return (schema.filter(knownProfileField).length > matchThreshold);
+};
+
+let isVisualization = (name) => {
+  return name.indexOf('__hpcc_visualization') > -1;
+}
+
+require.config({
+  paths: {
+    'ln': '/javascripts/line-navigator',
+    '_': '/javascripts/lodash',
+    '@hpcc-js/util': '/javascripts/hpcc-js/util/dist/index.min',
+    '@hpcc-js/comms': '/javascripts/hpcc-js/comms/dist/index.min',
+  },
+  packages: [{
+    name: 'codemirror',
+    location: '/javascripts/codemirror/',
+    main: 'lib/codemirror'
+  }]
+});
+
+require([
+  'ln/line-navigator.min', 'codemirror', '_/lodash.min', '@hpcc-js/comms',
+  'codemirror/mode/ecl/ecl',
+  'codemirror/addon/selection/active-line',
+  'codemirror/addon/scroll/simplescrollbars'
+], function(LineNavigator, CodeMirror, _, comms) {
+  let editor = null,
+      $draggedObject = null,
+      $scriptPanel = $('.script-panel'),
+      $scriptPanelPlaceholder = $('.script-panel-placeholder'),
+      $main = $('[role="main"]'),
+      $sidebar = $('.sidebar'),
+      $outputsPanel = $('.outputs-panel');
+
+  $scriptPanel.resizable({
+    handles: 'n',
+    resize: function(evt, ui) {
+      $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
+    }
+  });
+  $main.css('margin-left', $sidebar.css('width'));
+  $outputsPanel.css('left', $sidebar.css('width'));
+  $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+  $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+  $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
+
+  $sidebar.resizable({
+    handles: 'e',
+    resize: function(evt, ui) {
+      $main.css('margin-left', $sidebar.css('width'));
+      $outputsPanel.css('left', $sidebar.css('width'));
+      $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+      $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+    }
+  });
+
 let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
@@ -183,30 +255,93 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       if (!wuResult.WUResultResponse) {
         throw 'No Workunit Response available for ' + wuid;
       }
-      let results = wuResult.WUResultResponse.Result.Row;
+
+      let results = wuResult.WUResultResponse.Result.Row,
+          schema = comms.parseXSD(wuResult.WUResultResponse.Result.XmlSchema.xml).root;
+
       if (results.length < 1) {
         throw 'No results for Workunit ' + wuid;
       }
-      console.log(wuResult);
+
       $tableWrapper.html(
         '<table class="table data-table" style="width: 100%;">' +
         '<thead><tr></tr></thead><tbody></tbody>' +
         '<tfoot><tr></tr></tfoot></table>'
       );
       $table = $tableWrapper.find('.data-table');
-      Object.keys(results[0]).forEach((key) => {
-        $table.find('thead tr').append('<th scope="col">' + key + '</th>');
-        $table.find('tfoot tr').append('<th scope="col">' + key + '</th>');
+
+      let jsonSchema = {}, trsArr = [], trs = '';
+
+      // this function does two things... while iterating over the xml schema
+      // one: it generates the data-table's header rows
+      // two: it creates a more normal json object that representing the schema
+      let createHeaders = (cols, count, _schema) => {
+        if (!trsArr[count]) trsArr[count] = [];
+        // iterate through the columns of the workunit's xml schema
+        cols.forEach(column => {
+          // if the node has children, it will span multiple columns
+          // if not, it will likely span multiple rows, assuming any node has children
+          trsArr[count].push('<th rowspan="' + ((column.children().length > 0 || count > 0) ? "1" : "2") +
+            '" colspan="' + ((column.children().length > 0) ? column.children().length : "1") + '">' +
+            column.name + '</th>');
+          if (column.children().length > 0) {
+            _schema[column.name] = {};
+            createHeaders(column.children(), count + 1, _schema[column.name]);
+          } else {
+            _schema[column.name] = column.type;
+          }
+        });
+      };
+      createHeaders(schema.children(), 0, jsonSchema);
+
+      trsArr.forEach(arr => {
+        trs += '<tr>' + arr.join('') + '</tr>';
       });
+      // if there was only one row of headers added to the array, then
+      // make all rowspans == 1, otherwise jQ DataTable will throw an exception
+      if (trsArr.length < 2) {
+        trs = trs.replace(/rowspan="2"/g, 'rowspan="1"');
+      }
+
+      $table.find('thead').html(trs);
+      $table.find('tfoot').html(trs);
+
       let docFrag = document.createDocumentFragment();
       results.forEach((row) => {
         let _tr = document.createElement('tr');
-        for (var x in row) {
-          let _td = document.createElement('td');
-          _td.setAttribute('scope', 'row');
-          _td.textContent = row[x];
-          _tr.appendChild(_td);
-        }
+        schema.children().forEach((attr) => {
+          // if this element in the results has a child record
+          if (typeof jsonSchema[attr.name] == 'object') {
+            if (row[attr.name].Row.length > 0) {
+              // iterate over the schema-defined keys
+              for (var _attr in jsonSchema[attr.name]) {
+                let _td = document.createElement('td');
+                _td.setAttribute('scope', 'row');
+                // in order to reference the values while iterating
+                // over each child row. creating multiple spans inside
+                // of a single td
+                for (var i = 0; i < row[attr.name].Row.length; i++) {
+                  let _span = document.createElement('span');
+                  _span.textContent = row[attr.name].Row[i][_attr];
+                  _td.appendChild(_span);
+                }
+                _tr.appendChild(_td);
+              }
+            } else {
+              for (var _attr in jsonSchema[attr.name]) {
+                let _td = document.createElement('td');
+                _td.setAttribute('scope', 'row');
+                _td.textContent = '';
+                _tr.appendChild(_td);
+              }
+            }
+          } else {
+            let _td = document.createElement('td');
+            _td.setAttribute('scope', 'row');
+            _td.textContent = row[attr.name];
+            _tr.appendChild(_td);
+          }
+        });
         docFrag.appendChild(_tr);
       });
       $table.find('tbody')[0].appendChild(docFrag);
@@ -232,76 +367,6 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
   });
 };
-
-let isDataPatternProfile = (schema) => {
-  let matchThreshold = 4,
-      matches = 0,
-      knownProfileField = (column) => {
-        return ([
-          'attribute', 'given_attribute_type', 'best_attribute_type',
-          'rec_count', 'fill_count', 'fill_rate', 'cardinality',
-          'cardinality_breakdown', 'modes', 'min_length', 'max_length',
-          'ave_length', 'popular_patterns', 'rare_patterns', 'is_numeric',
-          'numeric_min', 'numeric_max', 'numeric_mean', 'numeric_std_dev',
-          'numeric_lower_quartile', 'numeric_median', 'numeric_upper_quartile',
-          'numeric_correlations'
-        ].indexOf(column.ColumnName) > -1);
-      };
-
-  return (schema.filter(knownProfileField).length > matchThreshold);
-};
-
-let isVisualization = (name) => {
-  return name.indexOf('__hpcc_visualization') > -1;
-}
-
-require.config({
-  paths: {
-    'ln': '/javascripts/line-navigator',
-    '_': '/javascripts/lodash',
-  },
-  packages: [{
-    name: 'codemirror',
-    location: '/javascripts/codemirror/',
-    main: 'lib/codemirror'
-  }]
-});
-
-require([
-  'ln/line-navigator.min', 'codemirror', '_/lodash.min',
-  'codemirror/mode/ecl/ecl',
-  'codemirror/addon/selection/active-line',
-  'codemirror/addon/scroll/simplescrollbars'
-], function(LineNavigator, CodeMirror, _) {
-  let editor = null,
-      $draggedObject = null,
-      $scriptPanel = $('.script-panel'),
-      $scriptPanelPlaceholder = $('.script-panel-placeholder'),
-      $main = $('[role="main"]'),
-      $sidebar = $('.sidebar'),
-      $outputsPanel = $('.outputs-panel');
-
-  $scriptPanel.resizable({
-    handles: 'n',
-    resize: function(evt, ui) {
-      $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
-    }
-  });
-  $main.css('margin-left', $sidebar.css('width'));
-  $outputsPanel.css('left', $sidebar.css('width'));
-  $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
-  $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
-  $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
-
-  $sidebar.resizable({
-    handles: 'e',
-    resize: function(evt, ui) {
-      $main.css('margin-left', $sidebar.css('width'));
-      $outputsPanel.css('left', $sidebar.css('width'));
-      $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
-      $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
-    }
-  });
 
   $('#tour-link').on('click', function() {
     tour.start();

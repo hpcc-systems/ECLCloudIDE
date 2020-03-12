@@ -13,9 +13,13 @@
     "lodash:clean": "rm -rf ./public/javascripts/lodash/",
     "lodash:copy": "npx cpx \"node_modules/lodash/**/*\" public/javascripts/lodash/",
     "lodash": "npm run lodash:clean && npm run lodash:copy",
-    "clientdeps": "npm run codemirror && npm run linenav && npm run lodash"
+    "hpccjs:clean": "rm -rf ./public/javascripts/hpcc-js/",
+    "hpccjs:copy": "npx cpx \"node_modules/@hpcc-js/**/*\" public/javascripts/hpcc-js/",
+    "hpccjs": "npm run hpccjs:clean && npm run hpccjs:copy",
+    "clientdeps": "npm run codemirror && npm run linenav && npm run lodash && npm run hpccjs"
   },
   "dependencies": {
+    "@hpcc-js/comms": "^2.13.0",
     "aws-sdk": "^2.504.0",
     "bcrypt": "^3.0.3",
     "codemirror": "^5.44.0",

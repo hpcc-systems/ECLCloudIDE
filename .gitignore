@@ -19,6 +19,7 @@ config.js
 codemirror/
 line-navigator/
 lodash/
+hpcc-js/
 
 #ecl workspaces
 workspaces

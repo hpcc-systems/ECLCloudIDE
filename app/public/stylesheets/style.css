@@ -403,6 +403,19 @@ main .loader p {
   border: 0;
 }
 
+.table-wrapper .data-table tbody td span {
+  display: block;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #cccccc;
+}
+
+.table-wrapper .data-table tbody td span:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 .script-panel-placeholder {
   height: 66%;
   width: 100%;
