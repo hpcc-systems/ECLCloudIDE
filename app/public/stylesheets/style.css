@@ -1,6 +1,7 @@
 body {
   font: 16px "Source Sans Pro", Helvetica, Arial, sans-serif;
   background-color: #f8f9fa;
+  overflow: hidden;
 }
 
 a {
@@ -118,6 +119,10 @@ a {
   display: block;
 }
 
+.dataset-content {
+  width: 100%;
+}
+
 .dataset-content h4 span {
   font-size: 0.9rem;
   vertical-align: top;
@@ -193,8 +198,27 @@ a {
   padding: 52px 0 0; /* Height of navbar */
   width: 275px;
   max-width: 450px !important;
-  min-width: 225px !important;
+  min-width: 60px !important;
   border-right: 1px solid #242a30;
+}
+
+.sidebar-collapser {
+  position: absolute;
+  right: 5px;
+  bottom: 10px;
+  height: 48px;
+  width: 48px;
+  cursor: pointer;
+}
+
+.sidebar.SM .sidebar-collapser .fa::before {
+  content: '\f054';
+  margin-left: 6px;
+}
+
+.sidebar.MD .sidebar-collapser .fa::before {
+  content: '\f053';
+  margin-left: 2px;
 }
 
 .sidebar a:hover {
@@ -206,6 +230,13 @@ a {
   top: 0;
   height: calc(100vh - 48px);
   overflow-x: hidden;
+}
+
+.sidebar.SM .sidebar-sticky {
+  overflow-y: hidden;
+}
+
+.sidebar.MD .sidebar-sticky {
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
@@ -213,6 +244,14 @@ a {
   text-transform: uppercase;
   font-weight: 700;
   font-size: 0.9em;
+}
+
+.sidebar.SM .js-collapser span {
+  writing-mode: vertical-rl;
+}
+
+.sidebar.MD .js-collapser span {
+  writing-mode: initial;
 }
 
 .context-menu {
@@ -254,10 +293,37 @@ a {
   border-bottom: 1px solid #242a30;
 }
 
+.sidebar.SM #new-dataset,
+.sidebar.SM #new-script {
+  display: none;
+}
+
+.sidebar.MD #new-dataset,
+.sidebar.MD #new-script {
+  display: initial;
+}
+
 #scripts-wrapper { }
 
 #scripts-wrapper .sidebar-heading {
   margin-top: 0 !important;
+}
+
+.sidebar.SM .datasets,
+.sidebar.SM .scripts {
+  height: 0;
+  display: none;
+}
+
+.sidebar.MD .datasets.show:not(.collapsing),
+.sidebar.MD .scripts.show:not(.collapsing) {
+  height: initial;
+  display: initial;
+}
+
+.datasets.collapsing,
+.scripts.collapsing {
+  transition: height 0s;
 }
 
 .datasets ul,
@@ -265,11 +331,6 @@ a {
   list-style-type: none;
   margin: 0;
   padding: 0;
-}
-
-.datasets ul li,
-.scripts ul li {
-
 }
 
 .datasets ul ul,
@@ -393,14 +454,28 @@ main .loader p {
   margin: 10px 0;
 }
 
-.table-wrapper .dataTables_wrapper {
-  width: 95%;
-}
-
 .table-wrapper iframe {
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.table-wrapper .dataTables_scrollBody {
+  overflow: scroll !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.66) rgba(0, 0, 0, 0);
+}
+
+.table-wrapper .dataTables_scrollBody::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.table-wrapper .dataTables_scrollBody::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0);
+}
+.table-wrapper .dataTables_scrollBody::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.66);
+  border-radius: 6px;
 }
 
 .table-wrapper .data-table tbody td span {
@@ -416,15 +491,6 @@ main .loader p {
   border-bottom: none;
 }
 
-.script-panel-placeholder {
-  height: 66%;
-  width: 100%;
-}
-
-.script-panel-placeholder.minimized {
-  height: 38px !important;
-}
-
 .script-panel {
   position: fixed !important;
   top: initial !important;
@@ -434,15 +500,6 @@ main .loader p {
   height: 66%;
   z-index: 10;
   border-top: 1px solid #242a30;
-}
-
-.script-panel-controls-wrapper {
-  position: absolute;
-  height: 38px;
-  width: 98%;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
 }
 
 .script-panel-controls,
@@ -460,17 +517,64 @@ main .loader p {
   cursor: pointer;
 }
 
-.script-panel #editor {
-  height: 100%;
-  margin-top: 38px;
+.script-tabs .tab-list {
+  min-width: 50px;
+  min-height: 36px;
 }
 
-#editor .CodeMirror {
+.main-script-tabs.border-right {
+  border-right-style: dashed !important;
+}
+
+.main-script-tabs {
+  width: calc(50% + 100px) !important;
+}
+
+.script-tabs .tab-list li a {
+  color: #f8f9fa !important;
+}
+
+.script-tabs .tab-list li.active,
+.script-tabs .tab-list li:hover {
+  border-color: #17a2b8 !important;
+}
+
+.script-tabs .tab-list li.active a,
+.script-tabs .tab-list li:hover a {
+  color: #17a2b8 !important;
+}
+
+.script-tabs .tab-list li.ghost {
+  background-color: #17a2b8;
+}
+
+.script-tabs .tab-list li.ghost a {
+  color: #f8f9fa !important;
+}
+
+.editors {
+  height: calc(100% - 82px);
+}
+
+.maximized .editors {
+  height: calc(100% - 136px);
+}
+
+.editor {
+  height: 100%;
+  border: 1px solid transparent;
+}
+
+.editor.active {
+  border: 1px solid #17a2b8;
+}
+
+.editor .CodeMirror {
   height: 100%;
 }
 
-#editor .CodeMirror-overlayscroll-horizontal div,
-#editor .CodeMirror-overlayscroll-vertical div {
+.editor .CodeMirror-overlayscroll-horizontal div,
+.editor .CodeMirror-overlayscroll-vertical div {
   background: rgba(128, 128, 128, 0.66);
 }
 

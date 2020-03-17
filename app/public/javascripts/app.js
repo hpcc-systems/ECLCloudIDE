@@ -21,6 +21,8 @@ import {
   getWorkunitResults,
 } from './modules/hpccWorkunits.mjs';
 
+import Sortable from './sortablejs/sortable.esm.js';
+
 let dataTable = null;
 
 let toggleNewScriptPopover = () => {
@@ -180,32 +182,95 @@ require([
   'codemirror/addon/scroll/simplescrollbars'
 ], function(LineNavigator, CodeMirror, _, comms) {
   let editor = null,
+      editor2 = null,
       $draggedObject = null,
       $scriptPanel = $('.script-panel'),
-      $scriptPanelPlaceholder = $('.script-panel-placeholder'),
       $main = $('[role="main"]'),
       $sidebar = $('.sidebar'),
       $outputsPanel = $('.outputs-panel');
 
   $scriptPanel.resizable({
     handles: 'n',
-    resize: function(evt, ui) {
-      $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
+    stop: function(evt, ui) {
+      $('.dataTables_scrollBody').css('height', parseInt(window.innerHeight - 425, 10) + 'px');
     }
   });
-  $main.css('margin-left', $sidebar.css('width'));
+  $main.css({
+    'margin-left': $sidebar.css('width'),
+    'width': 'calc(100% - ' + $sidebar.css('width') + ')',
+  });
   $outputsPanel.css('left', $sidebar.css('width'));
   $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
   $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
-  $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
 
   $sidebar.resizable({
     handles: 'e',
     resize: function(evt, ui) {
-      $main.css('margin-left', $sidebar.css('width'));
+      $main.css({
+        'margin-left': $sidebar.css('width'),
+        'width': 'calc(100% - ' + $sidebar.css('width') + ')',
+      });
       $outputsPanel.css('left', $sidebar.css('width'));
       $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
       $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
+    },
+    stop: function(evt, ui) {
+      if (parseInt($sidebar.css('width'), 10) > 225) {
+        $sidebar.data('last-width', $sidebar.css('width'));
+      } else {
+        $sidebar.data('last-width', '');
+      }
+    }
+  });
+
+  if ('ResizeObserver' in self) {
+    var ro = new ResizeObserver(function(entries) {
+      var defaultBreakpoints = {SM: 25, MD: 85, LG: 230, XL: 320};
+
+      entries.forEach(function(entry) {
+        var breakpoints = entry.target.dataset.breakpoints ?
+            JSON.parse(entry.target.dataset.breakpoints) :
+            defaultBreakpoints;
+
+        Object.keys(breakpoints).forEach(function(breakpoint) {
+          var minWidth = breakpoints[breakpoint];
+          if (entry.contentRect.width >= minWidth) {
+            entry.target.classList.add(breakpoint);
+          } else {
+            entry.target.classList.remove(breakpoint);
+          }
+        });
+      });
+    });
+
+    var elements = document.querySelectorAll('[data-observe-resize]');
+    for (var element, i = 0; element = elements[i]; i++) {
+      ro.observe(element);
+    }
+  }
+
+  $('.sidebar-collapser').on('click', function() {
+    if ($sidebar.hasClass('MD')) {
+      $sidebar.css('width', '60px');
+      $scriptPanel.css('width', 'calc(100% - 60px)');
+      $main.css({
+        'width': 'calc(100% - 60px)',
+        'margin-left': '60px'
+      }).find('.outputs-panel').css({
+        'left': '60px',
+        'width': 'calc(100% - 60px)'
+      });
+    } else {
+      let lastWidth = $sidebar.data('last-width') || '225px';
+      $sidebar.css('width', lastWidth);
+      $scriptPanel.css('width', 'calc(100% - ' + lastWidth + ')');
+      $main.css({
+        'width': 'calc(100% - ' + lastWidth + ')',
+        'margin-left': lastWidth
+      }).find('.outputs-panel').css({
+        'left': lastWidth,
+        'width': 'calc(100% - ' + lastWidth + ')'
+      });
     }
   });
 
@@ -351,8 +416,21 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       }
       dataTable = $table.DataTable({
         order: [],
-        pageLength: 25
+        pageLength: 25,
+        scrollX: true,
+        scrollY: parseInt(window.innerHeight - 405, 10)
       });
+
+      let _t = window.setTimeout(function() {
+        $('.dataTables_scrollHead .data-table, .dataTables_scrollFoot .data-table')
+          .css('width', $('.dataTables_scrollBody .data-table').css('width'));
+        $('.dataTables_scrollBody').css({
+          'max-height': $('.dataTables_scrollBody').css('height'),
+          'height': ''
+        });
+        window.clearTimeout(_t);
+      }, 100);
+
       $loader.addClass('d-none');
       $datasetContent.removeClass('d-none');
       if (query && query.match(scopeRegex) !== null && !hideScope) {
@@ -390,6 +468,24 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     });
   }
 
+  if ($('#editor2').length > 0) {
+    editor2 = CodeMirror($('#editor2')[0], {
+      mode: "ecl",
+      lineNumbers: true,
+      extraKeys: {"Ctrl-Space": "autocomplete"},
+      // keyMap: "sublime",
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      showCursorWhenSelecting: true,
+      styleActiveLine: true,
+      viewPortMargin: 10,
+      scrollbarStyle: 'overlay',
+      theme: "darcula",
+      tabSize: 2,
+      gutters: ['CodeMirror-linenumbers', 'cm-errors']
+    });
+  }
+
   if ($('.workspaces').length > 0 &&
       ($('.datasets').length > 0 && $('.scripts').length > 0)) {
     populateWorkspaces();
@@ -400,6 +496,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   $('.js-collapser').on('click', function(evt) {
     let $this = $(this),
         $chevron = $this.find('.fa');
+
+    if (!$sidebar.hasClass('MD')) {
+      $('.sidebar-collapser').trigger('click');
+      if ($chevron.hasClass('fa-chevron-down')) return false;
+    }
 
     if ($chevron.hasClass('fa-chevron-right')) {
       $chevron.removeClass('fa-chevron-right');
@@ -521,20 +622,48 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   });
 
   /* CHANGE SELECTED WORKSPACE */
-  $('.workspaces').on('click', '.dropdown-item', function(evt) {
+  $('.workspaces').on('click', '.dropdown-item', async function(evt) {
     let $this = $(this),
+        directoryTree = JSON.parse($this.data('directoryTree')),
+        $previousWorkspace = $('.workspaces .active'),
         $options = $('.workspaces .dropdown-item'),
         $selected = $('#workspaceSelect'),
+        $scriptPanel = $('.script-panel'),
         $scriptPanelClose = $('.js-close'),
+        $scripts = $('.scripts .script'),
         $deleteWorkspace = $('.delete-workspace').parent(),
         $datasetContent = $('.dataset-content'),
         $main = $datasetContent.parents('main'),
+        $mainScriptTabs = $('.main-script-tabs'),
+        $mainTabList = $mainScriptTabs.find('.tab-list'),
+        $secondScriptTabs = $('.secondary-script-tabs'),
+        $secondTabList = $secondScriptTabs.find('.tab-list'),
+        $editor = $('#editor'),
+        $editor2 = $('#editor2'),
+        editors = [ editor, editor2 ],
         $tableWrapper = $datasetContent.find('.table-wrapper');
 
     evt.preventDefault();
 
+    if ($previousWorkspace.length > 0) {
+      fetch('/workspaces/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: $previousWorkspace.data('id'),
+          directoryTree: JSON.parse($previousWorkspace.data('directoryTree'))
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        }
+      });
+    }
+
     $datasetContent.addClass('d-none');
     $tableWrapper.html('');
+
+    $mainScriptTabs.find('li:not(.cloner)').remove();
+    $secondScriptTabs.find('li:not(.cloner)').remove();
 
     $options.removeClass('active');
     $this.addClass('active');
@@ -549,8 +678,74 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $scriptPanelClose.trigger('click');
 
     populateWorkspaceDirectoryTree(JSON.parse($this.data('directoryTree')));
-    populateDatasets();
-    populateScripts();
+    await populateDatasets();
+    await populateScripts();
+
+    $scripts = $('.scripts .script:not(.cloner)');
+
+    if (directoryTree.openTabs && directoryTree.openTabs['main-script-tabs'].length > 0) {
+      directoryTree.openTabs['main-script-tabs'].forEach((id, idx) => {
+        let $script = $scripts.filter((idx, el) => {
+          return $(el).data('id') == id;
+        });
+        console.log($script.data());
+        let $newTab = $mainTabList.find('.cloner').clone();
+        $mainTabList.append($newTab);
+        $newTab.find('span').text($script.data('name'));
+        $('.script-controls-row-one').find('li').removeClass('active');
+        $newTab.removeClass('cloner d-none').addClass('active');
+        $newTab.data($script.data());
+        if (idx == 0) {
+          editor.getDoc().setValue($script.data('content'));
+          $editor.addClass('cmReady');
+        }
+      });
+      $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+
+      if (directoryTree.openTabs['secondary-script-tabs'].length > 0) {
+        directoryTree.openTabs['secondary-script-tabs'].forEach((id, idx) => {
+          let $script = $scripts.filter((idx, el) => {
+            return $(el).data('id') == id;
+          });
+          let $newTab = $secondTabList.find('.cloner').clone();
+          $secondTabList.append($newTab);
+          $newTab.find('span').text($script.data('name'));
+          $('.script-controls-row-one').find('li').removeClass('active');
+          $newTab.removeClass('cloner d-none').addClass('active');
+          $newTab.data($script.data());
+          if (idx == 0) {
+            editor2.getDoc().setValue($script.data('content'));
+            $editor2.addClass('cmReady');
+          }
+        });
+        $editor.addClass('w-50').css('width', '');
+        $mainScriptTabs.addClass('w-50 border-right');
+        $secondScriptTabs.addClass('w-50').removeClass('empty');
+        $editor2.removeClass('d-none');
+      } else {
+        $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+        editors[1].getDoc().setValue('');
+        $editor2.addClass('d-none');
+        $mainScriptTabs.removeClass('w-50').removeClass('border-right');
+        $secondScriptTabs.removeClass('w-50').addClass('empty');
+      }
+
+      $scriptPanel.removeClass('d-none');
+      let _t = window.setTimeout(function() {
+        if (!$editor2.hasClass('d-none')) {
+          $secondScriptTabs.find('li:not(.cloner)').first().trigger('click');
+        }
+        $mainScriptTabs.find('li:not(.cloner)').first().trigger('click');
+        window.clearTimeout(_t);
+      }, 200);
+    } else {
+      $('.script-tabs .tab-list').find('li:not(.cloner)').remove();
+      $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+      editors[1].getDoc().setValue('');
+      $editor2.addClass('d-none');
+      $mainScriptTabs.removeClass('w-50').removeClass('border-right');
+      $secondScriptTabs.removeClass('w-50').addClass('empty');
+    }
 
     if ($this.data('cluster')) {
       if ($this.data('cluster').lastIndexOf(':') > 4) {
@@ -1552,36 +1747,66 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
    *  SCRIPTS                                                                 *
    *==========================================================================*/
 
+  let sortableTabs1 = null, sortableTabs2 = null;
+
   $('.scripts').on('click', '.script', function(evt) {
     let $this = $(this),
         _wuid = $this.data('wuid') ? $this.data('wuid') : '',
         _cluster = $this.data('cluster') ? $this.data('cluster') : '',
+        $workspace = $('.workspaces .active'),
+        directoryTree = JSON.parse($workspace.data('directoryTree')),
         $scriptControls = $('.script-controls'),
+        $mainScriptTabs = $('.main-script-tabs'),
+        $mainTabList = $mainScriptTabs.find('.tab-list'),
+        $secondScriptTabs = $('.secondary-script-tabs'),
+        $secondTabList = $secondScriptTabs.find('.tab-list'),
         $scriptPanel = $('.script-panel'),
-        $scriptPanelPlaceholder = $('.script-panel-placeholder'),
+        $neighbor = null,
+        editors = [ editor, editor2 ],
+        $editor = $('#editor'),
+        $editor2 = $('#editor2'),
+        $editors = [ $editor, $editor2 ],
+        $activeEditor = $editor,
+        $origTabs = null,
+        $activeTabs = $mainScriptTabs,
+        $activeTabsList = $activeTabs.find('ul'),
         $clusters = $('.thors'),
         $selectedCluster = $('#selectTarget');
+
+    if (!directoryTree.openTabs) {
+      directoryTree.openTabs = {
+        'main-script-tabs': [ $this.data('id') ],
+        'secondary-script-tabs': []
+      };
+    } else {
+      if (directoryTree.openTabs['main-script-tabs'].indexOf($this.data('id')) < 0 &&
+        directoryTree.openTabs['secondary-script-tabs'].indexOf($this.data('id')) < 0) {
+          directoryTree.openTabs['main-script-tabs'].push($this.data('id'));
+      }
+    }
+
+    $workspace.data('directoryTree', JSON.stringify(directoryTree));
+
+    fetch('/workspaces/', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: $workspace.data('id'),
+        directoryTree: JSON.parse($workspace.data('directoryTree'))
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
+      }
+    });
+
+    console.log(directoryTree);
 
     $('#scripts').find('.script').removeClass('active');
     $this.addClass('active');
 
-    $scriptPanelPlaceholder.removeClass('d-none');
     $scriptPanel.removeClass('d-none');
-    $scriptPanelPlaceholder.css('height', parseFloat($scriptPanel.css('height')));
     $('#editor').removeClass('cmReady');
     $('.save-script').removeClass('badge-info').addClass('badge-secondary');
-    changeRunButtonState($('.run-script'), 'ready');
-    editor.refresh();
-
-    if ($this.data('content')) {
-      editor.getDoc().setValue($this.data('content'));
-    } else {
-      editor.getDoc().setValue('');
-    }
-    let _t = window.setTimeout(function() {
-      $('#editor').addClass('cmReady');
-      window.clearTimeout(_t);
-    }, 100);
 
     if (_wuid == '') {
       $scriptControls.find('.show-results').addClass('d-none');
@@ -1598,6 +1823,204 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         return $(el).data('name') == _cluster;
       }).addClass('active');
     }
+
+    let tabExists = $('.script-controls-row-one').find('li').filter((idx, li) => {
+      return $(li).data('id') == $this.data('id');
+    });
+
+    if (tabExists.length === 0) {
+      $activeTabs = $mainScriptTabs;
+      $activeTabsList = $activeTabs.children('ul');
+      $activeEditor = $editor;
+      let $newTab = $activeTabsList.find('.cloner').clone();
+      $activeTabsList.append($newTab);
+      $newTab.find('span').text($this.data('name'));
+      $('.script-controls-row-one').find('li').removeClass('active');
+      $newTab.removeClass('cloner d-none').addClass('active');
+      $newTab.data($this.data());
+    } else {
+      $activeTabs = $(tabExists).parents('.script-tabs');
+      $activeTabsList = $activeTabs.children('ul');
+      $activeEditor = $editors[$activeTabs.index()];
+      $('.script-controls-row-one').find('li').removeClass('active');
+      $(tabExists).addClass('active');
+    }
+    $('.editor').removeClass('active');
+    $editors[$activeEditor.index()].addClass('active');
+    $activeEditor.data('id', $this.data('id'));
+
+    changeRunButtonState($('.run-script'), 'ready');
+    if ($secondTabList.find('li:not(.cloner)').length == 0) {
+      $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+    } else {
+      $editor.addClass('w-50')
+    }
+    editors[$activeEditor.index()].refresh();
+
+    if ($this.data('content')) {
+      editors[$activeEditor.index()].getDoc().setValue($this.data('content'));
+    } else {
+      editors[$activeEditor.index()].getDoc().setValue('');
+    }
+    let _t = window.setTimeout(function() {
+      $('#editor').addClass('cmReady');
+      $('#editor2').addClass('cmReady');
+      window.clearTimeout(_t);
+    }, 100);
+
+    if ($scriptPanel.hasClass('minimized')) {
+      $('.js-restore').trigger('click');
+    }
+
+    if (sortableTabs1) sortableTabs1.destroy();
+    if (sortableTabs2) sortableTabs2.destroy();
+
+    sortableTabs1 = Sortable.create($mainTabList[0], {
+      group: 'scriptTabs',
+      dragClass: 'ghost',
+      ghostClass: 'ghost',
+      onStart: function(evt) {
+        if ($secondTabList.parent().hasClass('empty')) {
+          $mainScriptTabs.addClass('w-50');
+          $mainScriptTabs.addClass('border-right');
+          $secondScriptTabs.addClass('w-50').removeClass('empty');
+        }
+
+        $origTabs = $(evt.item).parents('.script-tabs');
+        $neighbor = $(evt.item).next(':not(.cloner)');
+        if ($neighbor.length === 0) {
+          $neighbor = $(evt.item).prev(':not(.cloner)');
+        }
+      },
+      onEnd: function(evt) {
+        let $tab = $(evt.item);
+        $tab.parents('.script-controls-row-one').find('li').removeClass('active');
+        if ($secondTabList.find('li:not(.cloner)').length == 0) {
+          $mainScriptTabs.removeClass('w-50');
+          $mainScriptTabs.removeClass('border-right');
+          $secondScriptTabs.removeClass('w-50').addClass('empty');
+          $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+          $editor2.addClass('d-none');
+          $tab.trigger('click');
+        } else {
+          //$editor.css('width', $mainScriptTabs.css('width'));
+          //$editor2.css('width', 'calc(100% - ' + (parseFloat($editor.css('width')) + 20) + 'px').removeClass('d-none');
+          $editor.addClass('w-50');
+          $editor2.removeClass('d-none');
+          if ($tab.data('content')) {
+            editors[$tab.parents('.script-tabs').index()].getDoc().setValue($tab.data('content'));
+            $tab.addClass('active').siblings().removeClass('active');
+          } else {
+            editors[$tab.parents('.script-tabs').index()].getDoc().setValue('');
+          }
+          if ($neighbor.data('content')) {
+            editors[$neighbor.parents('.script-tabs').index()].getDoc().setValue($neighbor.data('content'));
+          } else {
+            editors[$origTabs.index()].getDoc().setValue('');
+          }
+        }
+        if ($(evt.from).parents('div').hasClass('main-script-tabs')) {
+          directoryTree.openTabs['main-script-tabs'].splice(evt.oldIndex - 1, 1);
+        } else {
+          directoryTree.openTabs['secondary-script-tabs'].splice(evt.oldIndex - 1, 1);
+        }
+        if ($(evt.to).parents('div').hasClass('main-script-tabs')) {
+          directoryTree.openTabs['main-script-tabs'].splice(evt.newIndex - 1, 0, $tab.data('id'));
+        } else {
+          directoryTree.openTabs['secondary-script-tabs'].splice(evt.newIndex - 1, 0, $tab.data('id'));
+        }
+        $workspace.data('directoryTree', JSON.stringify(directoryTree));
+        $('.editor').removeClass('active');
+        $editors[$tab.parents('.script-tabs').index()].addClass('active').data('id', $tab.data('id'));
+        if ($neighbor.data('id')) {
+          $editors[$neighbor.parents('.script-tabs').index()].data('id', $neighbor.data('id'));
+        } else {
+          $editors[$origTabs.index()].data('id', '');
+        }
+      }
+    });
+
+    sortableTabs2 = Sortable.create($secondTabList[0], {
+      group: 'scriptTabs',
+      dragClass: 'ghost',
+      ghostClass: 'ghost',
+      onStart: function(evt) {
+        if ($secondTabList.parent().hasClass('empty')) {
+          $mainScriptTabs.addClass('w-50');
+          $mainScriptTabs.addClass('border-right');
+          $secondScriptTabs.addClass('w-50').removeClass('empty');
+        }
+
+        $origTabs = $(evt.item).parents('.script-tabs');
+        $neighbor = $(evt.item).next(':not(.cloner)');
+        if ($neighbor.length === 0) {
+          $neighbor = $(evt.item).prev(':not(.cloner)');
+        }
+      },
+      onEnd: function(evt) {
+        let $tab = $(evt.item);
+        $tab.parents('.script-controls-row-one').find('li').removeClass('active');
+        if ($secondTabList.find('li:not(.cloner)').length == 0) {
+          $mainScriptTabs.removeClass('border-right');
+          $secondScriptTabs.removeClass('w-50').addClass('empty');
+          $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+          $editor2.addClass('d-none');
+          $tab.trigger('click');
+        } else {
+          //$editor.css('width', $mainScriptTabs.css('width'));
+          //$editor2.css('width', 'calc(100% - ' + (parseFloat($editor.css('width')) + 20) + 'px').removeClass('d-none');
+          $editor.addClass('w-50');
+          $editor2.removeClass('d-none');
+          if ($tab.data('content')) {
+            editors[$tab.parents('.script-tabs').index()].getDoc().setValue($tab.data('content'));
+            $tab.addClass('active').siblings().removeClass('active');
+          } else {
+            editor2.getDoc().setValue('');
+          }
+          if ($neighbor.data('content')) {
+            editors[$neighbor.parents('.script-tabs').index()].getDoc().setValue($neighbor.data('content'));
+          } else {
+            editors[$origTabs.index()].getDoc().setValue('');
+          }
+        }
+        if ($(evt.from).parents('div').hasClass('main-script-tabs')) {
+          directoryTree.openTabs['main-script-tabs'].splice(evt.oldIndex - 1, 1);
+        } else {
+          directoryTree.openTabs['secondary-script-tabs'].splice(evt.oldIndex - 1, 1);
+        }
+        if ($(evt.to).parents('div').hasClass('main-script-tabs')) {
+          directoryTree.openTabs['main-script-tabs'].splice(evt.newIndex - 1, 0, $tab.data('id'));
+        } else {
+          directoryTree.openTabs['secondary-script-tabs'].splice(evt.newIndex - 1, 0, $tab.data('id'));
+        }
+        $workspace.data('directoryTree', JSON.stringify(directoryTree));
+        $('.editor').removeClass('active');
+        $editors[$tab.parents('.script-tabs').index()].addClass('active').data('id', $tab.data('id'));
+        if ($neighbor.data('id')) {
+          $editors[$neighbor.parents('.script-tabs').index()].data('id', $neighbor.data('id'));
+        } else {
+          $editors[$origTabs.index()].data('id', '');
+        }
+      }
+    });
+  });
+
+  $('.editor').on('click', function(evt) {
+    let $this = $(this);
+    $this.siblings().removeClass('active');
+    $('.script-controls-row-one li').removeClass('active');
+    $this.addClass('active');
+    $('.scripts .script').removeClass('active');
+    $('.scripts').find('.script:not(.cloner)').filter((idx, el) => {
+      if ($(el).data('id') == $this.data('id')) {
+        $(el).addClass('active');
+      }
+    });
+    $('.script-controls-row-one').find('li:not(.cloner)').filter((idx, el) => {
+      if ($(el).data('id') == $this.data('id')) {
+        $(el).addClass('active');
+      }
+    });
   });
 
   toggleNewScriptPopover();
@@ -1893,6 +2316,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $elementToRemove = $this.data('elementToRemove'),
         $scriptPanelClose = $('.js-close'),
+        $scriptTabs = $('.script-controls-row-one').find('li:not(.cloner)'),
         $targetScript = $elementToRemove.find('.script'),
         targetId = $targetScript.data('id');
 
@@ -1906,7 +2330,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     })
     .then(response => response.json())
     .then((json) => {
-      if ($targetScript.hasClass('active')) {
+      if ($targetScript.hasClass('active') && $scriptTabs.length == 0) {
         $scriptPanelClose.trigger('click');
       }
 
@@ -1948,6 +2372,17 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
         $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
         $elementToRemove.remove();
+
+        $scriptTabs.filter((idx, li) => {
+          if ($(li).data('id') == $this.data('script')) {
+            let $neighbor = $(li).next();
+            if ($neighbor.length === 0) {
+              $neighbor = $(li).prev();
+            }
+            $(li).remove();
+            $neighbor.trigger('click');
+          }
+        });
 
         $modal.modal('hide');
       });
@@ -2098,8 +2533,41 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
   $('.sidebar-sticky').on('click', '.folder', function(evt) {
     let $this = $(this),
-        $ul = $this.parents('li').first().children('ul').first();
-    if ($this.hasClass('open')) { $this.removeClass('open'); } else { $this.addClass('open'); }
+        $li = $this.parents('li').first(),
+        $parent = $li.parents('li'),
+        path = [$li.data('id')],
+        $workspaces = $('.workspaces'),
+        $activeWorkspace = $workspaces.find('.active'),
+        directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
+        node = directoryTree[$li.data('type')];
+
+    if ($parent.length > 0) {
+      path.unshift($parent.data('id'));
+      $parent = $parent.parents('li');
+    }
+
+    while ($parent.length > 0) {
+      path.unshift($parent.data('id'));
+      $parent = $parent.parents('li');
+    }
+
+    while (path.length > 0) {
+      let id = path.shift();
+      if (node[id]) {
+        node = node[id];
+      } else if (node.children[id]) {
+        node = node.children[id];
+      }
+    }
+
+    if ($this.hasClass('open')) {
+      $this.removeClass('open');
+      node.open = false;
+    } else {
+      $this.addClass('open');
+      node.open = true;
+    }
+    $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
   });
 
   /*==========================================================================*
@@ -2423,6 +2891,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
    *==========================================================================*/
 
   let $scriptPanelControls = $('.script-panel-controls'),
+      $scriptTabs = $('.script-tabs'),
       $scriptControls = $('.script-controls'),
       $runButton = $('.script-controls .run-script'),
       $outputsList = $('.outputs-list');
@@ -2449,7 +2918,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
   $scriptControls.on('click', '.run-script', function(evt) {
     let $script = $('.scripts .active'),
-        _query = editor.getValue(),
+        editors = [ editor, editor2 ],
+        activeEditor = editors[$('.editor.active').index()],
+        _query = activeEditor.getValue(),
         _wuid = '',
         _filename = $script.data('name') + '.ecl',
         $activeWorkspace = $('.workspaces .active'),
@@ -2482,7 +2953,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         scriptId: $script.data('id'),
         name: $script.data('name'),
         path: $script.data('parentPathNames'),
-        content: editor.getValue(),
+        content: activeEditor.getValue(),
         cluster: $cluster
       }),
       headers: {
@@ -2535,7 +3006,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
               .then(response => response.json())
               .then((json) => {
 
-                editor.getDoc().clearGutter('cm-errors');
+                activeEditor.getDoc().clearGutter('cm-errors');
 
                 if (json.state == 'completed') {
                   console.log(json);
@@ -2579,7 +3050,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                       let marker = document.createElement('div');
                       marker.style.color = '#dc3545';
                       marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-                      editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
+                      activeEditor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
                     });
                   };
                 } else {
@@ -2658,7 +3129,12 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   $scriptControls.on('click', '.save-script', function(evt) {
     let $script = $('.scripts .active'),
         $saveButton = $(this),
-        _query = editor.getValue().replace(/\s+/g, ' '),
+        $activeTab = $('.script-controls-row-one').find('li:not(.cloner)').filter((idx, el) => {
+          return $(el).data('id') == $script.data('id');
+        }),
+        editors = [ editor, editor2 ],
+        activeEditor = editors[$activeTab.parents('.script-tabs').index()],
+        _query = activeEditor.getValue().replace(/\s+/g, ' '),
         _wuid = '',
         revisionId = 0,
         script = {
@@ -2674,14 +3150,14 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     //$saveButton.contents()[0].nodeValue = 'SAVING';
     //$saveButton.removeClass('badge-info').addClass('badge-secondary');
-    $script.data('content', editor.getValue());
+    $script.data('content', activeEditor.getValue());
 
     fetch('/scripts/revision/', {
       method: 'POST',
       body: JSON.stringify({
         scriptId: $script.data('id'),
         path: $script.data('parentPathNames'),
-        content: editor.getValue()
+        content: activeEditor.getValue()
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -2695,7 +3171,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $script.data('revisionId', json.data.id);
         $script.data('content', json.data.content);
         $saveButton.attr('title', 'No Changes');
-        editor.getDoc().clearGutter('cm-errors');
+        activeEditor.getDoc().clearGutter('cm-errors');
       } else {
         let _annotateTimeout = window.setTimeout(function() {
           updateCodemirrorAnnotations(json.errors);
@@ -2708,11 +3184,105 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
             let marker = document.createElement('div');
             marker.style.color = '#dc3545';
             marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-            editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
+            activeEditor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
           });
         };
       }
     });
+  });
+
+  $scriptTabs.on('click', 'li', function(evt) {
+    let $this = $(this);
+
+    $('.scripts').find('.script:not(.cloner)').filter((idx, li) => {
+      return $(li).data('id') == $this.data('id');
+    }).trigger('click');
+
+    if ($('.script-panel').hasClass('minimized')) {
+      $('.js-restore').trigger('click');
+    }
+  });
+
+  $scriptTabs.on('click', '.fa-close', function(evt) {
+    let $this = $(this),
+        $tab = $this.parents('li'),
+        scriptId = $tab.data('id'),
+        isActive = $tab.hasClass('active') ? true : false,
+        $neighbor = $tab.next(':not(.cloner)'),
+        $mainScriptTabs = $('.main-script-tabs'),
+        $secondScriptTabs = $('.secondary-script-tabs'),
+        $openTabs = null,
+        $editor = $('#editor'),
+        $editor2 = $('#editor2'),
+        $editors = [ $editor, $editor2 ],
+        editors = [ editor, editor2 ],
+        $tabList = $this.parents('.tab-list'),
+        $workspace = $('.workspaces .active'),
+        directoryTree = JSON.parse($workspace.data('directoryTree')),
+        $activeTabs = $tabList.parent(),
+        $scriptPanelClose = $('.js-close');
+
+    if ($neighbor.length === 0) {
+      $neighbor = $tab.prev(':not(.cloner)');
+    }
+    $tab.remove();
+    $openTabs = $('.script-controls-row-one').find('li:not(.cloner)');
+
+    if ($tabList.find('li:not(.cloner)').length === 0) {
+      $editors[$activeTabs.index()].removeClass('active');
+      $editors[$activeTabs.index()].data('id', '');
+      editors[$activeTabs.index()].getDoc().setValue('');
+      if ($activeTabs.index() == 1) {
+        $editor2.addClass('d-none');
+        $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
+        $mainScriptTabs.removeClass('w-50');
+        $mainScriptTabs.removeClass('border-right');
+        $secondScriptTabs.removeClass('w-50').addClass('empty');
+      }
+    }
+
+    if ($openTabs.length === 0) {
+      $scriptPanelClose.trigger('click');
+      $editor2.addClass('d-none');
+      $mainScriptTabs.removeClass('w-50');
+      $mainScriptTabs.removeClass('border-right');
+      $secondScriptTabs.removeClass('w-50').addClass('empty');
+    } else {
+      if ($neighbor.length > 0) {
+        $editors[$activeTabs.index()].data('id', $neighbor.data('id'));
+        editors[$activeTabs.index()].getDoc().setValue(
+          $('.scripts .script').filter((idx, el) => {
+            return $(el).data('id') == $neighbor.data('id');
+          }).data('content')
+        );
+      } else {
+        $editors[$activeTabs.index()].data('id', '');
+        editors[$activeTabs.index()].getDoc().setValue('');
+      }
+    }
+
+    if (directoryTree.openTabs) {
+      if (directoryTree.openTabs['main-script-tabs'].indexOf(scriptId) >= 0) {
+        let index = directoryTree.openTabs['main-script-tabs'].indexOf(scriptId);
+        directoryTree.openTabs['main-script-tabs'].splice(index, 1);
+      } else if (directoryTree.openTabs['secondary-script-tabs'].indexOf(scriptId) >= 0) {
+        let index = directoryTree.openTabs['secondary-script-tabs'].indexOf(scriptId);
+        directoryTree.openTabs['secondary-script-tabs'].splice(index, 1);
+      }
+      $workspace.data('directoryTree', JSON.stringify(directoryTree));
+    }
+
+    fetch('/workspaces/', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: $workspace.data('id'),
+        directoryTree: directoryTree
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
+      }
+    })
   });
 
   $outputsList.on('click', '.output', function(evt) {
@@ -2785,6 +3355,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $('.script-panel').addClass('maximized');
       $('.script-panel-controls .js-restore').removeClass('fa-window-maximize').addClass('fa-window-restore');
       editor.layout();
+      editor2.layout();
     }
   });
 
@@ -2792,7 +3363,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
    *  EDITOR EVENT HANDLERS                                                   *
    *==========================================================================*/
 
-  editor.on('change', _.debounce((instance, changeObj) => {
+  let editorChangeHandler = (instance, changeObj) => {
     let $saveButton = $('.save-script');
 
     if ($('#editor').hasClass('cmReady')) {
@@ -2809,7 +3380,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     console.log(instance, changeObj);
     changeRunButtonState($('.run-script'), 'ready');
-  }, 500));
+  };
+  editor.on('change', _.debounce((instance, changeObj) => { editorChangeHandler(instance, changeObj) }, 500));
+  editor2.on('change', _.debounce((instance, changeObj) => { editorChangeHandler(instance, changeObj) }, 500));
 
   editor.on('focus', (instance, evt) => {
     if (false == $('#editor').hasClass('cmReady')) {
