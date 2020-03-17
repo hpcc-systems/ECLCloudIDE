@@ -82,7 +82,7 @@ let populateWorkspaces = () => {
         let $workspaces = $('.workspaces');
 
         workspaces.forEach((workspace) => {
-          console.log(workspace);
+          // console.log(workspace);
           let $newWorkspace = $workspaces.find('.cloner').clone();
           $newWorkspace.removeClass('d-none cloner');
           $newWorkspace.data('name', workspace.name || '');
@@ -132,7 +132,7 @@ let populateDatasets = () => {
   fetch(url)
     .then(response => response.json())
     .then((datasets) => {
-      console.log('populateDatasets', datasets);
+      // console.log('populateDatasets', datasets);
 
       if (Object.entries(datasets).length > 0) {
         $datasetLis.each((idx, el) => {
@@ -171,7 +171,7 @@ let populateScripts = () => {
   fetch(url)
     .then(response => response.json())
     .then((scripts) => {
-      console.log('populateScripts', scripts);
+      // console.log('populateScripts', scripts);
 
       if (Object.entries(scripts).length > 0) {
         $scriptLis.each((idx, el) => {

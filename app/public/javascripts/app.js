@@ -229,7 +229,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   checkWorkunitStatus(wuid)
   .then(response => response.json())
   .then(async (status) => {
-    console.log(status);
+    // console.log(status);
 
     if (status.state == 'unknown') {
       let defaultClusterTarget = await getDefaultTargetCluster(
@@ -494,7 +494,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $workspaceCreator = $workspaceSummary.find('.workspace-creator'),
         $workspaceCreated = $workspaceSummary.find('.workspace-created');
     if (!matches) {
-      console.log('no match');
+      // console.log('no match');
     } else {
       guid = (matches[1]) ? matches[1] : guid;
       $workspaceUrl.data('id', guid);
@@ -653,7 +653,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     }
 
     data.id = $workspace.data('id');
-    console.log('submitting PUT with: ', JSON.stringify(data));
+    // console.log('submitting PUT with: ', JSON.stringify(data));
 
     fetch('/workspaces/', {
       method: 'PUT',
@@ -893,13 +893,13 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       let uploadResp = await sendFileToLandingZone(file)
       let uploadJson = await uploadResp.json();
 
-      console.log(uploadJson);
+      // console.log(uploadJson);
       dataset.file = uploadJson.file;
 
       let sprayResp = await sprayFile(uploadJson.file, $workspaceName, $workspaceId)
       let sprayJson = await sprayResp.json();
 
-      console.log('sprayed file', sprayJson.wuid);
+      // console.log('sprayed file', sprayJson.wuid);
       await saveWorkunit(dataset.id, sprayJson.wuid);
 
       let wuResp = await createWorkunit();
@@ -920,7 +920,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       await updateWorkunit(dpWuid, null, dataset.name + '-profile.ecl', null, dataset.id, $workspaceId);
       await submitWorkunit(dpWuid, defaultClusterTarget);
 
-      console.log('check status of DataPatterns workunit');
+      // console.log('check status of DataPatterns workunit');
 
       let dpWorkunitStatusResp = await checkWorkunitStatus(dpWuid);
       let dpWorkunitStatusJson = await dpWorkunitStatusResp.json();
@@ -940,7 +940,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       if (dpResults.length < 1) {
         throw 'No results for Workunit ' + dpWuid;
       }
-      console.log(dpResults);
+      // console.log(dpResults);
 
       let _query = dataset.name + ":=RECORD\n",
           _keys = Object.keys(currentDatasetFile),
@@ -960,7 +960,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
         ",'thor',OVERWRITE);";
 
-      console.log(_query);
+      // console.log(_query);
 
       await updateWorkunit(_wuid, _query, null, null, null, $workspaceId);
       await submitWorkunit(_wuid, defaultClusterTarget);
@@ -1029,7 +1029,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       }
     });
 
-    console.log(dataset, parentPath, directoryTree);
+    // console.log(dataset, parentPath, directoryTree);
 
     let rootId = null,
         nextId = null,
@@ -1068,7 +1068,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       newFile = element[dataset.id];
     }
 
-    console.log(directoryTree);
+    // console.log(directoryTree);
 
     let workspaceResp = await fetch('/workspaces/', {
       method: 'PUT',
@@ -1194,7 +1194,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       checkWorkunitStatus($dataset.data('wuid'))
       .then(response => response.json())
       .then((json) => {
-        console.log(json);
+        // console.log(json);
         if (json.state == 'completed') {
 
           $datasetStatus.removeClass('fa-spin');
@@ -1261,12 +1261,12 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     });
     fileName.trim();
 
-    console.log(file, fileName);
+    // console.log(file, fileName);
 
     $('#dataset-name').val(fileName);
 
     ln.readLines(0, 2, (err, idx, lines, isEOF, progress) => {
-      console.log(lines);
+      // console.log(lines);
       let labels = lines[0].split(','),
           values = lines[1].split(','),
           $fileDetails = $('.file-details');
@@ -1308,7 +1308,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
         $fileDetails.append($newFormRow);
 
-        console.log(label, values[idx]);
+        // console.log(label, values[idx]);
       });
 
       $('[data-toggle="popover"]').popover({
@@ -1370,9 +1370,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     //link.parentElement.removeChild(link);
     $modal.find('#edit-dataset-name').val($dataset.find('.datasetname').text());
     $modal.modal('show');
-    console.log($dataset.index());
+    // console.log($dataset.index());
     $modal.find('.btn-primary').data('dataset', $dataset.index());
-    console.log($modal.find('.btn-primary').data('dataset'));
+    // console.log($modal.find('.btn-primary').data('dataset'));
   });
 
   /* EDIT DATASET */
@@ -1394,7 +1394,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     data.id = $dataset.data('id');
     data.prevName = $dataset.data('name');
     data.workspaceId = $workspaceId;
-    console.log('submitting PUT with: ', JSON.stringify(data));
+    // console.log('submitting PUT with: ', JSON.stringify(data));
 
     fetch('/datasets/', {
       method: 'PUT',
@@ -1472,11 +1472,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     //link.parentElement.removeChild(link);
     $modal.find('.dataset-name').text($dataset.find('.datasetname').text().trim());
     $modal.modal('show');
-    console.log($dataset.data());
+    // console.log($dataset.data());
     $deleteBtn.data('dataset', $dataset.data('id'));
     $deleteBtn.data('parentPath', parentPath);
     $deleteBtn.data('elementToRemove', $folder);
-    console.log($modal.find('.btn-danger').data('dataset'));
+    // console.log($modal.find('.btn-danger').data('dataset'));
   });
 
   /* DELETE SELECTED DATASET */
@@ -1624,11 +1624,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       return false;
     }
 
-    console.log(data);
+    // console.log(data);
     data.workspaceId = workspaceId;
     data.parentPathNames = parentPathNames.join('/');
     $this.data('parentPathNames', data.parentPathNames);
-    console.log(JSON.stringify(data));
+    // console.log(JSON.stringify(data));
 
     fetch('/scripts/', {
       method: 'POST',
@@ -1641,7 +1641,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     .then(response => response.json())
     .then((script) => {
 
-      console.log(script, parentPath, directoryTree);
+      // console.log(script, parentPath, directoryTree);
 
       let rootId = null,
           nextId = null,
@@ -1676,7 +1676,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         newFile = element[script.data.id];
       }
 
-      console.log(directoryTree);
+      // console.log(directoryTree);
 
       fetch('/workspaces/', {
         method: 'PUT',
@@ -1752,9 +1752,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $modal.modal('show');
     $saveBtn.data('elementToUpdate', $script);
     $saveBtn.data('parentPath', parentPath);
-    console.log($script.data('id'));
+    // console.log($script.data('id'));
     $saveBtn.data('script', $script.data('id'));
-    console.log($modal.find('.btn-primary').data('script'));
+    // console.log($modal.find('.btn-primary').data('script'));
   });
 
   /* EDIT SCRIPT */
@@ -1781,7 +1781,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     data.name = scriptName;
     data.prevName = $script.data('name');
     data.workspaceId = workspaceId;
-    console.log('submitting PUT with: ', JSON.stringify(data));
+    // console.log('submitting PUT with: ', JSON.stringify(data));
 
     fetch('/scripts/', {
       method: 'PUT',
@@ -1877,11 +1877,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     $modal.find('.script-name').text($script.find('.scriptname').text().trim());
     $modal.modal('show');
-    console.log($script.data('id'));
+    // console.log($script.data('id'));
     $deleteBtn.data('script', $script.data('id'));
     $deleteBtn.data('parentPath', parentPath);
     $deleteBtn.data('elementToRemove', $folder);
-    console.log($modal.find('.btn-danger').data('script'));
+    // console.log($modal.find('.btn-danger').data('script'));
   });
 
   /* DELETE SELECTED SCRIPT */
@@ -2013,8 +2013,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $scriptModal.find('.btn-primary').data('parentToReceiveChild', $folder);
       $folderModal.find('.btn-primary').data('parentToReceiveChild', $folder);
 
-      console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
-        'parentPath: ', parentPath, 'x: ' + evt.pageX + ', y: ' + evt.pageY);
+      // console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
+        // 'parentPath: ', parentPath, 'x: ' + evt.pageX + ', y: ' + evt.pageY);
       $contextMenu.css({
         'left': evt.pageX,
         'top': evt.pageY
@@ -2041,7 +2041,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           $target.data('parentPathNames', parentPathNames.join('/'));
         }
 
-        console.log($target);
+        // console.log($target);
       }
     }
   });
@@ -2126,7 +2126,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       return false;
     }
 
-    console.log(JSON.stringify(getFormData($form)), parentPath, directoryTree);
+    // console.log(JSON.stringify(getFormData($form)), parentPath, directoryTree);
 
     let rootId = null,
         nextId = null,
@@ -2166,7 +2166,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       newFolder = element[newUuid];
     }
 
-    console.log(directoryTree);
+    // console.log(directoryTree);
 
     fetch('/workspaces/', {
       method: 'PUT',
@@ -2242,19 +2242,19 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       return false;
     }
 
-    console.log($folderName.val(), folderId, directoryTree);
+    // console.log($folderName.val(), folderId, directoryTree);
 
     let changeFolderName = (root, id, name) => {
       for (var key in root) {
         let el = root[key];
-        console.log(el);
+        // console.log(el);
         if (el.id == id) {
-          console.log('changing ' + el.id);
+          // console.log('changing ' + el.id);
           el.name = name;
           return false;
         }
         if (el.children) {
-          console.log('recursing to children of ' + el.id);
+          // console.log('recursing to children of ' + el.id);
           changeFolderName(el.children, id, name);
         }
       }
@@ -2262,7 +2262,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     changeFolderName(directoryTree[folderType], folderId, $folderName.val());
 
-    console.log(directoryTree);
+    // console.log(directoryTree);
 
     fetch('/workspaces/', {
       method: 'PUT',
@@ -2314,7 +2314,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     //link.parentElement.removeChild(link);
     $modal.find('.foldername').text($folder.find('.foldername').first().text().trim());
     $modal.modal('show');
-    console.log(parentPath);
+    // console.log(parentPath);
     $deleteBtn.data('parentPath', parentPath);
     if ($wrapper.attr('id') == 'datasets') {
       $deleteBtn.data('folderType', 'datasets');
@@ -2322,7 +2322,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $deleteBtn.data('folderType', 'scripts');
     }
     $deleteBtn.data('elementToRemove', $folder);
-    console.log($deleteBtn.data('parentPath'));
+    // console.log($deleteBtn.data('parentPath'));
   });
 
   /* DELETE SELECTED FOLDER */
@@ -2348,10 +2348,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         childrenToDelete = [],
         deleteChildren = (node) => {
           if (node.type == 'file') {
-            console.log(node);
+            // console.log(node);
             childrenToDelete.push(node.id);
           } else {
-            console.log(Object.entries(node.children));
+            // console.log(Object.entries(node.children));
             Object.entries(node.children).forEach((_node) => {
               deleteChildren(_node[1]);
             });
@@ -2405,7 +2405,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         if ($activeScript.hasClass('active')) {
           $scriptPanelClose.trigger('click');
         }
-        console.log(JSON.stringify(directoryTree));
+        // console.log(JSON.stringify(directoryTree));
         $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
         $elementToRemove.remove();
 
@@ -2502,7 +2502,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
         let updateCodemirrorAnnotations = (errors) => {
           errors.forEach((err) => {
-            console.log(err);
+            // console.log(err);
             let marker = document.createElement('div');
             marker.style.color = '#dc3545';
             marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
@@ -2524,10 +2524,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         script.wuid = _wuid;
       })
       .then(() => {
-        console.log(_filename);
+        // console.log(_filename);
         updateWorkunit(_wuid, null, _filename, $script.data('parentPathNames'), null, $activeWorkspace.data('id')).then(() => {
           submitWorkunit(_wuid, $cluster).then(() => {
-            console.log('check status of workunit');
+            // console.log('check status of workunit');
 
             let t = null;
             let awaitWorkunitStatusComplete = () => {
@@ -2538,7 +2538,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                 editor.getDoc().clearGutter('cm-errors');
 
                 if (json.state == 'completed') {
-                  console.log(json);
+                  // console.log(json);
                   window.clearTimeout(t);
                   changeRunButtonState($runButton, 'ready');
                   $main.addClass('show-outputs');
@@ -2564,7 +2564,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                   });
                   $outputsList.children().eq(0).trigger('click');
                 } else if (json.state == 'failed') {
-                  console.log(json);
+                  // console.log(json);
                   window.clearTimeout(t);
                   changeRunButtonState($runButton, 'failed');
 
@@ -2575,7 +2575,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
                   let updateCodemirrorAnnotations = (errors) => {
                     errors.forEach((err) => {
-                      console.log(err);
+                      // console.log(err);
                       let marker = document.createElement('div');
                       marker.style.color = '#dc3545';
                       marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
@@ -2626,7 +2626,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           editor.getDoc().clearGutter('cm-errors');
 
           if (json.state == 'completed') {
-            console.log(json);
+            // console.log(json);
             changeRunButtonState($runButton, 'ready');
             $main.addClass('show-outputs');
             $outputsList.html('');
@@ -2704,7 +2704,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
         let updateCodemirrorAnnotations = (errors) => {
           errors.forEach((err) => {
-            console.log(err);
+            // console.log(err);
             let marker = document.createElement('div');
             marker.style.color = '#dc3545';
             marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
@@ -2798,7 +2798,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
       if (['+input', '+delete', 'cut', 'paste', 'drop', 'undo'].indexOf(changeObj.origin) > -1) {
-        console.log('autosave script...');
+        // console.log('autosave script...');
         $saveButton.trigger('click');
       }
     }
@@ -2807,7 +2807,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $saveButton.contents()[0].nodeValue = 'SAVE';
     }
 
-    console.log(instance, changeObj);
+    // console.log(instance, changeObj);
     changeRunButtonState($('.run-script'), 'ready');
   }, 500));
 
@@ -2819,15 +2819,15 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
   $(document).on('dragstart', (evt) => {
     let $target = $(evt.target);
-    console.log($target);
+    // console.log($target);
     if ($target.hasClass('dataset') || $target.hasClass('script')) {
       $draggedObject = $(evt.target);
-      console.log($draggedObject.data());
+      // console.log($draggedObject.data());
     }
   });
 
   editor.on('drop', (instance, evt) => {
-    console.log(instance, evt);
+    // console.log(instance, evt);
     let doc = instance.getDoc();
     let content = '';
 
