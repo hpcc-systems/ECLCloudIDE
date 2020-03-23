@@ -2560,7 +2560,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                       outputLabel = 'Visualizations';
                     }
 
-                    $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
+                    let $output = $('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
+                    $output.data('sequence', idx);
+                    $outputsList.append($output);
                   });
                   $outputsList.children().eq(0).trigger('click');
                 } else if (json.state == 'failed') {
@@ -2647,7 +2649,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                 outputLabel = 'Visualizations';
               }
 
-              $outputsList.append('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
+              let $output = $('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
+              $output.data('sequence', idx);
+              $outputsList.append($output);
             });
             $outputsList.children().eq(0).trigger('click');
           }
@@ -2730,7 +2734,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         '/report/res/index.html';
       fetch(dataPatternsReportUrl).then(response => response.text()).then(body => {
         if (body.indexOf('Cannot open resource') > -1) {
-          displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.index(), true);
+          displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.data('sequence'), true);
         } else {
           $tableWrapper.html('<iframe src="' + dataPatternsReportUrl + '" />');
           $tableWrapper.css({ height: '770px' });
@@ -2743,7 +2747,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $tableWrapper.html('<iframe src="' + visualizationUrl + '" />');
       $tableWrapper.css({ height: '770px' });
     } else {
-      displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.index(), true);
+      displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.data('sequence'), true);
       $tableWrapper.css({ height: '' });
     }
 
