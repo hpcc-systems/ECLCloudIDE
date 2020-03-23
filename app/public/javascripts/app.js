@@ -2746,12 +2746,12 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         '/res/index.html';
       $tableWrapper.html('<iframe src="' + visualizationUrl + '" />');
       $tableWrapper.css({ height: '770px' });
+
+      $datasetContent.removeClass('d-none');
     } else {
       displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.data('sequence'), true);
       $tableWrapper.css({ height: '' });
     }
-
-    $datasetContent.removeClass('d-none');
   });
 
   $scriptPanelControls.on('click', '.js-close', function() {
