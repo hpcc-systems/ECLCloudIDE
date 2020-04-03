@@ -505,6 +505,14 @@ main .loader p {
   cursor: not-allowed;
 }
 
+.show-results {
+  background-color: #ab47bc;
+}
+
+.show-results:hover {
+  background-color: #8a3898;
+}
+
 #selectTarget {
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 4px;
