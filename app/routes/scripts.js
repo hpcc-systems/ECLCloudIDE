@@ -5,6 +5,8 @@ const db = require('../models/index');
 
 const cp = require('child_process');
 
+const { EOL } = require('os');
+
 const fs = require('fs-extra');
 
 const { body, validationResult } = require('express-validator/check');
@@ -210,7 +212,7 @@ router.post('/compile', [
       console.log(response);
       let errors = [], parsedErrors = [];
       if (response.stderr !== '') {
-        errors = response.stderr.split(/\r\n/);
+        errors = response.stderr.split(EOL);
         errors.pop();
         errors.forEach((error) => {
           console.log(error);
