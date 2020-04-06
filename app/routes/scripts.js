@@ -140,7 +140,6 @@ router.post('/revision', [
 
   // console.log('request body', req.body);
   let path = req.body.path || '',
-      args = [],
       workspaceDirPath = '',
       scriptDirPath = '',
       scriptFilePath = '';
@@ -168,34 +167,65 @@ router.post('/revision', [
 
       console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
       fs.writeFileSync(scriptFilePath, revision.content);
-
-      args.push('-I', workspaceDirPath, '-syntax', scriptFilePath);
     }).then(() => {
-      eclccCmd(args, workspaceDirPath).then((response) => {
-        return res.json({ success: true, data: revision });
-      }).catch((response) => {
-        let errors = [], parsedErrors = [];
-        if (response.stderr !== '') {
-          errors = response.stderr.split(/\r\n/);
-          errors.pop();
-          errors.forEach((error) => {
-            console.log(error);
-            parsedErrors.push({
-              'Source': 'eclcc',
-              'Severity': 'Error',
-              'FileName': error.match(new RegExp(/(.*)\(/))[1],
-              'LineNo': error.match(new RegExp(/.*\(([0-9]+)/))[1],
-              'Column': error.match(new RegExp(/.*\([0-9]+,([0-9]+)/))[1],
-              'Message': error.match(new RegExp(/.*\):\s+error\s+[A-Z0-9]+\s*:\s+(.*)/))[1]
-            });
-          });
-        }
-        return res.json({ success: false, errors: parsedErrors, data: {} });
-      });
+      return res.json({ success: true, data: revision });
     });
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Script Revision could not be saved' });
+  });
+});
+
+/* Compile script */
+router.post('/compile', [
+    body('scriptId')
+      .isUUID(4).withMessage('Invalid script id'),
+    body('path')
+      .optional({ checkFalsy: true})
+      .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
+], (req, res, next) => {
+  let path = req.body.path || '',
+      args = [],
+      workspaceDirPath = '',
+      scriptDirPath = '',
+      scriptFilePath = '';
+
+  Script.findOne({
+    where: {
+      id: req.body.scriptId,
+    }
+  }).then((script) => {
+    script.cluster = req.body.cluster;
+    script.save({ fields: ['cluster'] });
+    console.log('update contents of script file');
+    workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
+    scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
+    scriptFilePath = scriptDirPath + script.name + '.ecl';
+
+    args.push('-I', workspaceDirPath, '-syntax', scriptFilePath);
+
+    eclccCmd(args, workspaceDirPath).then((response) => {
+      return res.json({ success: true });
+    }).catch((response) => {
+      console.log(response);
+      let errors = [], parsedErrors = [];
+      if (response.stderr !== '') {
+        errors = response.stderr.split(/\r\n/);
+        errors.pop();
+        errors.forEach((error) => {
+          console.log(error);
+          parsedErrors.push({
+            'Source': 'eclcc',
+            'Severity': 'Error',
+            'FileName': error.match(new RegExp(/(.*)\(/))[1],
+            'LineNo': error.match(new RegExp(/.*\(([0-9]+)/))[1],
+            'Column': error.match(new RegExp(/.*\([0-9]+,([0-9]+)/))[1],
+            'Message': error.match(new RegExp(/.*\):\s+error\s+[A-Z0-9]+\s*:\s+(.*)/))[1]
+          });
+        });
+      }
+      return res.json({ success: false, errors: parsedErrors, data: {} });
+    });
   });
 });
 

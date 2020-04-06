@@ -2719,6 +2719,60 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     });
   });
 
+  $scriptControls.on('click', '.compile-script', function(evt) {
+    let $script = $('.scripts .active'),
+        $button = $(this),
+        $icon = $button.find('.fa'),
+        _query = editor.getValue().replace(/\s+/g, ' '),
+        _wuid = '',
+        revisionId = 0,
+        script = {
+          id: $script.data('id'),
+        };
+
+    evt.preventDefault();
+    $script.data('content', editor.getValue());
+    $button.removeClass('badge-danger badge-info').addClass('badge-secondary');
+    $icon.removeClass('fa-question fa-close fa-check').addClass('fa-spin fa-spinner');
+
+    fetch('/scripts/compile/', {
+      method: 'POST',
+      body: JSON.stringify({
+        scriptId: $script.data('id'),
+        path: $script.data('parentPathNames'),
+        content: editor.getValue()
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
+      }
+    })
+    .then(response => response.json())
+    .then((json) => {
+      if (json.success) {
+        $button.removeClass('badge-secondary').addClass('badge-info');
+        $icon.removeClass('fa-spin fa-spinner').addClass('fa-check');
+      } else {
+        let _annotateTimeout = window.setTimeout(function() {
+          $button.removeClass('badge-secondary').addClass('badge-danger');
+          $icon.removeClass('fa-spin fa-spinner').addClass('fa-close');
+          updateCodemirrorAnnotations(json.errors);
+          window.clearTimeout(_annotateTimeout);
+        }, 500);
+
+        let updateCodemirrorAnnotations = (errors) => {
+          errors.forEach((err) => {
+            // console.log(err);
+            let marker = document.createElement('div');
+            marker.style.color = '#dc3545';
+            marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
+            editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
+          });
+        };
+      }
+    });
+  });
+
   $outputsList.on('click', '.output', function(evt) {
     let $output = $(this),
         $script = $('.scripts .active'),
@@ -2797,10 +2851,13 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
    *==========================================================================*/
 
   editor.on('change', _.debounce((instance, changeObj) => {
-    let $saveButton = $('.save-script');
+    let $saveButton = $('.save-script'),
+        $compileButton = $('.compile-script');
 
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
+      $compileButton.removeClass('badge-secondary badge-danger').addClass('badge-info')
+        .find('.fa').removeClass('fa-close fa-check').addClass('fa-question');
       if (['+input', '+delete', 'cut', 'paste', 'drop', 'undo'].indexOf(changeObj.origin) > -1) {
         // console.log('autosave script...');
         $saveButton.trigger('click');
@@ -2858,7 +2915,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           if (!$('.script-panel').hasClass('d-none') && $('.CodeMirror').hasClass('CodeMirror-focused')) {
             window.onhelp = function() { return false; }
             evt.preventDefault();
-            alert('check syntax');
+            $('.compile-script').trigger('click');
           }
           break;
         case 13: // Enter
