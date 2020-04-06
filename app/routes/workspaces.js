@@ -110,6 +110,12 @@ router.put('/', [
   body('directoryTree')
     .optional({ checkFalsy: true})
     .isJSON().withMessage('Directory tree should be valid JSON'),
+  body('folderName')
+    .optional({ checkFalsy: true })
+    .matches(/[a-zA-Z0-9_]*/).withMessage('Invalid folder name'),
+  body('prevFolderName')
+    .optional({ checkFalsy: true })
+    .matches(/[a-zA-Z0-9_]*/).withMessage('Invalid folder name'),
   body('workspaceCluster')
     .optional({ checkFalsy: true })
     .isIn(clusterWhitelist).withMessage('Invalid cluster')
@@ -125,7 +131,9 @@ router.put('/', [
     return res.json({ success: false, message: 'Please select a valid cluster' });
   }
 
-  let workspace = {};
+  let workspace = {},
+      path = req.body.path || '';
+
   if (req.body.workspaceName) workspace.name = req.body.workspaceName;
   if (req.body.directoryTree) workspace.directoryTree = req.body.directoryTree;
   if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
@@ -139,17 +147,51 @@ router.put('/', [
   } else if (req.body.clusterPassword === '') {
     workspace.clusterPwd = null;
   }
-  Workspace.update(workspace, {
-    where: {
-      id: req.body.id
+
+  if (req.body.prevFolderName && req.body.folderName) {
+
+    let workspaceDirPath = process.cwd() + '/workspaces/' + req.body.id +
+          '/' + req.body.folderType + '/',
+        folderDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
+        currentFolderPath = folderDirPath + req.body.prevFolderName + '/',
+        newFolderPath = folderDirPath + req.body.folderName + '/';
+
+    if (fs.existsSync(currentFolderPath)) {
+      fs.rename(currentFolderPath, newFolderPath, (err) => {
+        if (err) {
+          console.log(err);
+          return res.json({ success: false, message: 'Folder could not be saved' });
+        }
+
+        Workspace.update(workspace, {
+          where: {
+            id: req.body.id
+          }
+        }).then((result) => {
+          workspace.clusterPwd = req.body.clusterPassword;
+          return res.json({ success: true, data: workspace });
+        }).catch((err) => {
+          console.log(err);
+          return res.json({ success: false, message: 'Workspace could not be saved' });
+        });
+      });
+    } else {
+      return res.json({ success: false, message: 'Folder could not be saved' });
     }
-  }).then((result) => {
-    workspace.clusterPwd = req.body.clusterPassword;
-    return res.json({ success: true, data: workspace });
-  }).catch((err) => {
-    console.log(err);
-    return res.json({ success: false, message: 'Workspace could not be saved' });
-  });
+
+  } else {
+    Workspace.update(workspace, {
+      where: {
+        id: req.body.id
+      }
+    }).then((result) => {
+      workspace.clusterPwd = req.body.clusterPassword;
+      return res.json({ success: true, data: workspace });
+    }).catch((err) => {
+      console.log(err);
+      return res.json({ success: false, message: 'Workspace could not be saved' });
+    });
+  }
 });
 
 /* Delete workspace */

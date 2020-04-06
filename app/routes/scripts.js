@@ -238,6 +238,9 @@ router.put('/', [
     body('name')
       .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid script name')
       .escape(),
+    body('path')
+      .optional({ checkFalsy: true})
+      .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
     body('workspaceId')
       .isUUID(4).withMessage('Invalid workspace id'),
 ], (req, res, next) => {
@@ -246,7 +249,9 @@ router.put('/', [
     return res.status(422).json({ success: false, errors: errors.array() });
   }
 
-  let script = {};
+  let script = {},
+      path = req.body.path || '';
+
   if (req.body.name) script.name = req.body.name;
   if (req.body.filename) script.filename = req.body.filename;
   if (req.body.logicalfile) script.logicalfile = req.body.logicalfile;
@@ -255,23 +260,33 @@ router.put('/', [
   if (req.body.columnCount) script.columnCount = req.body.columnCount;
   if (req.body.eclSchema) script.eclSchema = JSON.parse(req.body.eclSchema);
   if (Object.keys(script).length > 0) {
-    Script.update(script, {
-      where: {
-        id: req.body.id
-      }
-    }).then((result) => {
-      // let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-      //     currentScriptFilePath = workspaceDirPath + '/' + req.body.prevId + '/' + req.body.prevName + '.ecl',
-      //     newScriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
+    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
+        scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
+        currentScriptFilePath = scriptDirPath + req.body.prevName + '.ecl',
+        newScriptFilePath = scriptDirPath + script.name + '.ecl';
 
-      // if (fs.existsSync(currentScriptFilePath)) {
-      //   fs.rename(currentScriptFilePath, newScriptFilePath);
-      // }
-      return res.json({ success: true, data: script });
-    }).catch((err) => {
-      console.log(err);
+    if (fs.existsSync(currentScriptFilePath)) {
+      fs.rename(currentScriptFilePath, newScriptFilePath, (err) => {
+        if (err) {
+          console.log(err);
+          return res.json({ success: false, message: 'Script could not be saved' });
+        }
+      });
+
+      Script.update(script, {
+        where: {
+          id: req.body.id
+        }
+      }).then((result) => {
+        return res.json({ success: true, data: script });
+      }).catch((err) => {
+        console.log(err);
+        return res.json({ success: false, message: 'Script could not be saved' });
+      });
+    } else {
       return res.json({ success: false, message: 'Script could not be saved' });
-    });
+    }
+
   }
 });
 
