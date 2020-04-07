@@ -16,7 +16,10 @@
     "hpccjs:clean": "rm -rf ./public/javascripts/hpcc-js/",
     "hpccjs:copy": "npx cpx \"node_modules/@hpcc-js/**/*\" public/javascripts/hpcc-js/",
     "hpccjs": "npm run hpccjs:clean && npm run hpccjs:copy",
-    "clientdeps": "npm run codemirror && npm run linenav && npm run lodash && npm run hpccjs"
+    "sortablejs:clean": "rm -rf ./public/javascripts/sortablejs/",
+    "sortablejs:copy": "npx cpx \"node_modules/sortablejs/modular/sortable.esm.js\" public/javascripts/sortablejs/",
+    "sortablejs": "npm run sortablejs:clean && npm run sortablejs:copy",
+    "clientdeps": "npm run codemirror && npm run linenav && npm run lodash && npm run hpccjs && npm run sortablejs"
   },
   "dependencies": {
     "@hpcc-js/comms": "^2.13.0",
@@ -47,7 +50,8 @@
     "pug": "2.0.3",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "sequelize": "^5.21.1"
+    "sequelize": "^5.21.1",
+    "sortablejs": "^1.10.2"
   },
   "devDependencies": {
     "cpx": "^1.5.0"

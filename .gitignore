@@ -20,6 +20,7 @@ codemirror/
 line-navigator/
 lodash/
 hpcc-js/
+sortablejs/
 
 #ecl workspaces
 workspaces

@@ -61,7 +61,7 @@ let addFolder = (branch, type) => {
   $li.data('name', branch.name);
   $li.data('id', branch.id);
   $li.data('type', type);
-  $li.append('<a class="folder text-light"><span class="foldername">' +
+  $li.append('<a class="folder text-light' + ((branch.open) ? ' open' : '') + '"><span class="foldername">' +
     branch.name + '</span>' +
     '<i class="float-right fa fa-close delete d-none" title="Delete folder"></i>' +
     '<i class="float-right fa fa-pencil-square-o edit d-none mr-1" title="Edit folder"></i>' +
@@ -119,7 +119,7 @@ let populateWorkspaceDirectoryTree = (tree) => {
   $scriptsTreeRoot.append($scriptsUl);
 };
 
-let populateDatasets = () => {
+let populateDatasets = async () => {
   let url = new URL(hostname + '/datasets'),
       $activeWorkspace = $('.workspaces .active'),
       $datasets = $('.datasets'),
@@ -128,25 +128,27 @@ let populateDatasets = () => {
       params = { workspaceId: $activeWorkspace.data('id') };
 
   url.search = new URLSearchParams(params);
+  return new Promise((resolve) => {
+    fetch(url)
+      .then(response => response.json())
+      .then((datasets) => {
+        console.log('populateDatasets', datasets);
 
-  fetch(url)
-    .then(response => response.json())
-    .then((datasets) => {
-      // console.log('populateDatasets', datasets);
+        if (Object.entries(datasets).length > 0) {
+          $datasetLis.each((idx, el) => {
+            let $dataset = $(el),
+                _dataset = datasets[$dataset.data('id')];
+            $dataset.data('query', _dataset.eclQuery);
+            $dataset.data('wuid', _dataset.workunitId);
+            $dataset.data('rows', _dataset.rowCount);
+            $dataset.data('cols', _dataset.columnCount);
+          });
 
-      if (Object.entries(datasets).length > 0) {
-        $datasetLis.each((idx, el) => {
-          let $dataset = $(el),
-              _dataset = datasets[$dataset.data('id')];
-          $dataset.data('query', _dataset.eclQuery);
-          $dataset.data('wuid', _dataset.workunitId);
-          $dataset.data('rows', _dataset.rowCount);
-          $dataset.data('cols', _dataset.columnCount);
-        }).promise().done(function() {
           showDatasets();
-        });
-      }
-    });
+        }
+        resolve();
+      });
+  });
 };
 
 let showDatasets = () => {
@@ -158,7 +160,7 @@ let showDatasets = () => {
   }
 };
 
-let populateScripts = () => {
+let populateScripts = async () => {
   let url = new URL(hostname + '/scripts'),
       $activeWorkspace = $('.workspaces .active'),
       $scripts = $('.scripts'),
@@ -168,26 +170,28 @@ let populateScripts = () => {
 
   url.search = new URLSearchParams(params);
 
-  fetch(url)
-    .then(response => response.json())
-    .then((scripts) => {
-      // console.log('populateScripts', scripts);
+  return new Promise((resolve) => {
+    fetch(url)
+      .then(response => response.json())
+      .then((scripts) => {
+        console.log('populateScripts', scripts);
 
-      if (Object.entries(scripts).length > 0) {
-        $scriptLis.each((idx, el) => {
-          let $script = $(el),
-              _script = scripts[$script.data('id')];
-          if (_script) {
-            $script.data('revisionId', _script.revisionId);
-            $script.data('content', _script.content);
-            $script.data('cluster', _script.cluster);
-            $script.data('parentPathNames', _script.parentPathNames);
-            $script.data('wuid', _script.workunitId);
-          }
-        }).promise().done(function() {
+        if (Object.entries(scripts).length > 0) {
+          $scriptLis.each((idx, el) => {
+            let $script = $(el),
+                _script = scripts[$script.data('id')];
+            if (_script) {
+              $script.data('revisionId', _script.revisionId);
+              $script.data('content', _script.content);
+              $script.data('cluster', _script.cluster);
+              $script.data('parentPathNames', _script.parentPathNames);
+              $script.data('wuid', _script.workunitId);
+            }
+          });
           showScripts();
-        });
-      }
+        }
+        resolve();
+      });
     });
 };
 

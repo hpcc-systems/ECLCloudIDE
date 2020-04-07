@@ -1,4 +1,4 @@
-nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
+nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar(data-observe-resize)
   div.sidebar-sticky
 
     div.px-3.py-3(id="datasets-wrapper")
@@ -8,7 +8,7 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
           aria-expanded="false"
         )
           span Datasets
-            i.fa.fa-chevron-right.ml-1
+            i.fa.fa-chevron-right.ml-1.mt-1
         a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(
           href='#', title="New Dataset...", data-toggle="modal",
           data-target="#newDatasetModal"
@@ -33,7 +33,7 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
           aria-expanded="false"
         )
           span Scripts
-            i.fa.fa-chevron-right.ml-1
+            i.fa.fa-chevron-right.ml-1.mt-1
         a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(
           href='#', title="New Script...", data-toggle="modal",
           data-target="#newScriptModal"
@@ -57,6 +57,9 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar
         i.float-right.fa.fa-close.delete.d-none(title="Delete folder")
         i.float-right.fa.fa-pencil-square-o.edit.d-none.mr-1(title="Edit folder")
       ul.d-none
+
+    div.sidebar-collapser.border.border-secondary.rounded-lg.text-secondary.p-2
+      i.fa.fa-2x
 
 div.context-menu(id="scripts-context-menu")
   ul.menu-items

@@ -51,11 +51,26 @@ block content
                   td 0.00
                   td 9.00
 
-        div.script-panel-placeholder.d-none
-
-        div.script-panel.bg-dark.d-none
+        div.script-panel.bg-dark.d-none.flex-column
           div.script-panel-controls-wrapper
-            div.script-controls.ml-30.d-flex.align-items-center
+            div.script-controls-row-one.d-flex.justify-content-between
+              div#script-tabs-1.script-tabs.main-script-tabs.ml-2.pr-2.position-relative
+                ul.tab-list.list-unstyled.d-flex.m-0.flex-wrap
+                  li.cloner.d-none.border-top-0.border.rounded-bottom.mr-1
+                    a.p-2.align-middle.d-inline-block.text-decoration-none(href="#")
+                      span Name
+                      i.fa.fa-close.p-0.ml-1
+              div#script-tabs-2.script-tabs.secondary-script-tabs.ml-2.empty
+                ul.tab-list.list-unstyled.d-flex.m-0.flex-wrap
+                  li.cloner.d-none.border-top-0.border.rounded-bottom.mr-1
+                    a.p-2.align-middle.d-inline-block.text-decoration-none(href="#")
+                      span Name
+                      i.fa.fa-close.p-0.ml-1
+              div.script-panel-controls.my-1.mx-2.flex-shrink-0
+                i.fa.fa-window-minimize.js-minimize(title="Minimize Script")
+                i.fa.fa-window-maximize.js-restore(title="Restore Script")
+                i.fa.fa-window-close-o.js-close(title="Close Script")
+            div.script-controls.m-2.d-flex.align-items-center
               a.run-script.text-light.badge.badge-pill.badge-success(href="#", title="Execute Script") RUN
                 i.fa.fa-play
               a.save-script.d-none.text-light.badge.badge-pill.badge-secondary.ml-2(href="#", title="No Changes") SAVE
@@ -77,8 +92,6 @@ block content
               div.dropdown-menu.thors(aria-labelledby='selectTarget')
                 a.dropdown-item.cloner.d-none(href='#') Target
 
-            div.script-panel-controls.mr-3.d-flex.align-items-center
-              i.fa.fa-window-minimize.js-minimize(title="Minimize Script")
-              i.fa.fa-window-maximize.js-restore(title="Restore Script")
-              i.fa.fa-window-close-o.js-close(title="Close Script")
-          div#editor
+          div.editors.d-flex.flex-row
+            div#editor.editor.active.w-50
+            div#editor2.d-none.editor.w-50
