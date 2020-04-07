@@ -3354,7 +3354,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         editors[$activeTabs.index()].getDoc().setValue(
           $('.scripts .script').filter((idx, el) => {
             return $(el).data('id') == $neighbor.data('id');
-          }).data('content')
+          }).data('content') || ''
         );
       } else {
         $editors[$activeTabs.index()].data('id', '');
@@ -3465,7 +3465,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
    *==========================================================================*/
 
   let editorChangeHandler = (instance, changeObj) => {
-    let $saveButton = $('.save-script');
+    let $saveButton = $('.save-script'),
+        $compileButton = $('.compile-script');
 
     if ($('#editor').hasClass('cmReady')) {
       $saveButton.attr('title', 'Save Script').removeClass('badge-secondary').addClass('badge-info');
