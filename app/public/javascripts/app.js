@@ -2299,17 +2299,20 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $modal = $('#removeScriptModal'),
         $wrapper = $this.parents('.nav'),
         parentPath = [],
+        parentPathNames = [],
         $deleteBtn = $modal.find('.btn-danger');
 
     evt.stopPropagation();
 
     if ($folder.data('id')) {
       parentPath.unshift($folder.data('id'));
+      parentPathNames.unshift($folder.data('name'));
     }
     let $parent = $folder.parents('li');
     do {
       if ($parent.data('id')) {
         parentPath.unshift($parent.data('id'));
+        parentPathNames.unshift($parent.data('name'));
       }
       $parent = $parent.parents('li');
     } while ($parent.length > 0);
@@ -2318,7 +2321,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $modal.modal('show');
     // console.log($script.data('id'));
     $deleteBtn.data('script', $script.data('id'));
-    $deleteBtn.data('parentPath', parentPath);
+    $deleteBtn.data('parentPath', parentPathNames);
     $deleteBtn.data('elementToRemove', $folder);
     // console.log($modal.find('.btn-danger').data('script'));
   });
@@ -2338,7 +2341,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     fetch('/scripts/', {
       method: 'DELETE',
-      body: JSON.stringify({ scriptId: targetId }),
+      body: JSON.stringify({
+        scriptId: targetId,
+        path: parentPath.join('/')
+      }),
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken

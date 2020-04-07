@@ -298,8 +298,10 @@ router.delete('/', (req, res, next) => {
       id: req.body.scriptId,
     }
   }).then((script) => {
-    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-        scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
+    let path = req.body.path || '';
+    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
+        scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
+        scriptFilePath = scriptDirPath + script.name + '.ecl';
     if (fs.existsSync(scriptFilePath)) {
       fs.unlinkSync(scriptFilePath);
     }
