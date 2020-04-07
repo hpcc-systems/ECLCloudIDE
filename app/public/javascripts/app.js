@@ -1762,9 +1762,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     let $this = $(this),
         $modal = $('#editScriptModal'),
         $script = $this.data('elementToUpdate'),
+        $folder = $script.parents('li'),
         $activeWorkspace = $('.workspaces .active'),
         workspaceId = $activeWorkspace.data('id'),
-        parentPath = $this.data('parentPath'),
+        parentPath = [],
+        parentPathNames = [],
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $form = $modal.find('form'),
         scriptName = $form.find('#edit-script-name').val(),
@@ -1777,9 +1779,23 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       return false;
     }
 
+    if ($folder.data('id')) {
+      parentPath.unshift($folder.data('id'));
+      parentPathNames.unshift($folder.data('name'));
+    }
+    let $parent = $folder.parents('li');
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+        parentPathNames.unshift($parent.data('name'));
+      }
+      $parent = $parent.parents('li');
+    } while ($parent.length > 0);
+
     data.id = $script.data('id');
     data.name = scriptName;
     data.prevName = $script.data('name');
+    data.path = parentPathNames.join('/');
     data.workspaceId = workspaceId;
     // console.log('submitting PUT with: ', JSON.stringify(data));
 
@@ -2231,6 +2247,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $form = $modal.find('form'),
         $saveBtn = $modal.find('.btn-primary'),
         $targetFolder = $saveBtn.data('targetFolder'),
+        parentPath = [],
+        parentPathNames = [],
         folderType = $saveBtn.data('folderType'),
         folderId = $saveBtn.data('folderId'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree'));
@@ -2241,6 +2259,21 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $form.addClass('was-validated');
       return false;
     }
+
+    if ($targetFolder.data('id')) {
+      parentPath.unshift($targetFolder.data('id'));
+      parentPathNames.unshift($targetFolder.data('name'));
+    }
+    let $parent = $targetFolder.parents('li');
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+        parentPathNames.unshift($parent.data('name'));
+      }
+      $parent = $parent.parents('li');
+    } while ($parent.length > 0);
+    parentPath.pop();
+    parentPathNames.pop();
 
     // console.log($folderName.val(), folderId, directoryTree);
 
@@ -2268,6 +2301,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       method: 'PUT',
       body: JSON.stringify({
         id: $activeWorkspace.data('id'),
+        folderType: folderType,
+        folderName: $folderName.val(),
+        prevFolderName: $targetFolder.text(),
+        path: parentPathNames.join('/'),
         directoryTree: directoryTree
       }),
       headers: {
