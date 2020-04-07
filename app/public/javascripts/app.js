@@ -3424,7 +3424,6 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   $scriptPanelControls.on('click', '.js-close', function() {
     $('.script-panel-placeholder').addClass('d-none');
     $('.script-panel').addClass('d-none');
-    $('.scripts .script').removeClass('active');
     $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
     $('.script-panel').removeClass('maximized').removeClass('minimized');
     $('.script-panel-placeholder').removeClass('minimized');
