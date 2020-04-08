@@ -2321,7 +2321,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $modal.modal('show');
     // console.log($script.data('id'));
     $deleteBtn.data('script', $script.data('id'));
-    $deleteBtn.data('parentPath', parentPathNames);
+    $deleteBtn.data('parentPath', parentPath);
+    $deleteBtn.data('parentPathNames', parentPathNames);
     $deleteBtn.data('elementToRemove', $folder);
     // console.log($modal.find('.btn-danger').data('script'));
   });
@@ -2332,6 +2333,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $modal = $('#removeScriptModal'),
         $activeWorkspace = $('.workspaces .active'),
         parentPath = $this.data('parentPath'),
+        parentPathNames = $this.data('parentPathNames'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $elementToRemove = $this.data('elementToRemove'),
         $scriptPanelClose = $('.js-close'),
@@ -2343,7 +2345,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       method: 'DELETE',
       body: JSON.stringify({
         scriptId: targetId,
-        path: parentPath.join('/')
+        path: parentPathNames.join('/')
       }),
       headers: {
         'Content-Type': 'application/json',
