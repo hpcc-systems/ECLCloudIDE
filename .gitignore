@@ -11,6 +11,9 @@ node_modules/
 # dotenv environment variables file
 .env
 
+# patch files
+*.patch
+
 # Sequelize config file
 config.json
 config.js
