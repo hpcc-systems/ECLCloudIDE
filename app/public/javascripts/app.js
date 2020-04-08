@@ -2398,11 +2398,12 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $elementToRemove.remove();
 
         $scriptTabs.filter((idx, li) => {
-          if ($(li).data('id') == $this.data('script')) {
+          if ($(li).data('id') == targetId) {
             let $neighbor = $(li).next();
             if ($neighbor.length === 0) {
               $neighbor = $(li).prev();
             }
+            $(li).find('.fa-close').trigger('click');
             $(li).remove();
             $neighbor.trigger('click');
           }
