@@ -119,10 +119,26 @@ router.put('/', [
   body('workspaceCluster')
     .optional({ checkFalsy: true })
     .isIn(clusterWhitelist).withMessage('Invalid cluster')
-], (req, res, next) => {
+], async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({ success: false, errors: errors.array() });
+  }
+
+  let _workspace = await Workspace.findOne({
+    where: {
+      id: req.body.id
+    }, include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Workspace could not be saved' });
+  });
+
+  if (_workspace.Users[0].dataValues.id !== req.session.user.id) {
+    return res.status(403).send('Forbidden');
   }
 
   console.log('request body', req.body);
@@ -198,10 +214,15 @@ router.put('/', [
 router.delete('/', (req, res, next) => {
   Workspace.findOne({
     where: { id: req.body.workspaceId },
-    through: {
-      where: { role: WorkspaceUser.roles.OWNER }
-    }
+    include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
   }).then(workspace => {
+    if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+      return res.status(403).send('Forbidden');
+    }
+
     let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
     if (fs.existsSync(workspaceDirPath)) {
       fs.removeSync(workspaceDirPath);

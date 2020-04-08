@@ -47,13 +47,30 @@ router.post('/', [
     .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid dataset name'),
   body('filename')
     .not().isEmpty().withMessage('Dataset filename cannot be empty'),
-], (req, res, next) => {
+], async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({ success: false, errors: errors.array() });
   }
 
   console.log('request body', req.body);
+
+  let _workspace = await Workspace.findOne({
+    where: {
+      id: req.body.workspaceId
+    }, include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Dataset could not be saved' });
+  });
+
+  if (_workspace.Users[0].dataValues.id !== req.session.user.id) {
+    return res.status(403).send('Forbidden');
+  }
+
   Dataset.findAll({
     where: {
       workspaceId: req.body.workspaceId,
@@ -127,7 +144,24 @@ router.put('/', [
     .matches(/^[-a-zA-Z0-9\._:]+$/).withMessage('Invalid logical file name'),
   body('rowCount')
     .isInt().withMessage('Invalid row count'),
-], (req, res, next) => {
+], async (req, res, next) => {
+
+  let _workspace = await Workspace.findOne({
+    where: {
+      id: req.body.workspaceId
+    }, include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Dataset could not be saved' });
+  });
+
+  if (_workspace.Users[0].dataValues.id !== req.session.user.id) {
+    return res.status(403).send('Forbidden');
+  }
+
   let dataset = {};
   if (req.body.name) dataset.name = req.body.name;
   if (req.body.filename) dataset.filename = req.body.filename;
@@ -159,20 +193,31 @@ router.delete('/', (req, res, next) => {
       id: req.body.datasetId,
     }
   }).then((dataset) => {
-    Dataset.destroy({
-      where: { id: dataset.id }
-    });
-    Workunit.destroy({
-      where: { objectId: dataset.id }
-    });
-    let datasetFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' + dataset.id
-    console.log('if path exists - ' + datasetFilePath);
-    if (fs.existsSync(datasetFilePath)) {
-      console.log('removeSync - ' + datasetFilePath);
-      fs.removeSync(datasetFilePath);
-    }
-  }).then(() => {
-    return res.json({ success: true, message: 'Dataset deleted' });
+    dataset.getWorkspace({
+      include: [{
+        model: User,
+        through: { userId: req.session.user.id }
+      }]
+    }).then(workspace => {
+      if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+        return res.status(403).send('Forbidden');
+      }
+
+      let datasetFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' + dataset.id
+      console.log('if path exists - ' + datasetFilePath);
+      if (fs.existsSync(datasetFilePath)) {
+        console.log('removeSync - ' + datasetFilePath);
+        fs.removeSync(datasetFilePath);
+      }
+      Workunit.destroy({
+        where: { objectId: dataset.id }
+      });
+      Dataset.destroy({
+        where: { id: dataset.id }
+      }).then(() => {
+        return res.json({ success: true, message: 'Dataset deleted' });
+      });
+    })
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Dataset could not be deleted' });

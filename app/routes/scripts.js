@@ -49,7 +49,6 @@ let eclccCmd = (args, cwd) => {
 };
 
 router.get('/', (req, res, next) => {
-  console.log('request query', req.query);
   const query = `SELECT s.id, s.name, sr.id AS revisionId, sr.content, \
     s.cluster, sr.createdAt, sr.updatedAt, w.workunitId \
     FROM Scripts AS s \
@@ -59,7 +58,11 @@ router.get('/', (req, res, next) => {
       WHERE sr2.id IS NULL \
     ) AS sr ON sr.scriptId = s.id \
     LEFT JOIN Workunits AS w ON sr.id = w.objectId \
+    LEFT JOIN Workspaces AS ws ON s.workspaceId = ws.id \
+    LEFT JOIN WorkspaceUsers AS wsu ON wsu.workspaceId = ws.id \
     WHERE s.workspaceId = :workspaceId \
+    AND wsu.role = :owner \
+    AND wsu.userId = :userId \
     AND (w.workunitId LIKE "W%" OR w.workunitId IS NULL) \
     AND sr.id IS NOT NULL \
     AND s.deletedAt IS NULL \
@@ -67,7 +70,11 @@ router.get('/', (req, res, next) => {
 
   db.sequelize.query(query, {
     type: db.sequelize.QueryTypes.SELECT,
-    replacements: { workspaceId: req.query.workspaceId }
+    replacements: {
+      workspaceId: req.query.workspaceId,
+      owner: WorkspaceUser.roles.OWNER,
+      userId: req.session.user.id
+    }
   }).then((_scripts) => {
     let scripts = {};
     _scripts.forEach((script) => {
@@ -96,35 +103,49 @@ router.post('/', [
     return res.status(422).json({ success: false, errors: errors.array() });
   }
 
-  console.log('request body', req.body);
-  Script.create({
-    name: req.body.scriptName,
-    workspaceId: req.body.workspaceId,
-    eclFilePath: req.body.parentPathNames
-  }).then((script) => {
-    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-        scriptDirPath = workspaceDirPath + '/' + req.body.parentPathNames,
-        scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
-
-    if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
-      fs.mkdirpSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
+  Workspace.findOne({
+    where: { id: req.body.workspaceId },
+    include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
+  }).then((workspace) => {
+    if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+      return res.status(403).send('Forbidden');
     }
 
-    if (!fs.existsSync(scriptDirPath)) {
-      fs.mkdirSync(scriptDirPath, { recursive: true }, (err) => {
-        if (err) {
-          throw err;
-        }
-      });
-    }
-    if (!fs.existsSync(scriptFilePath)) {
-      fs.closeSync(fs.openSync(scriptFilePath, 'w'));
-    }
-    return res.json({ success: true, data: script });
+    Script.create({
+      name: req.body.scriptName,
+      workspaceId: req.body.workspaceId,
+      eclFilePath: req.body.parentPathNames
+    }).then((script) => {
+      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
+          scriptDirPath = workspaceDirPath + '/' + req.body.parentPathNames,
+          scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
+
+      if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
+        fs.mkdirpSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
+      }
+
+      if (!fs.existsSync(scriptDirPath)) {
+        fs.mkdirSync(scriptDirPath, { recursive: true }, (err) => {
+          if (err) {
+            throw err;
+          }
+        });
+      }
+      if (!fs.existsSync(scriptFilePath)) {
+        fs.closeSync(fs.openSync(scriptFilePath, 'w'));
+      }
+      return res.json({ success: true, data: script });
+    }).catch((err) => {
+      console.log(err);
+      return res.json({ success: false, message: 'Script could not be saved' });
+    });
   }).catch((err) => {
-    console.log(err);
-    return res.json({ success: false, message: 'Script could not be saved' });
-  });
+      console.log(err);
+      return res.json({ success: false, message: 'Script could not be saved' });
+    });
 });
 
 /* Create script revision */
@@ -146,36 +167,55 @@ router.post('/revision', [
       scriptDirPath = '',
       scriptFilePath = '';
 
-  ScriptRevision.create({
-    scriptId: req.body.scriptId,
-    content: req.body.content
-  }).then((revision) => {
-    console.log('find script by id', req.body.scriptId);
-    Script.findOne({
-      where: {
-        id: req.body.scriptId,
-      }
-    }).then((script) => {
-      script.cluster = req.body.cluster;
-      script.save({ fields: ['cluster'] });
-      console.log('update contents of script file');
-      workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
-      scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
-      scriptFilePath = scriptDirPath + script.name + '.ecl';
-
-      if (!fs.existsSync(scriptDirPath)) {
-        fs.mkdirpSync(scriptDirPath);
+  Script.findOne({
+    where: {
+      id: req.body.scriptId,
+    }
+  }).then((script) => {
+    script.getWorkspace({
+      include: [{
+        model: User,
+        through: { userId: req.session.user.id }
+      }]
+    }).then(workspace => {
+      if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+        return res.status(403).send('Forbidden');
       }
 
-      console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
-      fs.writeFileSync(scriptFilePath, revision.content);
-    }).then(() => {
-      return res.json({ success: true, data: revision });
+      ScriptRevision.create({
+        scriptId: req.body.scriptId,
+        content: req.body.content
+      }).then((revision) => {
+          script.cluster = req.body.cluster;
+          script.save({ fields: ['cluster'] });
+          console.log('update contents of script file');
+          workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
+          scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
+          scriptFilePath = scriptDirPath + script.name + '.ecl';
+
+          if (!fs.existsSync(scriptDirPath)) {
+            fs.mkdirpSync(scriptDirPath);
+          }
+
+          console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
+          fs.writeFileSync(scriptFilePath, revision.content);
+
+          return res.json({ success: true, data: revision });
+        }).catch((err) => {
+          console.log(err);
+          return res.json({ success: false, message: 'Script Revision could not be saved' });
+        });
+
+    }).catch((err) => {
+      console.log(err);
+      return res.json({ success: false, message: 'Script Revision could not be saved' });
     });
+
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Script Revision could not be saved' });
   });
+
 });
 
 /* Compile script */
@@ -249,45 +289,67 @@ router.put('/', [
     return res.status(422).json({ success: false, errors: errors.array() });
   }
 
-  let script = {},
-      path = req.body.path || '';
+  Script.findOne({
+    where: {
+      id: req.body.id,
+    }
+  }).then((_script) => {
+    _script.getWorkspace({
+      include: [{
+        model: User,
+        through: { userId: req.session.user.id }
+      }]
+    }).then(workspace => {
+      if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+        return res.status(403).send('Forbidden');
+      }
 
-  if (req.body.name) script.name = req.body.name;
-  if (req.body.filename) script.filename = req.body.filename;
-  if (req.body.logicalfile) script.logicalfile = req.body.logicalfile;
-  if (req.body.workspaceId) script.workspaceId = req.body.workspaceId;
-  if (req.body.rowCount) script.rowCount = req.body.rowCount;
-  if (req.body.columnCount) script.columnCount = req.body.columnCount;
-  if (req.body.eclSchema) script.eclSchema = JSON.parse(req.body.eclSchema);
-  if (Object.keys(script).length > 0) {
-    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
-        scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
-        currentScriptFilePath = scriptDirPath + req.body.prevName + '.ecl',
-        newScriptFilePath = scriptDirPath + script.name + '.ecl';
+      let script = {},
+          path = req.body.path || '';
 
-    if (fs.existsSync(currentScriptFilePath)) {
-      fs.rename(currentScriptFilePath, newScriptFilePath, (err) => {
-        if (err) {
-          console.log(err);
+      if (req.body.name) script.name = req.body.name;
+      if (req.body.filename) script.filename = req.body.filename;
+      if (req.body.logicalfile) script.logicalfile = req.body.logicalfile;
+      if (req.body.workspaceId) script.workspaceId = req.body.workspaceId;
+      if (req.body.rowCount) script.rowCount = req.body.rowCount;
+      if (req.body.columnCount) script.columnCount = req.body.columnCount;
+      if (req.body.eclSchema) script.eclSchema = JSON.parse(req.body.eclSchema);
+      if (Object.keys(script).length > 0) {
+        let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
+            scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
+            currentScriptFilePath = scriptDirPath + req.body.prevName + '.ecl',
+            newScriptFilePath = scriptDirPath + script.name + '.ecl';
+
+        if (fs.existsSync(currentScriptFilePath)) {
+          fs.rename(currentScriptFilePath, newScriptFilePath, (err) => {
+            if (err) {
+              console.log(err);
+              return res.json({ success: false, message: 'Script could not be saved' });
+            }
+          });
+
+          Script.update(script, {
+            where: {
+              id: req.body.id
+            }
+          }).then((result) => {
+            return res.json({ success: true, data: script });
+          }).catch((err) => {
+            console.log(err);
+            return res.json({ success: false, message: 'Script could not be saved' });
+          });
+        } else {
           return res.json({ success: false, message: 'Script could not be saved' });
         }
-      });
-
-      Script.update(script, {
-        where: {
-          id: req.body.id
-        }
-      }).then((result) => {
-        return res.json({ success: true, data: script });
-      }).catch((err) => {
-        console.log(err);
-        return res.json({ success: false, message: 'Script could not be saved' });
-      });
-    } else {
+      } //end if Object.keys(script).length > 0
+    }).catch((err) => { // error from script.getWorkspace
+      console.log(err);
       return res.json({ success: false, message: 'Script could not be saved' });
-    }
-
-  }
+    });
+  }).catch((err) => { // error from Script.findOne
+    console.log(err);
+    return res.json({ success: false, message: 'Script could not be saved' });
+  });
 });
 
 /* Delete script */
@@ -298,18 +360,31 @@ router.delete('/', (req, res, next) => {
       id: req.body.scriptId,
     }
   }).then((script) => {
-    let path = req.body.path || '';
-    let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
-        scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
-        scriptFilePath = scriptDirPath + script.name + '.ecl';
-    if (fs.existsSync(scriptFilePath)) {
-      fs.unlinkSync(scriptFilePath);
-    }
-    Script.destroy({
-      where: { id: script.id }
+     script.getWorkspace({
+      include: [{
+        model: User,
+        through: { userId: req.session.user.id }
+      }]
+    }).then(workspace => {
+      if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+        return res.status(403).send('Forbidden');
+      }
+      let path = req.body.path || '';
+      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
+          scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
+          scriptFilePath = scriptDirPath + script.name + '.ecl';
+      if (fs.existsSync(scriptFilePath)) {
+        fs.unlinkSync(scriptFilePath);
+      }
+      Script.destroy({
+        where: { id: script.id }
+      }).then(() => {
+        res.json({ success: true, message: 'Script deleted' });
+      })
+    }).catch((err) => {
+      console.log(err);
+      return res.json({ success: false, message: 'Script could not be deleted' });
     });
-  }).then(() => {
-    res.json({ success: true, message: 'Script deleted' });
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Script could not be deleted' });
@@ -318,25 +393,29 @@ router.delete('/', (req, res, next) => {
 
 /* Delete multiple scripts */
 router.delete('/batch', (req, res, next) => {
-  console.log('request body', req.body);
-  Script.findAll({
+  // console.log('request body', req.body);
+  Workspace.findOne({
     where: {
-      id: { [db.Sequelize.Op.in]: req.body.ids },
+      id: req.body.workspaceId,
+    },
+    include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
+  }).then((workspace) => {
+    if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+      return res.status(403).send('Forbidden');
     }
-  }).then((scripts) => {
-    scripts.forEach((script) => {
-      console.log(script.name, script.id);
-      let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
-          scriptFilePath = workspaceDirPath + '/' + script.id + '/' + script.name + '.ecl';
-      if (fs.existsSync(scriptFilePath)) {
-        fs.unlinkSync(scriptFilePath);
+
+    fs.remove(process.cwd() + '/workspaces/' + req.body.workspaceId + '/scripts/' + req.body.path);
+
+    Script.destroy({
+      where: {
+        id: { [db.Sequelize.Op.in]: req.body.ids },
       }
-      Script.destroy({
-        where: { id: script.id }
-      });
+    }).then(() => {
+      res.json({ success: true, message: 'Scripts deleted' });
     });
-  }).then(() => {
-    res.json({ success: true, message: 'Scripts deleted' });
   }).catch((err) => {
     console.log(err);
     return res.json({ success: false, message: 'Scripts could not be deleted' });
