@@ -14,6 +14,9 @@ node_modules/
 # patch files
 *.patch
 
+# deploy dir
+deploy/
+
 # Sequelize config file
 config.json
 config.js
