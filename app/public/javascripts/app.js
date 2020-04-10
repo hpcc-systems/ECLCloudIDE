@@ -2194,6 +2194,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         workspaceId = $activeWorkspace.data('id'),
         parentPath = [],
         parentPathNames = [],
+        $scriptTabs = $('.script-controls-row-one').find('li:not(.cloner)'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $form = $modal.find('form'),
         scriptName = $form.find('#edit-script-name').val(),
@@ -2283,6 +2284,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $modal.modal('hide');
         $script.data('name', script.data.name);
         $script.find('.scriptname').text(script.data.name);
+        $scriptTabs.filter((idx, el) => {
+          if ($(el).data('id') == $script.data('id')) {
+            $(el).find('span').text(script.data.name);
+          }
+        });
         $modal.find('#edit-script-name').val('');
         $form.removeClass('was-validated');
       });
