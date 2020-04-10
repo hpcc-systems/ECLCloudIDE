@@ -1558,7 +1558,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   $('.datasets').on('click', '.dataset .edit', function(evt) {
     let $this = $(this),
         $dataset = $this.parents('.dataset'),
-        $modal = $('#editDatasetModal');
+        $modal = $('#editDatasetModal'),
+        $saveBtn = $modal.find('.btn-primary');
 
     evt.stopPropagation();
 
@@ -1566,15 +1567,17 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $modal.find('#edit-dataset-name').val($dataset.find('.datasetname').text());
     $modal.modal('show');
     // console.log($dataset.index());
-    $modal.find('.btn-primary').data('dataset', $dataset.index());
+    $saveBtn.data('dataset', $dataset.data('id'));
+    $saveBtn.data('elementToUpdate', $dataset);
     // console.log($modal.find('.btn-primary').data('dataset'));
   });
 
   /* EDIT DATASET */
   $('#editDatasetModal').on('click', '.btn-primary', function(evt) {
-    let $modal = $('#editDatasetModal'),
+    let $this = $(this),
+        $modal = $('#editDatasetModal'),
         $datasets = $('.datasets ul'),
-        $dataset = $datasets.children().eq($(this).data('dataset')).find('.dataset'),
+        $dataset = $this.data('elementToUpdate'),
         $workspaceId = $('.workspaces .dropdown-item.active').data('id'),
         $form = $modal.find('form'),
         data = getFormData($form);
@@ -1608,6 +1611,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $form.removeClass('was-validated');
       let dirTree = JSON.parse($('.workspaces .dropdown-item.active').data('directoryTree'));
       dirTree.datasets[$dataset.data('id')].name = dataset.data.name;
+      $('.workspaces .active').data('directoryTree', JSON.stringify(dirTree));
       fetch('/workspaces/', {
         method: 'PUT',
         body: JSON.stringify({
@@ -2809,6 +2813,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $folder = $this.parents('li').first(),
         $wrapper = $this.parents('.folder-root'),
         parentPath = [],
+        parentPathNames = [],
         $modal = $('#removeFolderModal'),
         $deleteBtn = $modal.find('.btn-danger');
 
@@ -2816,11 +2821,13 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     if ($folder.data('id')) {
       parentPath.unshift($folder.data('id'));
+      parentPathNames.unshift($folder.data('name'));
     }
     let $parent = $folder.parents('li');
     do {
       if ($parent.data('id')) {
         parentPath.unshift($parent.data('id'));
+        parentPathNames.unshift($parent.data('name'));
       }
       $parent = $parent.parents('li');
     } while ($parent.length > 0);
@@ -2830,6 +2837,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $modal.modal('show');
     // console.log(parentPath);
     $deleteBtn.data('parentPath', parentPath);
+    $deleteBtn.data('parentPathNames', parentPathNames);
     if ($wrapper.attr('id') == 'datasets') {
       $deleteBtn.data('folderType', 'datasets');
     } else {
@@ -2848,6 +2856,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
         folderType = $this.data('folderType'),
         parentPath = $this.data('parentPath'),
+        parentPathNames = $this.data('parentPathNames'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $elementToRemove = $this.data('elementToRemove'),
         $scriptPanelClose = $('.js-close'),
@@ -2870,9 +2879,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
               deleteChildren(_node[1]);
             });
           }
-        },
-
-        elementsToDelete = null;
+        };
 
     if (parentPath.length > 0) {
       element = element[parentPath.shift()];
@@ -2894,7 +2901,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     fetch(deleteUri, {
       method: 'DELETE',
       body: JSON.stringify({
-        ids: childrenToDelete
+        ids: childrenToDelete,
+        workspaceId: $activeWorkspace.data('id'),
+        path: parentPathNames.join('/')
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -2903,28 +2912,30 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     })
     .then(response => response.json())
     .then((json) => {
-      fetch('/workspaces/', {
-        method: 'PUT',
-        body: JSON.stringify({
-          id: $activeWorkspace.data('id'),
-          directoryTree: directoryTree
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'CSRF-Token': csrfToken
-        }
-      })
-      .then(response => response.json())
-      .then((json) => {
-        if ($activeScript.hasClass('active')) {
-          $scriptPanelClose.trigger('click');
-        }
-        // console.log(JSON.stringify(directoryTree));
-        $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
-        $elementToRemove.remove();
+      if (json.success) {
+        fetch('/workspaces/', {
+          method: 'PUT',
+          body: JSON.stringify({
+            id: $activeWorkspace.data('id'),
+            directoryTree: directoryTree
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            'CSRF-Token': csrfToken
+          }
+        })
+        .then(response => response.json())
+        .then((json) => {
+          if ($activeScript.hasClass('active')) {
+            $scriptPanelClose.trigger('click');
+          }
+          // console.log(JSON.stringify(directoryTree));
+          $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
+          $elementToRemove.remove();
 
-        $modal.modal('hide');
-      });
+          $modal.modal('hide');
+        });
+      }
     });
   });
 
