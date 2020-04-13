@@ -3040,7 +3040,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
             let marker = document.createElement('div');
             marker.style.color = '#dc3545';
             marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-            editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
+            activeEditor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
           });
         };
         return false;
@@ -3262,6 +3262,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     let $script = $('.scripts .active'),
         $button = $(this),
         $icon = $button.find('.fa'),
+        $activeTab = $('.script-controls-row-one').find('li:not(.cloner)').filter((idx, el) => {
+          return $(el).data('id') == $script.data('id');
+        }),
+        editors = [ editor, editor2 ],
+        activeEditor = editors[$activeTab.parents('.script-tabs').index()],
         _query = editor.getValue().replace(/\s+/g, ' '),
         _wuid = '',
         revisionId = 0,
