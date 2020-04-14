@@ -23,9 +23,9 @@ config.js
 
 #dist/public javascripts
 codemirror/
-line-navigator/
-lodash/
 hpcc-js/
+lodash/
+papaparse/
 sortablejs/
 
 #ecl workspaces
