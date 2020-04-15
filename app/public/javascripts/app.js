@@ -21,6 +21,8 @@ import {
   getWorkunitResults,
 } from './modules/hpccWorkunits.mjs';
 
+import { parseDatasetFile } from './modules/fileParser.mjs';
+
 import Sortable from './sortablejs/sortable.esm.js';
 
 let dataTable = null;
@@ -163,8 +165,8 @@ let isVisualization = (name) => {
 
 require.config({
   paths: {
-    'ln': '/javascripts/line-navigator',
     '_': '/javascripts/lodash',
+    'papaparse': '/javascripts/papaparse',
     '@hpcc-js/util': '/javascripts/hpcc-js/util/dist/index.min',
     '@hpcc-js/comms': '/javascripts/hpcc-js/comms/dist/index.min',
   },
@@ -176,11 +178,11 @@ require.config({
 });
 
 require([
-  'ln/line-navigator.min', 'codemirror', '_/lodash.min', '@hpcc-js/comms',
+  'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min',
   'codemirror/mode/ecl/ecl',
   'codemirror/addon/selection/active-line',
   'codemirror/addon/scroll/simplescrollbars'
-], function(LineNavigator, CodeMirror, _, comms) {
+], function(CodeMirror, _, comms, Papa) {
   let editor = null,
       editor2 = null,
       $draggedObject = null,
@@ -1140,7 +1142,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       let _query = dataset.name + ":=RECORD\n",
           _keys = Object.keys(currentDatasetFile),
           _avgs = Object.values(currentDatasetFile),
-          _type =
+          _type = 'STRING';
 
       $fileDetails.find('.form-group').each((idx, group) => {
         let _type = "STRING" + _avgs[idx];
@@ -1150,8 +1152,18 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         _query += "\t" + _type + " " + $(group).children('input:eq(0)').val() + ";\n";
       });
 
+      let dsType = '',
+          fileExtension = dataset.filename.substr(dataset.filename.lastIndexOf('.') + 1).toLowerCase();
+
+      switch (fileExtension) {
+        case 'csv':
+        default:
+          dsType = "CSV(HEADING(1))";
+          break;
+      }
+
       _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
-        dataset.filename + "'," + dataset.name + ",CSV(HEADING(1)));\nOUTPUT(DS,," +
+        dataset.filename + "'," + dataset.name + "," + dsType + ");\nOUTPUT(DS,," +
         "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
         ",'thor',OVERWRITE);";
 
@@ -1427,57 +1439,17 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     }, 1000);
   });
 
-  /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
-  $('#dataset-file').on('change', function(evt) {
-    let $file = $(evt.target),
+  let parseDataset = () => {
+    let $file = $('#dataset-file'),
         $saveBtn = $file.parents('.modal').find('.btn-primary'),
         $fileFeedback = $file.siblings('.invalid-feedback'),
-        file = evt.target.files[0],
+        $fileDetails = $('.file-details'),
+        file = $file[0].files[0],
         fileName = '',
-        ln = new LineNavigator(file);
+        fileExtension = '',
+        parseResults = null;
 
-    $file.removeClass('is-invalid');
-    $fileFeedback.text(DEFAULT_FILE_FEEDBACK);
-
-    if (!file) {
-      $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
-      $file.addClass('is-invalid');
-      $saveBtn.attr('disabled', 'disabled').addClass('disabled');
-      return false;
-    } else if (file.size > FILE_LIMIT) {
-      $file.siblings('.invalid-feedback').text('Please select a file less than "' + (FILE_LIMIT / (1024 * 1024)) + 'MB" to upload.');
-      $file.addClass('is-invalid');
-      $saveBtn.attr('disabled', 'disabled').addClass('disabled');
-      return false;
-    }
-
-    file.name.substr(0, file.name.lastIndexOf('.')).replace(/-|_|\s/g, '_').split('_').map((word) => {
-      fileName += word.substr(0, 1).toUpperCase() + word.substr(1).toLowerCase();
-    });
-    fileName.trim();
-
-    // console.log(file, fileName);
-
-    $('#dataset-name').val(fileName);
-
-    ln.readLines(0, 2, (err, idx, lines, isEOF, progress) => {
-      // console.log(lines);
-      let labels = lines[0].split(','),
-          values = lines[1].split(','),
-          $fileDetails = $('.file-details');
-
-      if (labels.length != values.length) {
-        $file.siblings('.invalid-feedback').text(
-          'There may be an issue with this file: the number of column headings doesn\'t match ' +
-          'the number of columns in the first row of data.'
-        );
-        $file.addClass('is-invalid');
-        $saveBtn.attr('disabled', 'disabled').addClass('disabled');
-        return false;
-      }
-
-      $fileDetails.html('');
-
+    let appendRows = (labels, values) => {
       labels.forEach((label, idx) => {
         let $newFormRow = $('<div class="form-group"></div>'),
             headingsEl = '<label data-toggle="popover" data-placement="right" ' +
@@ -1502,39 +1474,58 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $newFormRow.append('<input type="text" class="form-control" value="' + values[idx] + '" disabled="disabled" />');
 
         $fileDetails.append($newFormRow);
-
-        // console.log(label, values[idx]);
       });
 
       $('[data-toggle="popover"]').popover({
         trigger: 'hover'
       });
+    };
+
+    $file.removeClass('is-invalid');
+    $fileFeedback.text(DEFAULT_FILE_FEEDBACK);
+    $fileDetails.html('');
+
+    if (!file) {
+      $file.siblings('.invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
+      $file.addClass('is-invalid');
+      $saveBtn.attr('disabled', 'disabled').addClass('disabled');
+      return false;
+    } else if (file.size > FILE_LIMIT) {
+      $file.siblings('.invalid-feedback').text('Please select a file less than "' + (FILE_LIMIT / (1024 * 1024)) + 'MB" to upload.');
+      $file.addClass('is-invalid');
+      $saveBtn.attr('disabled', 'disabled').addClass('disabled');
+      return false;
+    }
+
+    file.name.substr(0, file.name.lastIndexOf('.')).replace(/-|_|\s/g, '_').split('_').map((word) => {
+      fileName += word.substr(0, 1).toUpperCase() + word.substr(1).toLowerCase();
+    });
+    fileName.trim();
+    fileExtension = file.name.substr(file.name.lastIndexOf('.') + 1).toLowerCase();
+
+    // console.log(file, fileName);
+
+    $('#dataset-name').val(fileName);
+
+    parseDatasetFile(file, Papa).then((parseResults) => {
+      if (parseResults.success) {
+        setCurrentDatasetFile(parseResults.schema);
+        appendRows(Object.keys(parseResults.schema), parseResults.data);
+      } else {
+        $fileFeedback.text(parseResults.errorMsg);
+        $file.addClass('is-invalid');
+      }
+    }).catch((parseResults) => {
+      $fileFeedback.text(parseResults.errorMsg);
+      $file.addClass('is-invalid');
     });
 
-    ln.readLines(0, 11, (err, idx, lines, isEOF, progress) => {
-      let labels = lines[0].split(','),
-          averages = {};
-
-      for (var i = 1; i < 11; i++) {
-        let values = lines[i].split(',');
-        values.forEach((val, idx) => {
-          if (!averages[labels[idx]]) averages[labels[idx]] = 0;
-          averages[labels[idx]] += val.length;
-        });
-      }
-
-      for (var i = 0; i < Object.keys(averages).length; i++) {
-        averages[labels[i]] = averages[labels[i]] / 10;
-        if (averages[labels[i]] > 10) {
-          averages[labels[i]] = Math.floor((Math.log(averages[labels[i]]) / 1.5) * averages[labels[i]]);
-        } else {
-          averages[labels[i]] = Math.round((1 + Math.log(averages[labels[i]])) * averages[labels[i]]);
-        }
-      }
-
-      setCurrentDatasetFile(averages);
-    });
     $saveBtn.removeAttr('disabled').removeClass('disabled');
+  };
+
+  /* WHEN FILE IS SELECTED FOR NEW DATASET FORM */
+  $('#dataset-file').on('change', function(evt) {
+    parseDataset();
   });
 
   /* RESET NEW DATASET FORM ON MODAL HIDE */

@@ -131,29 +131,44 @@ router.post('/spray', [
 });
 
 router.sprayFile = (clusterAddr, filename, username, workspaceName, dropzoneIp = '') => {
+  let sprayPayload = {},
+      fileExtension = filename.substr(filename.lastIndexOf('.') + 1);
+
   if (dropzoneIp == '' && router && router.dropzoneIp) {
     dropzoneIp = router.dropzoneIp;
   }
+
+  sprayPayload = {
+    destGroup: (router.clusters && router.clusters.length > 0) ?
+      router.clusters[Math.floor(Math.random() * Math.floor(router.clusters.length))] :
+      'mythor',
+    DFUServerQueue: 'dfuserver_queue',
+    namePrefix: username + '::' + workspaceName,
+    targetName: filename,
+    overwrite: 'on',
+    sourceIP: dropzoneIp,
+    sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
+    destLogicalName: username + '::' + workspaceName + '::' + filename,
+    rawxml_: 1
+  };
+
+  switch (fileExtension) {
+    case 'csv':
+    default:
+      sprayPayload = { ...sprayPayload, ...{
+          sourceFormat: 1,
+          sourceCsvSeparate: '\,',
+          sourceCsvTerminate: '\n,\r\n',
+          sourceCsvQuote: '"'
+        }
+      };
+      break;
+  } //end switch
+
   return request({
     method: 'POST',
     uri: clusterAddr + '/FileSpray/SprayVariable.json',
-    formData: {
-      destGroup: (router.clusters && router.clusters.length > 0) ?
-        router.clusters[Math.floor(Math.random() * Math.floor(router.clusters.length))] :
-        'mythor',
-      DFUServerQueue: 'dfuserver_queue',
-      namePrefix: username + '::' + workspaceName,
-      targetName: filename,
-      sourceFormat: 1,
-      sourceCsvSeparate: '\,',
-      sourceCsvTerminate: '\n,\r\n',
-      sourceCsvQuote: '"',
-      overwrite: 'on',
-      sourceIP: dropzoneIp,
-      sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
-      destLogicalName: username + '::' + workspaceName + '::' + filename,
-      rawxml_: 1
-    },
+    formData: sprayPayload,
     resolveWithFullResponse: true
   });
 };
