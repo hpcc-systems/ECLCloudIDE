@@ -153,6 +153,16 @@ router.sprayFile = (clusterAddr, filename, username, workspaceName, dropzoneIp =
   };
 
   switch (fileExtension) {
+    case 'json':
+      sprayPayload = { ...sprayPayload, ...{
+          sourceFormat: 2,
+          sourceMaxRecordSize: '',
+          isJSON: 1,
+          sourceRowPath: '/',
+          targetRowPath: '/'
+        }
+      };
+      break;
     case 'csv':
     default:
       sprayPayload = { ...sprayPayload, ...{

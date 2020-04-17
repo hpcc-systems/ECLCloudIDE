@@ -2,7 +2,8 @@
 
 import {
   hostname, NO_WORKSPACE, NEW_SCRIPT, NEW_DATASET, FILE_LIMIT,
-  DEFAULT_FILE_FEEDBACK, currentDatasetFile, setCurrentDatasetFile,
+  DEFAULT_FILE_FEEDBACK,  DEFAULT_FILE_ROW_PATH_FEEDBACK,
+  ECL_KEYWORDS, currentDatasetFile, setCurrentDatasetFile,
   cluster, setClusterHost, setClusterPort, setClusterUser, setClusterPass,
   csrfToken,
 } from './modules/consts.mjs';
@@ -282,7 +283,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $scopeDefn = $title.find('.scopename'),
       $activeWorkspace = $('.workspaces .active'),
       query = $('.datasets .active').data('query'),
-      scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.csv_thor/,
+      scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.[a-zA-Z]+_thor/,
       $loader = $datasetContent.siblings('.loader'),
       $tableWrapper = $datasetContent.find('.table-wrapper'),
       $table = null;
@@ -379,26 +380,35 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         schema.children().forEach((attr) => {
           // if this element in the results has a child record
           if (typeof jsonSchema[attr.name] == 'object') {
-            if (row[attr.name].Row.length > 0) {
-              // iterate over the schema-defined keys
-              for (var _attr in jsonSchema[attr.name]) {
-                let _td = document.createElement('td');
-                _td.setAttribute('scope', 'row');
-                // in order to reference the values while iterating
-                // over each child row. creating multiple spans inside
-                // of a single td
-                for (var i = 0; i < row[attr.name].Row.length; i++) {
-                  let _span = document.createElement('span');
-                  _span.textContent = row[attr.name].Row[i][_attr];
-                  _td.appendChild(_span);
+            if (row[attr.name].Row) {
+              if (row[attr.name].Row.length > 0) {
+                // iterate over the schema-defined keys
+                for (var _attr in jsonSchema[attr.name]) {
+                  let _td = document.createElement('td');
+                  _td.setAttribute('scope', 'row');
+                  // in order to reference the values while iterating
+                  // over each child row. creating multiple spans inside
+                  // of a single td
+                  for (var i = 0; i < row[attr.name].Row.length; i++) {
+                    let _span = document.createElement('span');
+                    _span.textContent = row[attr.name].Row[i][_attr];
+                    _td.appendChild(_span);
+                  }
+                  _tr.appendChild(_td);
                 }
-                _tr.appendChild(_td);
+              } else {
+                for (var _attr in jsonSchema[attr.name]) {
+                  let _td = document.createElement('td');
+                  _td.setAttribute('scope', 'row');
+                  _td.textContent = '';
+                  _tr.appendChild(_td);
+                }
               }
             } else {
               for (var _attr in jsonSchema[attr.name]) {
                 let _td = document.createElement('td');
                 _td.setAttribute('scope', 'row');
-                _td.textContent = '';
+                _td.textContent = row[attr.name][_attr];
                 _tr.appendChild(_td);
               }
             }
@@ -1029,12 +1039,91 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $fileFeedback = $file.siblings('.invalid-feedback'),
         file = $('#dataset-file')[0].files[0],
         $datasetName = $('#dataset-name').val(),
+        $rowPath = $('#dataset-row-path').val(),
         data = getFormData($form),
+        keys = Object.keys(currentDatasetFile),
+        values = Object.values(currentDatasetFile),
+        subRecords = false,
         dataset = {
           name: $datasetName,
           workspaceId: $workspaceId,
           workspaceName: $workspaceName
         };
+
+    // console.log(currentDatasetFile, keys, values);
+    dataset.layout = '';
+    dataset.rowpath = $rowPath;
+
+    let generateRecord = (record, key, childRecs) => {
+      let keys = Object.keys(record),
+          name = (key) ? key.toUpperCase() + '_' : '',
+          layout = name + 'LAYOUT := RECORD\n';
+
+      if (_.isEqual(['_type', '_length', '_path'], keys)) {
+        layout += '\t' + record._type + record._length + ' ' + key;
+        if (file.name.substr(file.name.lastIndexOf('.') + 1) == 'json') {
+          layout += ((record._path != '') ? ' ' + record._path : '');
+        }
+        layout += ';\n';
+      } else {
+        if (keys.indexOf('isDataset') > -1) {
+          keys.splice(keys.indexOf('isDataset'), 1);
+        }
+        keys.forEach((_key) => {
+          let fieldKey = _key;
+          if (ECL_KEYWORDS.indexOf(_key) > -1) {
+            fieldKey = '_' + fieldKey;
+          }
+          if (record[_key]._type != undefined && record[_key]._length != null) {
+            layout += '\t' + record[_key]._type + record[_key]._length + ' ' + fieldKey;
+            if (file.name.substr(file.name.lastIndexOf('.') + 1) == 'json') {
+              layout += ((record[_key]._path != '') ? ' ' + record[_key]._path : '');
+            }
+            layout += ';\n';
+          } else {
+            if (childRecs.indexOf(_key) > -1) {
+              layout += '\tDATASET(' + _key.toUpperCase() + '_LAYOUT) ' + fieldKey;
+            } else {
+              layout += '\t' + _key.toUpperCase() + '_LAYOUT ' + fieldKey;
+            }
+            if (file.name.substr(file.name.lastIndexOf('.') + 1) == 'json') {
+              layout += ' {xpath(\'' + _key + '\')}';
+            }
+            layout += ';\n';
+          }
+        })
+      }
+      layout += 'END;\n\n';
+      return layout;
+    };
+
+    let parseRecords = (schema, keys) => {
+      let childRecs = [];
+      keys.forEach((key, idx) => {
+        let record = schema[key];
+        if (!_.isEqual(['_type', '_length', '_path'], Object.keys(record))) {
+          if (true === record.isDataset) {
+            childRecs.push(key);
+          }
+          dataset.layout += generateRecord(record, key, childRecs);
+        }
+      });
+      dataset.layout += generateRecord(schema, null, childRecs);
+    };
+
+    values.forEach((val) => {
+      if (!val._type) subRecords = true;
+      return;
+    })
+
+    if (subRecords) {
+      parseRecords(currentDatasetFile, keys);
+    } else {
+      dataset.layout = generateRecord(currentDatasetFile);
+    }
+
+    // console.log(currentDatasetFile, dataset.layout);
+    // return false;
 
     if (!$parentEl) $parentEl = $('.datasets ul').first();
 
@@ -1122,9 +1211,27 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       let dpWorkunitStatusResp = await checkWorkunitStatus(dpWuid);
       let dpWorkunitStatusJson = await dpWorkunitStatusResp.json();
 
-      while (dpWorkunitStatusJson.state != 'completed') {
+      while (['completed', 'failed'].indexOf(dpWorkunitStatusJson.state) < 0) {
         dpWorkunitStatusResp = await checkWorkunitStatus(dpWuid);
         dpWorkunitStatusJson = await dpWorkunitStatusResp.json();
+      }
+
+      if (dpWorkunitStatusJson.state == 'failed') {
+        alert('Workunit failed - ' + dpWuid);
+
+        await fetch('/datasets/', {
+          method: 'DELETE',
+          body: JSON.stringify({ datasetId: dataset.id }),
+          headers: {
+            'Content-Type': 'application/json',
+            'CSRF-Token': csrfToken
+          }
+        });
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+
+        return false;
       }
 
       let dpWuResultsResp = await getWorkunitResults(dpWuid);
@@ -1139,30 +1246,32 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       }
       // console.log(dpResults);
 
-      let _query = dataset.name + ":=RECORD\n",
-          _keys = Object.keys(currentDatasetFile),
-          _avgs = Object.values(currentDatasetFile),
-          _type = 'STRING';
+      let _query = dataset.layout;
 
-      $fileDetails.find('.form-group').each((idx, group) => {
-        let _type = "STRING" + _avgs[idx];
-        if (dpResults[idx].best_attribute_type) {
-          _type = dpResults[idx].best_attribute_type;
-        }
-        _query += "\t" + _type + " " + $(group).children('input:eq(0)').val() + ";\n";
+      dpResults.forEach((result, idx) => {
+        let attrName = result.attribute.substr(result.attribute.lastIndexOf('.') + 1),
+            search = result.given_attribute_type + ' ' + attrName,
+            replacement = result.best_attribute_type + ' ' + attrName;
+
+        _query = _query.replace(search, replacement);
       });
+
+      _query = _query.replace(/[^_]LAYOUT|^LAYOUT/, dataset.name);
 
       let dsType = '',
           fileExtension = dataset.filename.substr(dataset.filename.lastIndexOf('.') + 1).toLowerCase();
 
       switch (fileExtension) {
+        case 'json':
+          dsType = "JSON('" + ($rowPath ? $rowPath : "/") + "')";
+          break;
         case 'csv':
         default:
           dsType = "CSV(HEADING(1))";
           break;
       }
 
-      _query += "END;\nDS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
+      _query += "DS := DATASET('~#USERNAME#::" + $workspaceName + "::" +
         dataset.filename + "'," + dataset.name + "," + dsType + ");\nOUTPUT(DS,," +
         "'~#USERNAME#::" + $workspaceName + "::" + dataset.filename + "_thor'" +
         ",'thor',OVERWRITE);";
@@ -1177,11 +1286,27 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       let workunitStatusResp = await checkWorkunitStatus(_wuid);
       let workunitStatusJson = await workunitStatusResp.json();
 
-      while (workunitStatusJson.state != 'completed') {
+      while (['completed', 'failed'].indexOf(workunitStatusJson.state) < 0) {
         workunitStatusResp = await checkWorkunitStatus(_wuid);
         workunitStatusJson = await workunitStatusResp.json();
       }
 
+      if (workunitStatusJson.state == 'failed') {
+        alert('Workunit failed - ' + _wuid);
+
+        await fetch('/datasets/', {
+          method: 'DELETE',
+          body: JSON.stringify({ datasetId: dataset.id }),
+          headers: {
+            'Content-Type': 'application/json',
+            'CSRF-Token': csrfToken
+          }
+        });
+
+        $saveBtnStatus.addClass('d-none');
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+        return false;
+      }
       dataset.eclQuery = workunitStatusJson.query;
 
       if (workunitStatusJson.results[0].logicalFile) {
@@ -1389,64 +1514,18 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     });
   }
 
-  /* UPDATE DATASET INFO */
-  $('.datasets').on('click', '.dataset .status', function(evt) {
-    let $dataset = $(evt.target).parents('.dataset'),
-        dataset = { id: $dataset.data('id') },
-        $datasetStatus = $dataset.find('.status');
-
-    evt.stopPropagation();
-    $datasetStatus.addClass('fa-spin');
-    let t = window.setTimeout(function() {
-      checkWorkunitStatus($dataset.data('wuid'))
-      .then(response => response.json())
-      .then((json) => {
-        // console.log(json);
-        if (json.state == 'completed') {
-
-          $datasetStatus.removeClass('fa-spin');
-
-          dataset.eclQuery = json.query;
-
-          if (json.results[0].logicalFile) {
-            dataset.logicalfile = json.results[0].logicalFile;
-          }
-
-          if (json.results[0].schema) {
-            dataset.rowCount = json.results[0].rows;
-            dataset.columnCount = json.results[0].columns;
-            dataset.eclSchema = JSON.stringify(json.results[0].schema);
-          }
-
-          if (dataset.rowCount && dataset.columnCount) {
-            fetch('/datasets/', {
-              method: 'PUT',
-              body: JSON.stringify(dataset),
-              headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
-              }
-            }).then(() => {
-              $dataset.find('.rows').text('Rows: ' + dataset.rowCount);
-              $dataset.find('.cols').text('Columns: ' + dataset.columnCount);
-              $dataset.data('eclSchema', dataset.eclSchema);
-              $dataset.data('eclQuery', dataset.eclQuery);
-            });
-          }
-        }
-        window.clearTimeout(t);
-      });
-    }, 1000);
-  });
-
   let parseDataset = () => {
     let $file = $('#dataset-file'),
+        $rowPath = $('#dataset-row-path'),
+        $rowPathFormRow = $rowPath.parents('.form-group'),
+        $rowInvalidMsg = $rowPath.siblings('.invalid-feedback'),
         $saveBtn = $file.parents('.modal').find('.btn-primary'),
         $fileFeedback = $file.siblings('.invalid-feedback'),
         $fileDetails = $('.file-details'),
         file = $file[0].files[0],
         fileName = '',
         fileExtension = '',
+        rowPath = $rowPath.val().trim().replace('/', '').split('/'),
         parseResults = null;
 
     let appendRows = (labels, values) => {
@@ -1483,6 +1562,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     $file.removeClass('is-invalid');
     $fileFeedback.text(DEFAULT_FILE_FEEDBACK);
+
+    $rowInvalidMsg.text(DEFAULT_FILE_ROW_PATH_FEEDBACK);
+    $rowPath.removeClass('is-invalid');
+
     $fileDetails.html('');
 
     if (!file) {
@@ -1507,7 +1590,13 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     $('#dataset-name').val(fileName);
 
-    parseDatasetFile(file, Papa).then((parseResults) => {
+    if (fileExtension != 'csv') {
+      $rowPathFormRow.removeClass('d-none');
+    } else {
+      $rowPathFormRow.addClass('d-none');
+    }
+
+    parseDatasetFile(file, Papa, rowPath).then((parseResults) => {
       if (parseResults.success) {
         setCurrentDatasetFile(parseResults.schema);
         appendRows(Object.keys(parseResults.schema), parseResults.data);
@@ -1528,6 +1617,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     parseDataset();
   });
 
+  /* WHEN JSON DATASET ROW PATH CHANGES IN NEW DATASET FORM */
+  $('#dataset-row-path').on('keyup', _.debounce(async (evt) => {
+    parseDataset();
+  }, 500));
+
   /* RESET NEW DATASET FORM ON MODAL HIDE */
   $('#newDatasetModal').on('hide.bs.modal', function(evt) {
     $('#newDatasetModal form').removeClass('was-validated');
@@ -1540,6 +1634,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $('#nav-upload-tab').addClass('active show').siblings().removeClass('active show');
     $('#nav-upload').addClass('active show').siblings().removeClass('active show');
     $('#dataset-search').val('').removeClass('is-invalid');
+    $('#dataset-row-path + .invalid-feedback').text(DEFAULT_FILE_ROW_PATH_FEEDBACK);
+    $('#dataset-row-path').removeClass('is-invalid');
+    $('#dataset-row-path').parents('.form-group').addClass('d-none');
     $('#nav-import').find('.file-preview .table thead tr').html('')
       .end().find('.file-preview').addClass('d-none');
     $('#nav-import').find('.file-preview .table tbody').html('');
