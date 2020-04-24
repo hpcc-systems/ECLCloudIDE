@@ -3,11 +3,26 @@ const router = express.Router();
 
 const db = require('../models/index');
 
+const multer = require('multer');
+const _destPath = './landing_zone';
+const _storage = multer.diskStorage({
+  destination: function(req, file, callback) {
+    callback(null, _destPath);
+  },
+  filename: function(req, file, callback) {
+    callback(null, Date.now() + '_' + file.originalname);
+  }
+});
+const upload = multer({ storage: _storage });
+
 const fs = require('fs-extra');
+const path = require('path');
+const archiver = require('archiver');
 
 const { param, body, validationResult } = require('express-validator/check');
 
 const crypt = require('../utils/crypt');
+const unzip = require('../utils/unzip');
 const clusterWhitelist = require('../cluster-whitelist')[process.env.NODE_ENV];
 
 const User = db.User;
@@ -570,6 +585,107 @@ let getDropzoneInfo = async (workspaceId) => {
     });
   });
 }
+
+router.get('/export/zip/:workspaceId', async (req, res, next) => {
+  console.log('generate zip');
+
+  Workspace.findOne({
+    where: { id: req.params.workspaceId },
+    through: {
+      where: { role: WorkspaceUser.roles.OWNER }
+    }
+  }).then(workspace => {
+    // console.log(workspace);
+    let scriptDirPath = process.cwd() + '/workspaces/' + workspace.id + '/scripts/',
+        zipPath = process.cwd() + '/landing_zone/' + workspace.id + '.zip',
+        zipAttachName = workspace.name + '.zip',
+        zip = fs.createWriteStream(zipPath),
+        archive = archiver('zip', { zlib: { level: 9 } });
+
+    zip.on('close', () => {
+      // console.log('file complete');
+      let secondsUntilDelete = 15;
+
+      // delete the generated archive after secondsUntilDelete
+      let delFile = setTimeout(() => {
+        fs.remove(zipPath);
+        clearTimeout(delFile);
+      }, secondsUntilDelete * 1000);
+
+      return res.download(zipPath, zipAttachName);
+    });
+
+    archive.on('warning', function(err) {
+      if (err.code === 'ENOENT') {
+        console.log(err)
+      } else {
+        throw err;
+      }
+    });
+
+    archive.on('error', function(err) {
+      console.log(err);
+      throw err;
+    });
+
+    // console.log('pipe archive to zip');
+    archive.pipe(zip);
+
+    // console.log('add ' + scriptDirPath + ' to zip');
+    archive.glob('**/*', {
+      cwd: scriptDirPath,
+      ignore: ['.eclcc', '**/eclcc.log']
+    });
+    archive.finalize();
+
+  }).catch(err => {
+    return res.json({ success: false, message: 'A workspace could not be found' })
+  });
+});
+
+router.post('/import/zip/', [ upload.single('file') ], async (req, res, next) => {
+  console.log(req.file);
+  let fileName = req.file.filename,
+      filePath = req.file.path,
+      baseName = path.basename(filePath, path.extname(filePath)),
+      srcFilePath = path.join(process.cwd(), filePath),
+      destFilePath = path.join(process.cwd(), 'landing_zone', baseName);
+
+  let json = await unzip(srcFilePath, { dir: destFilePath });
+
+  Workspace.create({
+    name: req.body.workspaceName,
+    cluster: req.body.workspaceCluster,
+    clusterUser: (req.body.clusterUsername != '') ? req.body.clusterUsername : null,
+    clusterPwd: (req.body.clusterPassword != '') ? crypt.encrypt(req.body.clusterPassword) : null,
+    directoryTree: JSON.stringify({ datasets: {}, scripts: json.tree })
+  }).then(async workspace => {
+    Object.values(json.flat).filter(f => {
+      if (f.type == 'file') return f;
+    }).forEach(async script => {
+      script.workspaceId = workspace.id;
+      script.eclFilePath = script.parentPathNames;
+      let newScript = await Script.create(script);
+      await ScriptRevision.create({
+        scriptId: newScript.id,
+        content: fs.readFileSync(destFilePath + '/' + script.parentPathNames + '/' + script.name)
+      })
+    });
+
+    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id + '/scripts';
+    await fs.copy(destFilePath, workspaceDirPath);
+
+    WorkspaceUser.create({
+      role: WorkspaceUser.roles.OWNER,
+      workspaceId: workspace.id,
+      userId: req.session.user.id
+    }).then((workspaceUser) => {
+      fs.remove(srcFilePath);
+      fs.remove(destFilePath);
+      return res.json(workspace);
+    });
+  });
+});
 
 router.get('/dropzones/:id', async (req, res, next) => {
   let dropzones = await getDropzoneInfo(req.params.id);

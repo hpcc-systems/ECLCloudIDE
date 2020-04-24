@@ -166,6 +166,7 @@ let isVisualization = (name) => {
 require.config({
   paths: {
     '_': '/javascripts/lodash',
+    'downloadjs': 'https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min',
     'papaparse': '/javascripts/papaparse',
     '@hpcc-js/util': '/javascripts/hpcc-js/util/dist/index.min',
     '@hpcc-js/comms': '/javascripts/hpcc-js/comms/dist/index.min',
@@ -174,15 +175,25 @@ require.config({
     name: 'codemirror',
     location: '/javascripts/codemirror/',
     main: 'lib/codemirror'
-  }]
+  }],
+  onNodeCreated: function(node, config, module, path) {
+    var sri = {
+      downloadjs: 'sha256-k77iqKeo6Og1Lf5mawux2rTxjaV9zUtyOWKVX3VttKE='
+    };
+
+    if (sri[module]) {
+      node.setAttribute('integrity', sri[module]);
+      node.setAttribute('crossorigin', 'anonymous');
+    }
+  }
 });
 
 require([
-  'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min',
+  'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min', 'downloadjs',
   'codemirror/mode/ecl/ecl',
   'codemirror/addon/selection/active-line',
   'codemirror/addon/scroll/simplescrollbars'
-], function(CodeMirror, _, comms, Papa) {
+], function(CodeMirror, _, comms, Papa, downloadjs) {
   let editor = null,
       editor2 = null,
       $draggedObject = null,
@@ -581,8 +592,53 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
         toggleNewScriptPopover();
       });
-    } else if ($form.data('type') == 'import') {
+    } else if ($form.data('type') == 'import-url') {
       window.location = '/workspaces/share/' + $workspaceUrl.data('id');
+    } else if ($form.data('type') == 'import-zip') {
+      let formData = new FormData(),
+          _workspaceName = $('#zip-workspace-name').val(),
+          _cluster = $('#zip-workspace-cluster').val(),
+          _clusterUser = $('#zip-cluster-username').val(),
+          _clusterPass = $('#zip-cluster-password').val(),
+          file = $('#workspace-zip')[0].files[0];
+
+      formData.append('workspaceName', _workspaceName);
+      formData.append('workspaceCluster', _cluster);
+      formData.append('clusterUsername', _clusterUser);
+      formData.append('clusterPassword', _clusterPass);
+      formData.append('file', file);
+
+      fetch('/workspaces/import/zip', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'CSRF-Token': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then((workspace) => {
+        $modal.modal('hide');
+
+        $newWorkspace.removeClass('d-none cloner');
+        $newWorkspace.data('name', workspace.name);
+        $newWorkspace.data('cluster', workspace.cluster);
+        $newWorkspace.data('id', workspace.id);
+        $newWorkspace.data('directoryTree', workspace.directoryTree);
+        $newWorkspace.text($newWorkspace.data('name'));
+        $workspaces.append($newWorkspace);
+
+        $workspaceName.val('');
+
+        $form.removeClass('was-validated');
+        $tip.addClass('d-none');
+        $deleteWorkspace.removeClass('d-none');
+
+        $workspaces.find('.dropdown-item').filter((idx, el) => {
+          return $(el).text() === $newWorkspace.data('name')
+        }).trigger('click');
+
+        toggleNewScriptPopover();
+      });
     }
   });
 
@@ -615,8 +671,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   /* RESET NEW WORKSPACE FORM ON MODAL HIDE */
   $('#newWorkspaceModal').on('hide.bs.modal', function(evt) {
     $('#newWorkspaceModal form').removeClass('was-validated');
-    $('#newWorkspaceModal form')[0].reset();
-    $('#newWorkspaceModal form')[1].reset();
+    $('#newWorkspaceModal form').each((idx, form) => { form.reset(); });
     $('#cluster-password').data('changed', false);
     $('.workspace-summary').addClass('d-none');
     $('#nav-create-workspace-tab').addClass('active show').siblings().removeClass('active show');
@@ -673,8 +728,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $selected.text($this.text());
     $deleteWorkspace.removeClass('d-none');
     $selected.append(
-      '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
-      '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
+      '<i class="fa fa-file-archive-o zip float-right" title="Export Workspace..."></i>' +
+      '<i class="fa fa-pencil-square-o edit float-right" title="Edit Workspace..."></i>' +
+      '<i class="fa fa-share-alt share float-right ml-2" title="Share Workspace..."></i>'
     );
 
     $scriptPanelClose.trigger('click');
@@ -690,7 +746,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         let $script = $scripts.filter((idx, el) => {
           return $(el).data('id') == id;
         });
-        console.log($script.data());
+        // console.log($script.data());
         let $newTab = $mainTabList.find('.cloner').clone();
         $mainTabList.append($newTab);
         $newTab.find('span').text($script.data('name'));
@@ -876,8 +932,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           $workspace.text($workspace.data('name'));
           $selected.text($workspace.data('name'));
           $selected.append(
-            '<i class="fa fa-pencil-square-o edit float-right d-none" title="Edit Workspace..."></i>' +
-            '<i class="fa fa-share-alt share float-right d-none" title="Share Workspace..."></i>'
+            '<i class="fa fa-file-archive-o zip float-right" title="Export Workspace..."></i>' +
+            '<i class="fa fa-pencil-square-o edit float-right" title="Edit Workspace..."></i>' +
+            '<i class="fa fa-share-alt share float-right ml-2" title="Share Workspace..."></i>'
           );
           $workspace.data('cluster', json.data.cluster);
           $workspace.data('clusterUsername', json.data.clusterUser);
@@ -922,6 +979,26 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     } catch(err) {
       alert('This browser doesn\'t support programmatic copy/paste. Please select the url and copy manually.');
     }
+  });
+
+  /* EXPORT WORKSPACE AS ZIP */
+  $('#workspaceSelect').on('click', '.zip', function(evt) {
+    let $activeWorkspace = $('.workspaces .active'),
+        workspaceId = $activeWorkspace.data('id');
+
+    evt.stopPropagation();
+
+    fetch('/workspaces/export/zip/' + workspaceId)
+      .then(function(resp) {
+        // console.log(resp);
+        return resp.blob();
+      }).then(function(blob) {
+        downloadjs(blob, $activeWorkspace.data('name') + '.zip', 'application/zip');
+      })
+      .catch(err => {
+        alert('The current workspace couldn\'t be downloaded as an archive.')
+        // console.log(err);
+      });
   });
 
   /* SHOW DELETE WORKSPACE CONFIRMATION */
@@ -1794,7 +1871,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       }
     });
 
-    console.log(directoryTree);
+    // console.log(directoryTree);
 
     $('#scripts').find('.script').removeClass('active');
     $this.addClass('active');
