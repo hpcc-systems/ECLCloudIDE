@@ -95,8 +95,8 @@ router.get('/', [
 ], (req, res, next) => {
   let clusterAddr = req.clusterAddrAndPort;
   let _headers = {};
-  if (req.headers.authorization) {
-    _headers.authorization = req.headers.authorization;
+  if (req.headers.Authorization) {
+    _headers.Authorization = req.headers.Authorization;
   }
   console.log('workunit status', req.query);
   request({
@@ -182,7 +182,7 @@ router.post('/', [
 router.createWorkunit = (clusterAddr, authHeader) => {
   let _headers = {};
   if (authHeader !== '') {
-    _headers.authorization = authHeader;
+    _headers.Authorization = authHeader;
   }
   return request({
     method: 'POST',
@@ -258,7 +258,7 @@ router.put('/', [
 
       router.updateWorkunit(
         req.clusterAddrAndPort, req.body.wuid, _query, _filename,
-        (req.headers.authorization || '')
+        (req.headers.Authorization || '')
       ).then((response) => {
         console.log('response to WUUpdate', response.body);
         let json = JSON.parse(response.body);
@@ -277,7 +277,7 @@ router.put('/', [
 
     router.updateWorkunit(
       req.clusterAddrAndPort, req.body.wuid, _query,
-      _filename, (req.headers.authorization || '')
+      _filename, (req.headers.Authorization || '')
     ).then((response) => {
       console.log('response to WUUpdate', response.body);
       let json = JSON.parse(response.body);
@@ -293,7 +293,7 @@ router.put('/', [
 router.updateWorkunit = (clusterAddr, wuid, query, filename="", authHeader="") => {
   let _headers = {};
   if (authHeader !== '') {
-    _headers.authorization = authHeader;
+    _headers.Authorization = authHeader;
   }
   return request({
     method: 'POST',
@@ -311,7 +311,7 @@ router.post('/submit', [
   router.submitWorkunit(
     req.clusterAddrAndPort,
     req.body.wuid,
-    (req.headers.authorization || ''),
+    (req.headers.Authorization || ''),
     req.body.cluster
   ).then((response) => {
     console.log('response to WUSubmit', response.body);
@@ -326,7 +326,7 @@ router.post('/submit', [
 router.submitWorkunit = (clusterAddr, wuid, authHeader="", cluster) => {
   let _headers = {};
   if (authHeader !== '') {
-    _headers.authorization = authHeader;
+    _headers.Authorization = authHeader;
   }
   return request({
     method: 'POST',
@@ -343,8 +343,8 @@ router.post('/results', [
   buildClusterAddr,
 ], (req, res, next) => {
   let _headers = {};
-  if (req.headers.authorization) {
-    _headers.authorization = req.headers.authorization;
+  if (req.headers.Authorization) {
+    _headers.Authorization = req.headers.Authorization;
   }
   console.log('requesting /WsWorkunits/WUResult.json');
   let formData = {
