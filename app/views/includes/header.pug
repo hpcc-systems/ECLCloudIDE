@@ -81,9 +81,13 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
               role="tab", aria-controls="create-workspace", aria-selected="true"
             ) Create
             a.nav-item.nav-link(
-              id="nav-import-workspace-tab", data-toggle="tab", href="#import-workspace",
-              role="tab", aria-controls="import-workspace", aria-selected="true"
-            ) Import
+              id="nav-import-workspace-url-tab", data-toggle="tab", href="#import-workspace-url",
+              role="tab", aria-controls="import-workspace-url", aria-selected="true"
+            ) Import Url
+            a.nav-item.nav-link(
+              id="nav-import-workspace-zip-tab", data-toggle="tab", href="#import-workspace-zip",
+              role="tab", aria-controls="import-workspace-zip", aria-selected="true"
+            ) Import Zip
         div.tab-content(id="nav-new-workspace-tabContent")
           div.tab-pane.fade.active.show(id="create-workspace", role="tabpanel", aria-labelledby="nav-create-workspace-tab")
             form(data-type="create")
@@ -114,10 +118,10 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
                   data-changed="false"
                 )
                 i.fa.fa-lg.fa-eye-slash.text-secondary.toggle-password(title="Show Password")
-          div.tab-pane.fade(id="import-workspace", role="tabpanel", aria-labelledby="nav-import-workspace-tab")
-            form(data-type="import")
+          div.tab-pane.fade(id="import-workspace-url", role="tabpanel", aria-labelledby="nav-import-workspace-url-tab")
+            form(data-type="import-url")
               div.form-group
-                label.col-form-label(for="workspace-url") Url:
+                label.col-form-label(for="workspace-url") Import a workspace url shared by another ECL IDE user
                 input.form-control(
                   id="workspace-url", name="workspaceName", type="text",
                   required="required", placeholder="Paste share workspace url..."
@@ -134,6 +138,41 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
                   span.workspace-created
                     label.p-0.m-0.mr-1.font-weight-bold Created:
                     span 2020-01-01 12:00
+          div.tab-pane.fade(id="import-workspace-zip", role="tabpanel", aria-labelledby="nav-import-workspace-zip-tab")
+            form(data-type="import-zip")
+              div.form-group
+                label.col-form-label(for="workspace-name") Name:
+                input.form-control(
+                  id="zip-workspace-name", name="workspaceName", type="text",
+                  required="required", placeholder="MyWorkspace...", pattern="[a-zA-Z]{1}[a-zA-Z0-9_]*"
+                )
+                .invalid-feedback Please provide a valid name for the workspace.
+              div.form-group
+                label.col-form-label(for="workspace-cluster") Cluster:
+                select.custom-select(id="zip-workspace-cluster", name="workspaceCluster", required="required")
+                  option(value="") Select...
+                  if clusterList
+                    each cluster in clusterList
+                      option(value=cluster) #{cluster}
+                .invalid-feedback Please select a cluster.
+              div.form-group
+                label.col-form-label(for="cluster-username") Cluster Username:
+                input.form-control(
+                  id="zip-cluster-username", name="clusterUsername", type="text"
+                )
+              div.form-group.position-relative
+                label.col-form-label(for="cluster-password") Cluster Password:
+                input.form-control(
+                  id="zip-cluster-password", name="clusterPassword", type="password",
+                  data-changed="false"
+                )
+                i.fa.fa-lg.fa-eye-slash.text-secondary.toggle-password(title="Show Password")
+              div.form-group
+                label.col-form-label(for="workspace-zip") Upload a zip archive containing ECL scripts to import to as a new workspace
+                input.form-control(
+                  id="workspace-zip", name="workspaceName", type="file", accept=".zip,.gz"
+                )
+                .invalid-feedback Please provide a valid name for the workspace.
 
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
