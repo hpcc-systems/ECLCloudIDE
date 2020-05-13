@@ -184,7 +184,7 @@ let populateScripts = async () => {
               $script.data('revisionId', _script.revisionId);
               $script.data('content', _script.content);
               $script.data('cluster', _script.cluster);
-              $script.data('parentPathNames', _script.parentPathNames);
+              $script.data('parentPathNames', _script.path);
               $script.data('wuid', _script.workunitId);
             }
           });

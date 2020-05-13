@@ -36,3 +36,6 @@ mysql-data/
 
 #datasets uploaded to cluster
 landing_zone/
+
+#zip containing default workspace scripts
+ecl-samples.zip

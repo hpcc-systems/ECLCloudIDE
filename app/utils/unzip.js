@@ -154,7 +154,8 @@ class Extractor {
     let fileJson = {
       id: uuidv4(),
       children: {},
-      name: path.basename(entry.fileName),
+      name: path.basename(entry.fileName, path.extname(entry.fileName)),
+      fileName: entry.fileName,
       parentPathNames: path.dirname(entry.fileName),
       type: (isDir) ? 'folder' : 'file'
     };

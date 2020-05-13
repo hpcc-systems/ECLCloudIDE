@@ -1,4 +1,6 @@
 const express = require('express');
+const router = express.Router();
+
 const passport = require('passport');
 
 const validator = require('express-validator');
@@ -14,8 +16,7 @@ const db = require('../models/index');
 const User = db.User;
 const PasswordReset = db.PasswordReset;
 
-const router = express.Router();
-
+const workspacesRouter = require('./workspaces');
 
 async function getAwsCredentials() {
   let role = process.env.AWS_IAM_ROLE ? process.env.AWS_IAM_ROLE : '';
@@ -395,7 +396,7 @@ router.get('/email/verify/:iv/:hash', (req, res, next) => {
       where: {
         emailAddress: email
       }
-    }).then((user) => {
+    }).then(async user => {
       let userParams = user.dataValues;
       userParams.emailVerified = true;
       User.update(userParams, {
@@ -404,6 +405,8 @@ router.get('/email/verify/:iv/:hash', (req, res, next) => {
 
       req.session.user = userParams;
       req.flash('info', 'Email address verified');
+
+      await workspacesRouter.createSamplesWorkspace(user.id);
 
       return req.session.save(() => { res.redirect('/'); });
     });
