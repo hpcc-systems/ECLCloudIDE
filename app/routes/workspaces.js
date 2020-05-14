@@ -644,7 +644,7 @@ router.get('/export/zip/:workspaceId', async (req, res, next) => {
 });
 
 router.post('/import/zip/', [ upload.single('file') ], async (req, res, next) => {
-  console.log(req.file);
+  // console.log(req.file);
   let fileName = req.file.filename,
       filePath = req.file.path,
       baseName = path.basename(filePath, path.extname(filePath)),
@@ -668,7 +668,7 @@ router.post('/import/zip/', [ upload.single('file') ], async (req, res, next) =>
       let newScript = await Script.create(script);
       await ScriptRevision.create({
         scriptId: newScript.id,
-        content: fs.readFileSync(destFilePath + '/' + script.parentPathNames + '/' + script.name)
+        content: fs.readFileSync(destFilePath + '/' + script.fileName)
       })
     });
 
@@ -686,6 +686,46 @@ router.post('/import/zip/', [ upload.single('file') ], async (req, res, next) =>
     });
   });
 });
+
+router.createSamplesWorkspace = async (userId) => {
+  // console.log(req.file);
+  let srcFilePath = path.join(process.cwd(), 'ecl-samples.zip'),
+      baseName = path.basename(srcFilePath, path.extname(srcFilePath)),
+      destFilePath = path.join(process.cwd(), 'workspaces', baseName);
+
+  let json = await unzip(srcFilePath, { dir: destFilePath });
+
+  Workspace.create({
+    name: 'ECL_Samples',
+    cluster: 'http://play.hpccsystems.com:8010',
+    clusterUser: null,
+    clusterPwd: null,
+    directoryTree: JSON.stringify({ datasets: {}, scripts: json.tree })
+  }).then(async workspace => {
+    Object.values(json.flat).filter(f => {
+      if (f.type == 'file') return f;
+    }).forEach(async script => {
+      script.workspaceId = workspace.id;
+      script.eclFilePath = script.parentPathNames;
+      let newScript = await Script.create(script);
+      await ScriptRevision.create({
+        scriptId: newScript.id,
+        content: fs.readFileSync(destFilePath + '/' + script.parentPathNames + '/' + script.fileName)
+      });
+    });
+
+    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id + '/scripts';
+    await fs.copy(destFilePath, workspaceDirPath);
+
+    WorkspaceUser.create({
+      role: WorkspaceUser.roles.OWNER,
+      workspaceId: workspace.id,
+      userId: userId
+    }).then(() => {
+      fs.remove(destFilePath);
+    })
+  });
+};
 
 router.get('/dropzones/:id', async (req, res, next) => {
   let dropzones = await getDropzoneInfo(req.params.id);

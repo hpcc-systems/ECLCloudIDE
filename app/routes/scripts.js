@@ -50,7 +50,7 @@ let eclccCmd = (args, cwd) => {
 
 router.get('/', (req, res, next) => {
   const query = `SELECT s.id, s.name, sr.id AS revisionId, sr.content, \
-    s.cluster, sr.createdAt, sr.updatedAt, w.workunitId \
+    s.cluster, s.eclFilePath AS path, sr.createdAt, sr.updatedAt, w.workunitId \
     FROM Scripts AS s \
     LEFT JOIN ( \
       SELECT sr1.* FROM ScriptRevisions sr1 \
