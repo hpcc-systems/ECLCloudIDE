@@ -91,11 +91,23 @@ router.post('/', [
       }).then((dataset) => {
         let profileFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' +
               dataset.id + '/',
+            fileExtension = req.body.filename.substr(req.body.filename.lastIndexOf('.') + 1).toLowerCase(),
             _filePath = "~" + req.session.user.username + "::" + req.body.workspaceName + "::" + dataset.filename,
-            _dpEcl = "IMPORT STD.DataPatterns;\nfilePath := '" + _filePath +
-              "';\nds := DATASET(filePath, RECORDOF(filePath, LOOKUP), csv);\n" +
-              "profileResults := DataPatterns.Profile(ds,,,,'best_ecl_types',5);\n" +
-              "OUTPUT(profileResults, ALL, NAMED('profileResults'));";
+            dsType = '';
+
+        switch(fileExtension) {
+          case 'json':
+            dsType = "JSON('" + (req.body.rowpath ? req.body.rowpath : "/") + "')";
+            break;
+          case 'csv':
+          default:
+            dsType = "CSV";
+            break;
+        }
+        let _dpEcl = "IMPORT STD.DataPatterns;\nfilePath := '" + _filePath +
+          "';\n" + req.body.layout + ";\nds := DATASET(filePath, Layout, " + dsType +");\n" +
+          "profileResults := DataPatterns.Profile(ds,,,,'best_ecl_types',5);\n" +
+          "OUTPUT(profileResults, ALL, NAMED('profileResults'));";
 
         if (!fs.existsSync(profileFilePath)) {
           fs.mkdirpSync(profileFilePath);

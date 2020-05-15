@@ -172,6 +172,40 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                   required="required", accept=".csv,.txt"
                 )
                 .invalid-feedback Please select a CSV file to upload.
+              div.form-group.mt-3.mb-0.d-none
+                span
+                  label(
+                    for="dataset-row-path", data-toggle="popover", data-placement="right",
+                    data-trigger="hover", title="Row Path", data-html="true",
+                    data-content=`<p>Indicate the path within the JSON file which contains the rows you wish to import.
+                    Often, a JSON file is simply an array of objects - and the default value
+                    of the root path "<b>/</b>" would suffice to import those objects.</p>
+                    <p>However, given the following JSON:
+                    <br />
+                    <pre style="overflow: none;">
+{
+  "type": "FeatureCollection",
+  <b style="color: #007bff;">"features"</b>: [
+    {
+      "type": "Feature",
+      "geometry": { ... },
+      "properties": { ...},
+    }, ...
+  ],
+  "dateCreated": ...,
+  ...
+}</pre>
+                    you might enter "<b>/features</b>" to import the array of "features"
+                    </p>`
+                  ) Row Path
+                    i.fa.fa-question-circle.ml-1.text-secondary
+                input.form-control(
+                  id="dataset-row-path", name="datasetRowPath", type="text",
+                  value="/", pattern="(\/(.*))*"
+                )
+                .invalid-feedback
+                  | Specify either the root of the JSON as "/", or some property
+                  | below the root as "/some-property...", the first character should always be /
               div.form-group
                 label.col-form-label(for="dataset-dropzone") Dropzone:
                 select.custom-select(id="dataset-dropzone", name="dropzone", required="required")
