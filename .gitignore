@@ -16,6 +16,7 @@ node_modules/
 
 # deploy dir
 deploy/
+/**/public/test/
 
 # Sequelize config file
 config.json
