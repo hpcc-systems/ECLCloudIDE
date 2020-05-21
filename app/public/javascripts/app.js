@@ -3144,6 +3144,17 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     }
   };
 
+  let updateCodemirrorAnnotations = (errors, _editor) => {
+    errors.forEach((err) => {
+      // console.log(err);
+      let marker = document.createElement('div');
+      let lineNum = (0 >= (err.LineNo - 1)) ? 1 : err.LineNo - 1;
+      marker.style.color = '#dc3545';
+      marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
+      _editor.getDoc().setGutterMarker(lineNum, 'cm-errors', marker);
+    });
+  };
+
   $scriptControls.on('click', '.run-script', function(evt) {
     let $script = $('.scripts .active'),
         editors = [ editor, editor2 ],
@@ -3195,19 +3206,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         changeRunButtonState($runButton, 'failed');
 
         let _annotateTimeout = window.setTimeout(function() {
-          updateCodemirrorAnnotations(json.errors);
+          updateCodemirrorAnnotations(json.errors, activeEditor);
           window.clearTimeout(_annotateTimeout);
         }, 500);
 
-        let updateCodemirrorAnnotations = (errors) => {
-          errors.forEach((err) => {
-            // console.log(err);
-            let marker = document.createElement('div');
-            marker.style.color = '#dc3545';
-            marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-            activeEditor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
-          });
-        };
         return false;
       }
 
@@ -3270,19 +3272,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                   changeRunButtonState($runButton, 'failed');
 
                   let _annotateTimeout = window.setTimeout(function() {
-                    updateCodemirrorAnnotations(json.errors);
+                    updateCodemirrorAnnotations(json.errors, activeEditor);
                     window.clearTimeout(_annotateTimeout);
                   }, 500);
-
-                  let updateCodemirrorAnnotations = (errors) => {
-                    errors.forEach((err) => {
-                      // console.log(err);
-                      let marker = document.createElement('div');
-                      marker.style.color = '#dc3545';
-                      marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-                      activeEditor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
-                    });
-                  };
                 } else {
                   let _status = json.state;
                   _status = (_status == 'unknown') ? 'running' : _status;
@@ -3406,19 +3398,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         activeEditor.getDoc().clearGutter('cm-errors');
       } else {
         let _annotateTimeout = window.setTimeout(function() {
-          updateCodemirrorAnnotations(json.errors);
+          updateCodemirrorAnnotations(json.errors, activeEditor);
           window.clearTimeout(_annotateTimeout);
         }, 500);
-
-        let updateCodemirrorAnnotations = (errors) => {
-          errors.forEach((err) => {
-            // console.log(err);
-            let marker = document.createElement('div');
-            marker.style.color = '#dc3545';
-            marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-            editor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
-          });
-        };
       }
     });
   });
@@ -3465,19 +3447,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         let _annotateTimeout = window.setTimeout(function() {
           $button.removeClass('badge-secondary').addClass('badge-danger');
           $icon.removeClass('fa-spin fa-spinner').addClass('fa-close');
-          updateCodemirrorAnnotations(json.errors);
+          updateCodemirrorAnnotations(json.errors, activeEditor);
           window.clearTimeout(_annotateTimeout);
         }, 500);
-
-        let updateCodemirrorAnnotations = (errors) => {
-          errors.forEach((err) => {
-            // console.log(err);
-            let marker = document.createElement('div');
-            marker.style.color = '#dc3545';
-            marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
-            activeEditor.getDoc().setGutterMarker(err.LineNo - 1, 'cm-errors', marker);
-          });
-        };
       }
     });
   });
