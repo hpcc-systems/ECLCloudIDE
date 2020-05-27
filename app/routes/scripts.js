@@ -256,14 +256,14 @@ router.post('/compile', [
         // errors.pop();
         errors.forEach((error) => {
           console.log(error);
-          if (error.match(new RegExp(/.*\):\s+error\s+[A-Z0-9]+\s*:\s+(.*)/))) {
+          if (error.match(new RegExp(/.*\):\s+(error|warning)\s+[A-Z0-9]+\s*:\s+(.*)/))) {
             parsedErrors.push({
               'Source': 'eclcc',
               'Severity': 'Error',
               'FileName': error.match(new RegExp(/(.*)\(/))[1],
               'LineNo': error.match(new RegExp(/.*\(([0-9]+)/))[1],
               'Column': error.match(new RegExp(/.*\([0-9]+,([0-9]+)/))[1],
-              'Message': error.match(new RegExp(/.*\):\s+error\s+[A-Z0-9]+\s*:\s+(.*)/))[1]
+              'Message': error.match(new RegExp(/.*\):\s+(error|warning)\s+[A-Z0-9]+\s*:\s+(.*)/))[2]
             });
           }
         });
