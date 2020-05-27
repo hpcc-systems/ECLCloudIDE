@@ -193,7 +193,9 @@ require([
   'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min', 'downloadjs',
   'codemirror/mode/ecl/ecl',
   'codemirror/addon/selection/active-line',
-  'codemirror/addon/scroll/simplescrollbars'
+  'codemirror/addon/scroll/simplescrollbars',
+  'codemirror/addon/comment/comment',
+  'codemirror/keymap/sublime'
 ], function(CodeMirror, _, comms, Papa, downloadjs) {
   let editor = null,
       editor2 = null,
@@ -477,8 +479,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     editor = CodeMirror($('#editor')[0], {
       mode: "ecl",
       lineNumbers: true,
-      extraKeys: {"Ctrl-Space": "autocomplete"},
-      // keyMap: "sublime",
+      // extraKeys: {"Ctrl-Space": "autocomplete"},
+      keyMap: "sublime",
       autoCloseBrackets: true,
       matchBrackets: true,
       showCursorWhenSelecting: true,
@@ -495,8 +497,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     editor2 = CodeMirror($('#editor2')[0], {
       mode: "ecl",
       lineNumbers: true,
-      extraKeys: {"Ctrl-Space": "autocomplete"},
-      // keyMap: "sublime",
+      // extraKeys: {"Ctrl-Space": "autocomplete"},
+      keyMap: "sublime",
       autoCloseBrackets: true,
       matchBrackets: true,
       showCursorWhenSelecting: true,
