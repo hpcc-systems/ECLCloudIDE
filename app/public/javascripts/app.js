@@ -2196,16 +2196,17 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
   /* CREATE NEW SCRIPT */
   $('#newScriptModal').on('click', '.btn-primary', function(evt) {
-    let $this = $(this),
+    let $saveBtn = $(this),
         $modal = $('#newScriptModal'),
         $scripts = $('.scripts'),
         $activeWorkspace = $('.workspaces .active'),
         workspaceId = $activeWorkspace.data('id'),
-        parentPath = $this.data('parentPath') || [],
-        parentPathNames = $this.data('parentPathNames') || [],
+        parentPath = $saveBtn.data('parentPath') || [],
+        parentPathNames = $saveBtn.data('parentPathNames') || [],
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
-        $parentEl = $this.data('parentToReceiveChild') || $('.scripts').children('ul').first(),
+        $parentEl = $saveBtn.data('parentToReceiveChild') || $('.scripts').children('ul').first(),
         $newScript = null,
+        $scriptName = $('#new-script-name'),
         $form = $modal.find('form'),
         data = getFormData($form);
 
@@ -2219,7 +2220,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     // console.log(data);
     data.workspaceId = workspaceId;
     data.parentPathNames = parentPathNames.join('/');
-    $this.data('parentPathNames', data.parentPathNames);
+    $saveBtn.data('parentPathNames', data.parentPathNames);
     // console.log(JSON.stringify(data));
 
     fetch('/scripts/', {
@@ -2232,6 +2233,15 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     })
     .then(response => response.json())
     .then((script) => {
+
+      if (script.success === false) {
+        $scriptName.siblings('.invalid-feedback').text(script.message);
+        $scriptName.addClass('is-invalid');
+
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+        $saveBtn.data('parentPathNames', $saveBtn.data('parentPathNames').split('/'));
+        return false;
+      }
 
       // console.log(script, parentPath, directoryTree);
 
@@ -2314,6 +2324,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   /* RESET NEW SCRIPT FORM ON MODAL HIDE */
   $('#newScriptModal').on('hide.bs.modal', function(evt) {
     $('#newScriptModal form').removeClass('was-validated');
+    $('#new-script-name').removeClass('is-invalid');
+    $('#new-script-name').siblings('.invalid-feedback').text('Please provide a valid name for the script.');
+    $('#newScriptModal .btn-primary').data({ parentPath: null, parentPathNames: null, parentToReceiveChild: null });
     $('#newScriptModal form')[0].reset();
   });
 
@@ -2351,9 +2364,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
   /* EDIT SCRIPT */
   $('#editScriptModal').on('click', '.btn-primary', function(evt) {
-    let $this = $(this),
+    let $saveBtn = $(this),
         $modal = $('#editScriptModal'),
-        $script = $this.data('elementToUpdate'),
+        $scriptName = $('#edit-script-name'),
+        $script = $saveBtn.data('elementToUpdate'),
         $folder = $script.parents('li'),
         $activeWorkspace = $('.workspaces .active'),
         workspaceId = $activeWorkspace.data('id'),
@@ -2362,7 +2376,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $scriptTabs = $('.script-controls-row-one').find('li:not(.cloner)'),
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $form = $modal.find('form'),
-        scriptName = $form.find('#edit-script-name').val(),
+        scriptName = $scriptName.val(),
         data = getFormData($form);
 
     if ($form[0].checkValidity() === false) {
@@ -2402,6 +2416,14 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     })
     .then(response => response.json())
     .then((script) => {
+
+      if (script.success === false) {
+        $scriptName.siblings('.invalid-feedback').text(script.message);
+        $scriptName.addClass('is-invalid');
+
+        $saveBtn.removeAttr('disabled').removeClass('disabled');
+        return false;
+      }
 
       let rootId = null,
           nextId = null,
@@ -2463,6 +2485,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   /* RESET EDIT SCRIPT FORM ON MODAL HIDE */
   $('#editScriptModal').on('hide.bs.modal', function(evt) {
     $('#editScriptModal form').removeClass('was-validated');
+    $('#edit-script-name').removeClass('is-invalid');
+    $('#edit-script-name').siblings('.invalid-feedback').text('Please provide a valid name for the script.');
+    $('#editScriptModal .btn-primary').data({ parentPath: null, parentPathNames: null, parentToReceiveChild: null });
     $('#editScriptModal form')[0].reset();
   });
 

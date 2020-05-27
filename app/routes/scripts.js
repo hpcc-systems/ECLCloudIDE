@@ -109,9 +109,22 @@ router.post('/', [
       model: User,
       through: { userId: req.session.user.id }
     }]
-  }).then((workspace) => {
+  }).then(async workspace => {
     if (workspace.Users[0].dataValues.id !== req.session.user.id) {
       return res.status(403).send('Forbidden');
+    }
+
+    let _script = null;
+    _script = await Script.findOne({
+      where: {
+        name: req.body.scriptName,
+        workspaceId: req.body.workspaceId,
+        eclFilePath: req.body.parentPathNames
+      }
+    });
+    // console.log(_script);
+    if (_script != null) {
+      return res.json({ success: false, message: 'A script with this name already exists' })
     }
 
     Script.create({
@@ -301,9 +314,22 @@ router.put('/', [
         model: User,
         through: { userId: req.session.user.id }
       }]
-    }).then(workspace => {
+    }).then(async workspace => {
       if (workspace.Users[0].dataValues.id !== req.session.user.id) {
         return res.status(403).send('Forbidden');
+      }
+
+      let __script = null;
+      __script = await Script.findOne({
+        where: {
+          name: req.body.name,
+          workspaceId: req.body.workspaceId,
+          eclFilePath: req.body.path
+        }
+      });
+      // console.log(__script);
+      if (__script != null) {
+        return res.json({ success: false, message: 'A script with this name already exists' })
       }
 
       let script = {},
