@@ -348,14 +348,19 @@ router.post('/results', [
   }
   console.log('requesting /WsWorkunits/WUResult.json');
   let formData = {
-    Count: req.body.count,
-    Sequence: req.body.sequence
+    Count: req.body.count
   };
+  if (req.body.sequence) {
+    formData.Sequence = req.body.sequence;
+  }
   if (req.body.wuid) {
     formData.Wuid = req.body.wuid;
   }
   if (req.body.logicalfile) {
     formData.LogicalName = req.body.logicalfile;
+  }
+  if (req.body.resultname) {
+    formData.ResultName = req.body.resultname;
   }
   request({
     method: 'POST',

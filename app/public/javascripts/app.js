@@ -164,10 +164,15 @@ let isVisualization = (name) => {
   return name.indexOf('__hpcc_visualization') > -1;
 }
 
+let isDashboard = (name) => {
+  return name.indexOf('_dashboard') > -1;
+}
+
 require.config({
   paths: {
     '_': '/javascripts/lodash',
     'downloadjs': 'https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min',
+    'g2plot': 'https://cdn.jsdelivr.net/npm/@antv/g2plot@1.1.3/dist/g2plot',
     'papaparse': '/javascripts/papaparse',
     '@hpcc-js/util': '/javascripts/hpcc-js/util/dist/index.min',
     '@hpcc-js/comms': '/javascripts/hpcc-js/comms/dist/index.min',
@@ -179,7 +184,8 @@ require.config({
   }],
   onNodeCreated: function(node, config, module, path) {
     var sri = {
-      downloadjs: 'sha256-k77iqKeo6Og1Lf5mawux2rTxjaV9zUtyOWKVX3VttKE='
+      downloadjs: 'sha256-k77iqKeo6Og1Lf5mawux2rTxjaV9zUtyOWKVX3VttKE=',
+      g2plot: 'sha256-/7CaTud+CGiLqmiMviUAJRJHVKeVyFyxEAjaM9IwwdA='
     };
 
     if (sri[module]) {
@@ -190,13 +196,13 @@ require.config({
 });
 
 require([
-  'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min', 'downloadjs',
-  'codemirror/mode/ecl/ecl',
+  'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min',
+  'downloadjs', 'g2plot', 'codemirror/mode/ecl/ecl',
   'codemirror/addon/selection/active-line',
   'codemirror/addon/scroll/simplescrollbars',
   'codemirror/addon/comment/comment',
   'codemirror/keymap/sublime'
-], function(CodeMirror, _, comms, Papa, downloadjs) {
+], function(CodeMirror, _, comms, Papa, downloadjs, g2plot) {
   let editor = null,
       editor2 = null,
       $draggedObject = null,
@@ -330,7 +336,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       }
     }
 
-    getWorkunitResults(wuid, 1000, sequence)
+    getWorkunitResults({ wuid: wuid, count: 1000, sequence: sequence })
     .then(response => response.json())
     .then((wuResult) => {
       if (!wuResult.WUResultResponse) {
@@ -1313,7 +1319,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         return false;
       }
 
-      let dpWuResultsResp = await getWorkunitResults(dpWuid);
+      let dpWuResultsResp = await getWorkunitResults({ wuid: dpWuid });
       let dpWuResultsJson = await dpWuResultsResp.json();
 
       if (!dpWuResultsJson.WUResultResponse) {
@@ -1538,7 +1544,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           })
       },
       onSelect: function(evt, term, item) {
-        getWorkunitResults('', 5, 0, term)
+        getWorkunitResults({ wuid: '', count: 5, sequence: 0, logicalfile: term })
           .then(response => response.json())
           .then((wuResult) => {
             let results = wuResult.WUResultResponse.Result.Row,
@@ -3286,10 +3292,15 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                       if ($outputsList.find('.visualization').length > 0) return;
                       classList.push('visualization');
                       outputLabel = 'Visualizations';
+                    } else if (isDashboard(result.name)) {
+                      if ($outputsList.find('.dashboard').length > 0) return;
+                      classList.push('dashboard');
+                      outputLabel = 'Dashboard';
                     }
 
                     let $output = $('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
                     $output.data('sequence', idx);
+                    $output.data('resultname', result.name);
                     $outputsList.append($output);
                   });
                   $outputsList.children().eq(0).trigger('click');
@@ -3365,10 +3376,15 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                 if ($outputsList.find('.visualization').length > 0) return;
                 classList.push('visualization');
                 outputLabel = 'Visualizations';
+              } else if (isDashboard(result.name)) {
+                if ($outputsList.find('.dashboard').length > 0) return;
+                classList.push('dashboard');
+                outputLabel = 'Dashboard';
               }
 
               let $output = $('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
               $output.data('sequence', idx);
+              $output.data('resultname', result.name);
               $outputsList.append($output);
             });
             $outputsList.children().eq(0).trigger('click');
@@ -3579,6 +3595,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     let $output = $(this),
         $script = $('.scripts .active'),
         $datasetContent = $('.dataset-content'),
+        $dashboardWrapper = $('.dashboard-wrapper'),
         $tableWrapper = $datasetContent.find('.table-wrapper');
 
     $output.addClass('badge-primary').removeClass('badge-secondary')
@@ -3596,7 +3613,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           $tableWrapper.css({ height: '770px' });
         }
       });
-    } else if ( $output.hasClass('visualization')) {
+      $dashboardWrapper.addClass('d-none');
+      $('body').css({ overflow: 'hidden' });
+    } else if ($output.hasClass('visualization')) {
       let visualizationUrl = ((cluster.host.indexOf('http') < 0) ? 'http://' : '') +
         cluster.host + ':' + cluster.port + '/WsWorkunits/res/' + $script.data('wuid') +
         '/res/index.html';
@@ -3604,9 +3623,113 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $tableWrapper.css({ height: '770px' });
 
       $datasetContent.removeClass('d-none');
+      $dashboardWrapper.addClass('d-none');
+      $('body').css({ overflow: 'hidden' });
+    } else if ($output.hasClass('dashboard')) {
+      getWorkunitResults({ wuid: $script.data('wuid'), resultname: $output.data('resultname') })
+        .then(response => response.json())
+        .then(async wuResult => {
+          if (!wuResult.WUResultResponse) {
+            throw 'No Workunit Response available for ' + wuid;
+          }
+
+          let results = wuResult.WUResultResponse.Result[$output.data('resultname')].Row,
+              $datasetContent = $('.dataset-content');
+
+          $dashboardWrapper.html('');
+          $datasetContent.addClass('d-none');
+          $dashboardWrapper.removeClass('d-none');
+
+          for (var result of results) {
+            console.log(result);
+            let plot = null,
+                resp = await getWorkunitResults({ wuid: $script.data('wuid'), resultname: result.data_source }),
+                _result = await resp.json(),
+                div = $('<div id="viz_' + result.data_source + '_' + result.chart_type.toLowerCase() + '"></div>');
+
+            _result = _result.WUResultResponse.Result[result.data_source].Row;
+            console.log(_result, JSON.parse(result.options));
+
+            $dashboardWrapper.append(div);
+            let chartOpts = { ...{
+              padding: 'auto',
+              title: {
+                  visible: true,
+                  text: result.title,
+              },
+              renderer: 'svg',
+              forceFit: true,
+              data: _result,
+              yAxis: {title: {offset: 40}},
+              xAxis: {title: {offset: 40}}
+            }, ...JSON.parse(result.options) };
+            console.log(chartOpts);
+            switch (result.chart_type.toLowerCase()) {
+              case 'column':
+                plot = new g2plot.Column(div[0], chartOpts);
+                break;
+              case 'groupedcolumn':
+                plot = new g2plot.GroupedColumn(div[0], chartOpts);
+                break;
+              case 'stackedcolumn':
+                plot = new g2plot.StackedColumn(div[0], chartOpts);
+                break;
+              case 'rangecolumn':
+                plot = new g2plot.RangeColumn(div[0], chartOpts);
+                break;
+              case 'line':
+                plot = new g2plot.Line(div[0], chartOpts);
+                break;
+              case 'stepline':
+                plot = new g2plot.StepLine(div[0], chartOpts);
+                break;
+              case 'area':
+                plot = new g2plot.Area(div[0], chartOpts);
+                break;
+              case 'stackedarea':
+                plot = new g2plot.StackArea(div[0], chartOpts);
+                break;
+              case 'bar':
+                plot = new g2plot.Bar(div[0], chartOpts);
+                break;
+              case 'stackedbar':
+                plot = new g2plot.StackBar(div[0], chartOpts);
+                break;
+              case 'groupedbar':
+                plot = new g2plot.GroupBar(div[0], chartOpts);
+                break;
+              case 'rangebar':
+                plot = new g2plot.RangeBar(div[0], chartOpts);
+                break;
+              case 'pie':
+                plot = new g2plot.Pie(div[0], chartOpts);
+                break;
+              case 'donut':
+                plot = new g2plot.Ring(div[0], chartOpts);
+                break;
+              case 'rose':
+                plot = new g2plot.Rose(div[0], chartOpts);
+                break;
+              case 'radar':
+                plot = new g2plot.Radar(div[0], chartOpts);
+                break;
+              case 'scatter':
+                plot = new g2plot.Scatter(div[0], chartOpts);
+                break;
+              default:
+                break;
+            }
+            if (plot) {
+              plot.render();
+            }
+          }
+        });
+        $('body').css({ overflow: 'inherit' });
     } else {
       displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.data('sequence'), true);
       $tableWrapper.css({ height: '' });
+      $dashboardWrapper.addClass('d-none');
+      $('body').css({ overflow: 'hidden' });
     }
   });
 

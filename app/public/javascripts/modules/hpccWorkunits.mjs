@@ -164,8 +164,11 @@ let checkWorkunitStatus = (wuid) => {
   });
 };
 
-let getWorkunitResults = (wuid = '', count, sequence, logicalfile = '') => {
-  console.log('request /hpcc/workunits/results', wuid, count);
+let getWorkunitResults = (opts) => {
+  console.log('request /hpcc/workunits/results', opts);
+  if (!opts.resultname && !opts.sequence) {
+    opts.sequence = 0;
+  }
 
   let _headers = {
     'Content-Type': 'application/json',
@@ -177,10 +180,11 @@ let getWorkunitResults = (wuid = '', count, sequence, logicalfile = '') => {
     method: 'POST',
     body: JSON.stringify({
       workspaceId: workspaceId,
-      wuid: wuid,
-      logicalfile: logicalfile,
-      count: ((count) ? count : 1000),
-      sequence: ((sequence) ? sequence : 0)
+      wuid: opts.wuid,
+      logicalfile: ((opts.logicalfile) ? opts.logicalfile : ''),
+      count: ((opts.count) ? opts.count : 1000),
+      sequence: opts.sequence,
+      resultname: ((opts.resultname) ? opts.resultname : '')
     }),
     headers: _headers
   });
