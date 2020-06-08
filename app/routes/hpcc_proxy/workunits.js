@@ -154,7 +154,9 @@ router.get('/', [
       });
 
       wuInfo.query = json.WUInfoResponse.Workunit.Query.Text;
-    } else if (json.WUInfoResponse.Workunit.Exceptions) {
+    }
+
+    if (json.WUInfoResponse.Workunit.Exceptions) {
       wuInfo.errors = json.WUInfoResponse.Workunit.Exceptions.ECLException;
     }
 

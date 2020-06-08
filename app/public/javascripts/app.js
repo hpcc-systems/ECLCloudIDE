@@ -3193,10 +3193,29 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   let updateCodemirrorAnnotations = (errors, _editor) => {
     errors.forEach((err) => {
       // console.log(err);
+      if (err.Message.indexOf('minor version number') > -1) return;
       let marker = document.createElement('div');
-      let lineNum = (0 >= (err.LineNo - 1)) ? 1 : err.LineNo - 1;
-      marker.style.color = '#dc3545';
-      marker.innerHTML = '<i class="fa fa-exclamation-circle" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
+      let lineNum = (0 >= (err.LineNo - 1)) ? 0 : err.LineNo - 1;
+      let markerClass = 'fa-exclamation-circle';
+      switch (err.Severity.toLowerCase()) {
+        case 'info':
+          markerClass = 'fa-question-circle';
+          marker.style.color = '#17a2b8';
+          err.Message = 'INFO - ' + err.Message;
+          break;
+        case 'warning':
+          markerClass = 'fa-exclamation-triangle';
+          marker.style.color = '#ffc107';
+          err.Message = 'WARNING - ' + err.Message;
+          break;
+        case 'error':
+        default:
+          markerClass = 'fa-exclamation-circle';
+          marker.style.color = '#dc3545';
+          err.Message = 'ERROR - ' + err.Message;
+          break;
+      }
+      marker.innerHTML = '<i class="fa ' + markerClass + '" title="' + err.Message.replace(/\"/g, "'") + '"></i>';
       _editor.getDoc().setGutterMarker(lineNum, 'cm-errors', marker);
     });
   };
@@ -3317,6 +3336,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
                     $outputsList.append($output);
                   });
                   $outputsList.children().eq(0).trigger('click');
+
+                  let _annotateTimeout = window.setTimeout(function() {
+                    updateCodemirrorAnnotations(json.errors, activeEditor);
+                    window.clearTimeout(_annotateTimeout);
+                  }, 500);
                 } else if (json.state == 'failed') {
                   // console.log(json);
                   window.clearTimeout(t);
@@ -3357,7 +3381,9 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     let $this = $(this),
         $script = $('.scripts .active'),
         $main = $('main'),
-        _wuid = $script.data('wuid') ? $script.data('wuid') : '';
+        _wuid = $script.data('wuid') ? $script.data('wuid') : '',
+        editors = [ editor, editor2 ],
+        activeEditor = editors[$('.editor.active').index()];
 
     $main.removeClass('show-outputs');
     $outputsList.html('');
@@ -3401,6 +3427,18 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
               $outputsList.append($output);
             });
             $outputsList.children().eq(0).trigger('click');
+
+            let _annotateTimeout = window.setTimeout(function() {
+              updateCodemirrorAnnotations(json.errors, activeEditor);
+              window.clearTimeout(_annotateTimeout);
+            }, 500);
+          } else if (json.state == 'failed') {
+            changeRunButtonState($runButton, 'failed');
+
+            let _annotateTimeout = window.setTimeout(function() {
+              updateCodemirrorAnnotations(json.errors, activeEditor);
+              window.clearTimeout(_annotateTimeout);
+            }, 500);
           }
         });
     }
