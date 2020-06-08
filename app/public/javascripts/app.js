@@ -2630,7 +2630,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
    *  CONTEXT MENU LEFT NAV                                                   *
    *==========================================================================*/
 
-  $('#datasets-wrapper, #scripts-wrapper').on('mousedown', function(evt) {
+
+  $('#datasets-wrapper, #scripts-wrapper').on('contextmenu', function(evt) {
     let $this = $(this),
         $target = $(evt.target),
         $folder = $target.parents('li').first(),
@@ -2645,77 +2646,89 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       $contextMenu = $('#datasets-context-menu');
     }
 
-    if (evt.button == 2) {
-      evt.preventDefault();
-      if ($folder.data('id')) {
-        parentPath.unshift($folder.data('id'));
-        parentPathNames.unshift($folder.data('name'));
+    evt.preventDefault();
+    $('.context-menu').hide();
+
+    if ($folder.data('id')) {
+      parentPath.unshift($folder.data('id'));
+      parentPathNames.unshift($folder.data('name'));
+    }
+    let $parent = $folder.parents('li');
+    do {
+      if ($parent.data('id')) {
+        parentPath.unshift($parent.data('id'));
+        parentPathNames.unshift($parent.data('name'));
       }
-      let $parent = $folder.parents('li');
-      do {
-        if ($parent.data('id')) {
-          parentPath.unshift($parent.data('id'));
-          parentPathNames.unshift($parent.data('name'));
-        }
-        $parent = $parent.parents('li');
-      } while ($parent.length > 0);
+      $parent = $parent.parents('li');
+    } while ($parent.length > 0);
 
-      $datasetModal.find('.btn-primary').data('parentPath', parentPath);
-      $scriptModal.find('.btn-primary').data('parentPath', parentPath);
-      $scriptModal.find('.btn-primary').data('parentPathNames', parentPathNames);
-      $folderModal.find('.btn-primary').data('parentPath', parentPath);
+    $datasetModal.find('.btn-primary').data('parentPath', parentPath);
+    $scriptModal.find('.btn-primary').data('parentPath', parentPath);
+    $scriptModal.find('.btn-primary').data('parentPathNames', parentPathNames);
+    $folderModal.find('.btn-primary').data('parentPath', parentPath);
 
-      if ($this.attr('id') == 'datasets-wrapper') {
-        $folderModal.find('.btn-primary').data('folderType', 'datasets');
-        if ($folder.length == 0) {
-          $folder = $('.datasets').find('ul').first();
-        }
-      } else {
-        $folderModal.find('.btn-primary').data('folderType', 'scripts');
-        if ($folder.length == 0) {
-          $folder = $('.scripts').find('ul').first();
-        }
+    if ($this.attr('id') == 'datasets-wrapper') {
+      $folderModal.find('.btn-primary').data('folderType', 'datasets');
+      if ($folder.length == 0) {
+        $folder = $('.datasets').find('ul').first();
       }
-
-      $datasetModal.find('.btn-primary').data('parentToReceiveChild', $folder);
-      $scriptModal.find('.btn-primary').data('parentToReceiveChild', $folder);
-      $folderModal.find('.btn-primary').data('parentToReceiveChild', $folder);
-
-      // console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
-        // 'parentPath: ', parentPath, 'x: ' + evt.pageX + ', y: ' + evt.pageY);
-      $contextMenu.css({
-        'left': evt.pageX,
-        'top': evt.pageY
-      });
-      $contextMenu.fadeIn(200);
     } else {
-      if ($target.hasClass('scriptname')) {
-        $target = $target.parents('.script');
-
-        if (!$target.data('parentPathNames')) {
-          if ($folder.data('id')) {
-            parentPath.unshift($folder.data('id'));
-            parentPathNames.unshift($folder.data('name'));
-          }
-          let $parent = $folder.parents('li');
-          do {
-            if ($parent.data('id')) {
-              parentPath.unshift($parent.data('id'));
-              parentPathNames.unshift($parent.data('name'));
-            }
-            $parent = $parent.parents('li');
-          } while ($parent.length > 0);
-
-          $target.data('parentPathNames', parentPathNames.join('/'));
-        }
-
-        // console.log($target);
+      $folderModal.find('.btn-primary').data('folderType', 'scripts');
+      if ($folder.length == 0) {
+        $folder = $('.scripts').find('ul').first();
       }
     }
+
+    $datasetModal.find('.btn-primary').data('parentToReceiveChild', $folder);
+    $scriptModal.find('.btn-primary').data('parentToReceiveChild', $folder);
+    $folderModal.find('.btn-primary').data('parentToReceiveChild', $folder);
+
+    // console.log('this: ', $this, 'folder: ', $folder, 'data: ', $folder.data(),
+      // 'parentPath: ', parentPath, 'x: ' + evt.pageX + ', y: ' + evt.pageY);
+    $contextMenu.css({
+      'left': evt.pageX,
+      'top': evt.pageY
+    });
+    $contextMenu.fadeIn(200);
   });
 
-  $('#datasets-wrapper, #scripts-wrapper').on('contextmenu', function(evt) {
-    return false;
+  $('#datasets-wrapper, #scripts-wrapper').on('click', function(evt) {
+    let $this = $(this),
+        $target = $(evt.target),
+        $folder = $target.parents('li').first(),
+        parentPath = [],
+        parentPathNames = [],
+        $contextMenu = $('#scripts-context-menu'),
+        $datasetModal = $('#newDatasetModal'),
+        $scriptModal = $('#newScriptModal'),
+        $folderModal = $('#newFolderModal');
+
+    if ($this.attr('id') == 'datasets-wrapper') {
+      $contextMenu = $('#datasets-context-menu');
+    }
+
+    if ($target.hasClass('scriptname')) {
+      $target = $target.parents('.script');
+
+      if (!$target.data('parentPathNames')) {
+        if ($folder.data('id')) {
+          parentPath.unshift($folder.data('id'));
+          parentPathNames.unshift($folder.data('name'));
+        }
+        let $parent = $folder.parents('li');
+        do {
+          if ($parent.data('id')) {
+            parentPath.unshift($parent.data('id'));
+            parentPathNames.unshift($parent.data('name'));
+          }
+          $parent = $parent.parents('li');
+        } while ($parent.length > 0);
+
+        $target.data('parentPathNames', parentPathNames.join('/'));
+      }
+
+      // console.log($target);
+    }
   });
 
   $('#datasets-context-menu, #scripts-context-menu').on('click', 'li', function(evt) {
