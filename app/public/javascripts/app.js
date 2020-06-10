@@ -697,8 +697,8 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   });
 
   /* CHANGE SELECTED WORKSPACE */
-  $('.workspaces').on('click', '.dropdown-item', async function(evt) {
-    let $this = $(this),
+  let changeWorkspace = async function($workspace) {
+    let $this = $workspace,
         directoryTree = JSON.parse($this.data('directoryTree')),
         $previousWorkspace = $('.workspaces .active'),
         $options = $('.workspaces .dropdown-item'),
@@ -717,8 +717,6 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $editor2 = $('#editor2'),
         editors = [ editor, editor2 ],
         $tableWrapper = $datasetContent.find('.table-wrapper');
-
-    evt.preventDefault();
 
     if ($previousWorkspace.length > 0) {
       fetch('/workspaces/', {
@@ -846,8 +844,32 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     toggleNewScriptPopover();
     populateScriptTargets();
+  };
 
-    localStorage.setItem('_lastUsedWorkspace', $('.workspaces .active').data('id'));
+  $('.workspaces').on('click', '.dropdown-item', function(evt) {
+    let $this = $(this);
+    evt.preventDefault();
+    changeWorkspace($this);
+
+    if (localStorage.getItem('_lastUsedWorkspace') != $('.workspaces .active').data('id')) {
+      localStorage.setItem('_lastUsedWorkspace', $('.workspaces .active').data('id'));
+      history.pushState(null, null, '?w=' + $('.workspaces .active').data('id'));
+    }
+  });
+
+  window.addEventListener('popstate', () => {
+    let qs = queryString.parse(window.location.search);
+    let workspaceId = '';
+    if (qs.w) {
+      workspaceId = qs.w;
+    }
+    // console.log(workspaceId, localStorage.getItem('_lastUsedWorkspace'));
+      if (workspaceId !== '') {
+      changeWorkspace($('.workspaces .dropdown-item').filter((idx, el) => {
+        return $(el).data('id') == workspaceId;
+      }));
+      localStorage.setItem('_lastUsedWorkspace', workspaceId);
+    }
   });
 
   /* SHOW WORKSPACE MEMBERS MODAL */
