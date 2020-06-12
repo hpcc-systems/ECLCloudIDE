@@ -132,7 +132,7 @@ let populateDatasets = async () => {
     fetch(url)
       .then(response => response.json())
       .then((datasets) => {
-        console.log('populateDatasets', datasets);
+        // console.log('populateDatasets', datasets);
 
         if (Object.entries(datasets).length > 0) {
           $datasetLis.each((idx, el) => {
@@ -174,7 +174,7 @@ let populateScripts = async () => {
     fetch(url)
       .then(response => response.json())
       .then((scripts) => {
-        console.log('populateScripts', scripts);
+        // console.log('populateScripts', scripts);
 
         if (Object.entries(scripts).length > 0) {
           $scriptLis.each((idx, el) => {
@@ -205,18 +205,24 @@ let showScripts = () => {
 };
 
 let loadWorkspace = () => {
-  let $workspaceId;
-  if( $('.workspace-load-msg.alert-info').length > 0) {
-    $workspaceId = $('.workspace-load-msg.alert-info').data('workspaceid');
-  } else if(localStorage.getItem('_lastUsedWorkspace') != undefined) {
-    $workspaceId = localStorage.getItem('_lastUsedWorkspace');
+  let workspaceId,
+      qs = queryString.parse(window.location.search);
+  if (qs.w) {
+    workspaceId = qs.w;
+  } else if (localStorage.getItem('_lastUsedWorkspace') != undefined) {
+    workspaceId = localStorage.getItem('_lastUsedWorkspace');
+  } else if ($('.workspace-load-msg.alert-info').length > 0) {
+    workspaceId = $('.workspace-load-msg.alert-info').data('workspaceid');
   }
-  if($workspaceId != undefined) {
+  if(workspaceId != undefined) {
     let $workspace = $('.workspaces .dropdown-item').filter(function() {
-      return ($(this).data("id") == $workspaceId ? true : false)
+      return ($(this).data("id") == workspaceId ? true : false)
     });
 
     $($workspace[0]).addClass('active');
+    if (window.location.search.replace('?w=', '') == '') {
+      history.replaceState(null, null, '?w=' + workspaceId);
+    }
     $('.workspaces .dropdown-item.active').trigger("click");
   }
 }
