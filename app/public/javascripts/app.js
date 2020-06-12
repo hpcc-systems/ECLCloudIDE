@@ -864,7 +864,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       workspaceId = qs.w;
     }
     // console.log(workspaceId, localStorage.getItem('_lastUsedWorkspace'));
-      if (workspaceId !== '') {
+      if (workspaceId !== '' && workspaceId != localStorage.getItem('_lastUsedWorkspace')) {
       changeWorkspace($('.workspaces .dropdown-item').filter((idx, el) => {
         return $(el).data('id') == workspaceId;
       }));
