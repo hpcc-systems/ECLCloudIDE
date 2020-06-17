@@ -71,6 +71,10 @@ let parseJson = (json, rowPath) => {
                     }
                   }
                   break;
+                case 'boolean':
+                  averages[alphaNumLabel]._type = 'boolean';
+                  averages[alphaNumLabel]._length = -1;
+                  break;
                 default:
                   averages[alphaNumLabel]._type += 'string';
                   if (length > averages[alphaNumLabel]._length) {
@@ -110,6 +114,10 @@ let parseJson = (json, rowPath) => {
                       }
                     }
                     break;
+                  case 'boolean':
+                    averages[alphaNumLabel][alphaNumKey]._type = 'boolean';
+                    averages[alphaNumLabel][alphaNumKey]._length = -1;
+                    break;
                   default:
                     averages[alphaNumLabel][alphaNumKey]._type += 'string';
                     if (length > averages[alphaNumLabel][alphaNumKey]._length) {
@@ -120,8 +128,10 @@ let parseJson = (json, rowPath) => {
                 averages[alphaNumLabel][alphaNumKey]._path = '{xpath(\'' + x + '\')}';
               } //end if (_idx == 0)
             });
+          } else if (val[x] && typeof val[x] === 'object') {
+            parseValue(_label, val[x], true);
           } else {
-            if (val && val[x]) {
+            if (val && val[x] != undefined) {
               let str = val[x].toString(),
                   length = str.length;
               switch (typeof val[x]) {
@@ -140,6 +150,10 @@ let parseJson = (json, rowPath) => {
                       averages[alphaNumLabel][alphaNumKey]._length = length + '_' + decLength;
                     }
                   }
+                  break;
+                case 'boolean':
+                  averages[alphaNumLabel][alphaNumKey]._type = 'boolean';
+                  averages[alphaNumLabel][alphaNumKey]._length = -1;
                   break;
                 default:
                   averages[alphaNumLabel][alphaNumKey]._type = 'string';
@@ -172,6 +186,10 @@ let parseJson = (json, rowPath) => {
                   averages[alphaNumLabel]._length = length + '_' + decLength;
                 }
               }
+              break;
+            case 'boolean':
+              averages[alphaNumLabel]._type = 'boolean';
+              averages[alphaNumLabel]._length = -1;
               break;
             default:
               averages[alphaNumLabel]._type = 'string';
