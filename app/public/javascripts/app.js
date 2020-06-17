@@ -1167,7 +1167,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
           layout = name + 'LAYOUT := RECORD\n';
 
       if (_.isEqual(['_type', '_length', '_path'], keys)) {
-        layout += '\t' + record._type + record._length + ' ' + key;
+        layout += '\t' + record._type + (record._length > -1 ? record._length : '') + ' ' + key;
         if (file.name.substr(file.name.lastIndexOf('.') + 1) == 'json') {
           layout += ((record._path != '') ? ' ' + record._path : '');
         }
@@ -1182,7 +1182,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
             fieldKey = '_' + fieldKey;
           }
           if (record[_key]._type != undefined && record[_key]._length != null) {
-            layout += '\t' + record[_key]._type + record[_key]._length + ' ' + fieldKey;
+            layout += '\t' + record[_key]._type + (record[_key]._length > -1 ? record[_key]._length : '') + ' ' + fieldKey;
             if (file.name.substr(file.name.lastIndexOf('.') + 1) == 'json') {
               layout += ((record[_key]._path != '') ? ' ' + record[_key]._path : '');
             }
