@@ -3697,7 +3697,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
       $datasetContent.removeClass('d-none');
       $dashboardWrapper.addClass('d-none');
-      $('body').css({ overflow: 'hidden' });
+      $('body').css({ overflow: 'inherit' });
     } else if ($output.hasClass('dashboard')) {
       getWorkunitResults({ wuid: $script.data('wuid'), resultname: $output.data('resultname') })
         .then(response => response.json())
