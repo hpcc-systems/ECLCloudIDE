@@ -203,7 +203,7 @@ router.put('/', [
     .isUUID(4).withMessage('Invalid dataset id'),
   body('filename')
     .optional({ checkFalsy: true })
-    .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*\.ecl$/).withMessage('Invalid script filename'),
+    .matches(/^[a-zA-Z]{1}[-a-zA-Z0-9_]*\.ecl$/).withMessage('Invalid script filename'),
   body('scriptPath')
     .optional({ checkFalsy: true })
     .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
