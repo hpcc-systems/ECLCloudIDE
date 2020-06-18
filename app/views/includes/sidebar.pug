@@ -167,9 +167,10 @@ div.modal.fade(id="newDatasetModal", role="dialog")
             form(data-type="upload")
               div.form-group.form-group-file
                 label.col-form-label(for="dataset-file") File:
+                - var _allowedDatasetFormats = allowedDatasetFormats
                 input.form-control-file(
                   id="dataset-file", name="datasetFile", type="file",
-                  required="required", accept=".csv,.txt"
+                  required="required", accept=_allowedDatasetFormats
                 )
                 .invalid-feedback Please select a CSV file to upload.
               div.form-group.mt-3.mb-0.d-none

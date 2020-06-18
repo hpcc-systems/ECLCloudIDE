@@ -14,9 +14,16 @@ router.get('/', (req, res, next) => {
     username: req.session.user.username,
     emailVerified: req.session.user.emailVerified
   };
+
+  let datasetFormats = [];
+  if (process.env.DATASETS_CSV == 1) { datasetFormats.push('.csv'); }
+  if (process.env.DATASETS_JSON == 1) { datasetFormats.push('.json'); }
+  if (process.env.DATASETS_FLAT == 1) { datasetFormats.push('.txt'); }
+
   res.render('index', {
     title: 'ECL IDE',
     user: user,
+    allowedDatasetFormats: datasetFormats.join(', '),
     csrfToken: req.csrfToken(),
     clusterList: clusterWhitelist
   });
