@@ -74,7 +74,7 @@ passport.use(new LocalStrategy((username, password, next) => {
     }
 
     user.loginAttempts = 0;
-    user.lastLoginAt = null;
+    user.lastLoginAt = now.toISOString();
     user.save();
 
     return next(null, user, { message: 'Logged In Successfully' });
