@@ -336,7 +336,7 @@ a {
 
 .datasets .folder::before,
 .scripts .folder::before {
-  content: "\f07b";
+  content: "\f054";
   font-family: 'FontAwesome';
   margin-right: 0.33rem;
   position: absolute;
@@ -352,7 +352,7 @@ a {
 
 .datasets .folder.open::before,
 .scripts .folder.open::before {
-  content: "\f07c";
+  content: "\f078";
 }
 
 .dataset, .script, .folder {
@@ -382,7 +382,7 @@ a.script:hover {
 }
 
 .script::before {
-  content: "\f15b";
+  content: "\f016";
   font-family: 'FontAwesome';
   margin-right: 0.33rem;
   position: absolute;
