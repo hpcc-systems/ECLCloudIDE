@@ -3,18 +3,22 @@
 import { hostname } from './consts.mjs';
 
 let renderTree = (subtree, type = 'scripts') => {
-  let $ul = $('<ul>');
-  subtree.forEach((_branch) => {
-    if (_branch[1].type == 'folder') {
-      $ul.append(addFolder(_branch[1], type));
+  let $ul = $('<ul>'),
+      _subtree = subtree.map(el => { return el[1] }),
+      folders = _subtree.filter(el => el.type == 'folder'),
+      files = _subtree.filter(el => el.type == 'file');
+
+  _.sortBy(folders, ['name']).forEach(_branch => {
+    $ul.append(addFolder(_branch, type));
+  });
+  _.sortBy(files, ['name']).forEach(_branch => {
+    if (type == 'scripts') {
+      $ul.append(addScript(_branch));
     } else {
-      if (type == 'scripts') {
-        $ul.append(addScript(_branch[1]));
-      } else {
-        $ul.append(addDataset(_branch[1]));
-      }
+      $ul.append(addDataset(_branch));
     }
   });
+
   return $ul;
 };
 
