@@ -553,7 +553,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
   let clearLoadMsgTimeout = window.setTimeout(function() {
     $(".workspace-load-msg").find('.close').trigger('click');
     window.clearTimeout(clearLoadMsgTimeout);
-  }, 3000);
+  }, 5000);
 
   /*==========================================================================*
    *  WORKSPACES                                                              *
