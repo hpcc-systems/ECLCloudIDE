@@ -281,6 +281,9 @@ let getUniqueWorkspaceName = async (workspaceToClone, user) => {
     }).then((cloningUser) => {
       console.log(cloningUser.Workspaces.length);
       if (cloningUser.Workspaces.length > 0) {
+        if (!clonedWorkspaceName) {
+          clonedWorkspaceName = 'workspace';
+        }
         if (clonedWorkspaceName.indexOf('_Copy') > -1) {
           clonedWorkspaceName.replace(/_Copy_[0-9]+/, '_Copy_' + cloningUser.Workspaces.length);
         } else {
@@ -310,7 +313,11 @@ let shareWorkspace = async (workspaceId, user) => {
         model: Dataset
       }]
     }).then(async (workspaceToClone) => {
-       //console.log(workspaceToClone.Users[0].username);
+      if (workspaceToClone == null) {
+        // console.log('workspace ' + workspaceId + ' not found');
+        reject({ success: false, message: 'The workspace you attempted to copy has been deleted by its owner' });
+      }
+      // console.log(workspaceToClone.Users[0].username);
       // console.log(workspaceToClone.Scripts.length + ' Scripts');
       // console.log(workspaceToClone.Datasets.length + ' Datasets');
       let clonedWorkspaceName = await getUniqueWorkspaceName(workspaceToClone, user);
@@ -475,7 +482,7 @@ let shareWorkspace = async (workspaceId, user) => {
         });
       });
     }).catch((err) => {
-      return reject({ success: false, message: err.message });
+      return reject({ success: false, message: 'There was an error importing the workspace' });
     });
   }) //end new Promise(...)
 };
@@ -490,8 +497,8 @@ router.get('/share/:id', async (req, res, next) => {
     // console.log('result: '+result);
     req.flash('info', 'Workspace imported succesfully.');
     req.flash('info', result);
-  }catch(err) {
-    req.flash('error', 'There was an error importing the workspace. ');
+  } catch(err) {
+    req.flash('error', err.message);
   }
 
   return req.session.save(() => { res.redirect('/'); });
