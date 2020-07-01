@@ -770,7 +770,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $newTab.removeClass('cloner d-none').addClass('active');
         $newTab.data($script.data());
         if (idx == 0) {
-          editor.getDoc().setValue($script.data('content'));
+          editor.getDoc().setValue($script.data('content') ? $script.data('content') : '');
           $editor.addClass('cmReady');
         }
       });
