@@ -8,7 +8,7 @@
     "codemirror:copy": "npx cpx \"node_modules/codemirror/**/*\" public/javascripts/codemirror/",
     "codemirror": "npm run codemirror:clean && npm run codemirror:copy",
     "papaparse:clean": "rm -rf ./public/javascripts/papaparse/",
-    "papaparse:copy": "npx cpx \"node_modules/papaparse/papaparse.min.js}\" public/javascripts/papaparse/",
+    "papaparse:copy": "npx cpx \"node_modules/papaparse/papaparse.min.js\" public/javascripts/papaparse/",
     "papaparse": "npm run papaparse:clean && npm run papaparse:copy",
     "lodash:clean": "rm -rf ./public/javascripts/lodash/",
     "lodash:copy": "npx cpx \"node_modules/lodash/**/*\" public/javascripts/lodash/",
