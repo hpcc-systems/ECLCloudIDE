@@ -253,7 +253,7 @@ let parseCsv = async (file, Papa) => {
         for (var i = 1; i < numRowsToScan; i++) {
           let values = Object.values(results.data[i]);
           values.forEach((val, idx) => {
-            let _label = labels[idx].trim().replace(' ', '');
+            let _label = labels[idx].trim().replace(new RegExp('[^a-zA-Z0-9]', 'g'), '');
             if (!averages[_label]) averages[_label] = { _type: typeof val, _length: 0, _path: '' };
             if (val && val.toString().length > averages[_label]._length) {
               averages[_label]._length = val.toString().length;
