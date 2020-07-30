@@ -25,7 +25,7 @@
     "@hpcc-js/comms": "^2.13.0",
     "archiver": "^4.0.1",
     "aws-sdk": "^2.504.0",
-    "bcrypt": "^3.0.3",
+    "bcrypt": "^5.0.0",
     "codemirror": "^5.44.0",
     "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
