@@ -5,19 +5,19 @@
   "scripts": {
     "start": "nodemon ./bin/www --ignore ./landing_zone/ --ignore ./workspaces/",
     "codemirror:clean": "rm -rf ./public/javascripts/codemirror/",
-    "codemirror:copy": "npx cpx \"node_modules/codemirror/**/*\" public/javascripts/codemirror/",
+    "codemirror:copy": "npx cpy **/* ../../public/javascripts/codemirror/ --cwd=node_modules/codemirror --parents",
     "codemirror": "npm run codemirror:clean && npm run codemirror:copy",
     "papaparse:clean": "rm -rf ./public/javascripts/papaparse/",
-    "papaparse:copy": "npx cpx \"node_modules/papaparse/papaparse.min.js\" public/javascripts/papaparse/",
+    "papaparse:copy": "npx cpy node_modules/papaparse/papaparse.min.js public/javascripts/papaparse/",
     "papaparse": "npm run papaparse:clean && npm run papaparse:copy",
     "lodash:clean": "rm -rf ./public/javascripts/lodash/",
-    "lodash:copy": "npx cpx \"node_modules/lodash/**/*\" public/javascripts/lodash/",
+    "lodash:copy": "npx cpy **/* ../../public/javascripts/lodash/ --cwd=node_modules/lodash --parents",
     "lodash": "npm run lodash:clean && npm run lodash:copy",
     "hpccjs:clean": "rm -rf ./public/javascripts/hpcc-js/",
-    "hpccjs:copy": "npx cpx \"node_modules/@hpcc-js/**/*\" public/javascripts/hpcc-js/",
+    "hpccjs:copy": "npx cpy **/* ../../public/javascripts/hpcc-js/ --cwd=node_modules/@hpcc-js --parents",
     "hpccjs": "npm run hpccjs:clean && npm run hpccjs:copy",
     "sortablejs:clean": "rm -rf ./public/javascripts/sortablejs/",
-    "sortablejs:copy": "npx cpx \"node_modules/sortablejs/modular/sortable.esm.js\" public/javascripts/sortablejs/",
+    "sortablejs:copy": "npx cpy node_modules/sortablejs/modular/sortable.esm.js public/javascripts/sortablejs/",
     "sortablejs": "npm run sortablejs:clean && npm run sortablejs:copy",
     "clientdeps": "npm run codemirror && npm run papaparse && npm run lodash && npm run hpccjs && npm run sortablejs"
   },
@@ -57,6 +57,6 @@
     "yauzl": "^2.10.0"
   },
   "devDependencies": {
-    "cpx": "^1.5.0"
+    "cpy-cli": "^3.1.1"
   }
 }
