@@ -55,7 +55,7 @@ let submitWorkunit = (wuid, selectedCluster) => {
   });
 };
 
-let sendFileToLandingZone = (file) => {
+let sendFileToLandingZone = (file, dropzone) => {
   let _headers = {
     'CSRF-Token': csrfToken
   };
@@ -64,6 +64,7 @@ let sendFileToLandingZone = (file) => {
   let formData = new FormData();
   formData.append('file', file);
   formData.append('workspaceId', workspaceId);
+  formData.append('dropzone', dropzone);
 
   return fetch('/hpcc/filespray/upload', {
     method: 'POST',
@@ -72,7 +73,7 @@ let sendFileToLandingZone = (file) => {
   });
 };
 
-let sprayFile = (clusterFilename, workspaceName, workspaceId) => {
+let sprayFile = (clusterFilename, workspaceName, workspaceId, dropzone) => {
   console.log(clusterFilename);
   let _headers = {
     'CSRF-Token': csrfToken
@@ -81,6 +82,7 @@ let sprayFile = (clusterFilename, workspaceName, workspaceId) => {
   formData.append('filename', clusterFilename);
   formData.append('workspaceName', workspaceName);
   formData.append('workspaceId', workspaceId);
+  formData.append('dropzone', dropzone);
 
   return fetch('/hpcc/filespray/spray', {
     method: 'POST',
