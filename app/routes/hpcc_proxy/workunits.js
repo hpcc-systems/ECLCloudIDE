@@ -360,6 +360,7 @@ router.post('/results', [
   }
   if (req.body.logicalfile) {
     formData.LogicalName = req.body.logicalfile;
+    formData.Wuid = null;
   }
   if (req.body.resultname) {
     formData.ResultName = req.body.resultname;

@@ -37,6 +37,8 @@ const Workunit = db.Workunit;
 const hpccFilesprayRouter = require('./hpcc_proxy/filespray');
 const hpccWorkunitsRouter = require('./hpcc_proxy/workunits');
 
+const workspacesCtrl = require('../controllers/workspaces');
+
 let request = require('request-promise');
 let _ = require('lodash');
 
@@ -556,42 +558,6 @@ router.get('/clusters/:id', async (req, res, next) => {
   }
 });
 
-let getDropzoneInfo = async (workspaceId) => {
-  return new Promise((resolve) => {
-    Workspace.findOne({
-      where: { id: workspaceId },
-      through: {
-        where: { role: WorkspaceUser.roles.OWNER }
-      }
-    }).then(workspace => {
-      let url = workspace.cluster;
-      if (url.indexOf('http') < 0) {
-        url = 'http://' + url
-      }
-        let _headers = {};
-        if (workspace.clusterUser && workspace.clusterPwd) {
-          let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
-          _headers.Authorization = 'Basic ' + Buffer.from(creds).toString('base64');
-        }
-        request(url + '/WsTopology/TpDropZoneQuery.json', {
-          headers: _headers,
-          json: true
-        })
-        .then(json => json.TpDropZoneQueryResponse.TpDropZones.TpDropZone)
-        .then(dropzones => {
-          let _dropzones = {};
-          dropzones.map(dropzone => {
-            _dropzones[dropzone.Name] = [];
-            _.flatMap(dropzone.TpMachines.TpMachine, (tpMachine) => {
-              _dropzones[dropzone.Name] = _dropzones[dropzone.Name].concat([tpMachine.Netaddress]);
-            })
-          });
-
-          resolve(_dropzones);
-        })
-    });
-  });
-}
 
 router.get('/export/zip/:workspaceId', async (req, res, next) => {
   console.log('generate zip');
@@ -735,7 +701,7 @@ router.createSamplesWorkspace = async (userId) => {
 };
 
 router.get('/dropzones/:id', async (req, res, next) => {
-  let dropzones = await getDropzoneInfo(req.params.id);
+  let dropzones = await workspacesCtrl.getDropzoneInfo(req.params.id);
   return res.json({ dropzones: dropzones });
 });
 

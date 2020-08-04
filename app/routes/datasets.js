@@ -21,7 +21,6 @@ router.get('/', (req, res, next) => {
     FROM Datasets AS d \
     LEFT JOIN Workunits AS w ON d.id = w.objectId \
     WHERE d.workspaceId = :workspaceId \
-    AND w.workunitId LIKE "W%" \
     AND d.deletedAt IS NULL`;
 
   db.sequelize.query(query, {

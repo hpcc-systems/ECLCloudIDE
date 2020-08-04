@@ -296,7 +296,7 @@ require([
     }
   });
 
-let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
+let displayWorkunitResults = (opts) => {
   let $datasetContent = $('.dataset-content'),
       $title = $datasetContent.find('h4'),
       $scopeDefn = $title.find('.scopename'),
@@ -305,15 +305,23 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.[a-zA-Z]+_thor/,
       $loader = $datasetContent.siblings('.loader'),
       $tableWrapper = $datasetContent.find('.table-wrapper'),
-      $table = null;
+      $table = null,
+      defaultOpts = {
+        wuid: null,
+        name: null,
+        sequence: 0,
+        hideScope: false
+      };
 
-  $title.contents()[0].nodeValue = title;
+  opts = { ...defaultOpts, ...opts };
+
+  $title.contents()[0].nodeValue = opts.title;
 
   $datasetContent.addClass('d-none');
   $scopeDefn.addClass('d-none');
   $loader.removeClass('d-none');
 
-  checkWorkunitStatus(wuid)
+  checkWorkunitStatus(opts.wuid)
   .then(response => response.json())
   .then(async (status) => {
     // console.log(status);
@@ -324,30 +332,35 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $activeWorkspace.data('clusterUsername'),
         $activeWorkspace.data('clusterPassword')
       );
-      await submitWorkunit(wuid, defaultClusterTarget);
+      await submitWorkunit(opts.wuid, defaultClusterTarget);
 
-      let statusResp = await checkWorkunitStatus(wuid);
+      let statusResp = await checkWorkunitStatus(opts.wuid);
       status = await statusResp.json();
 
       while (status.state != 'completed') {
         if (status.state == 'failed') break;
-        statusResp = await checkWorkunitStatus(wuid);
+        statusResp = await checkWorkunitStatus(opts.wuid);
         status = await statusResp.json();
       }
     }
 
-    getWorkunitResults({ wuid: wuid, count: 1000, sequence: sequence })
+    getWorkunitResults({
+      wuid: opts.wuid,
+      logicalfile: opts.logicalfile,
+      count: 1000,
+      sequence: opts.sequence
+    })
     .then(response => response.json())
     .then((wuResult) => {
       if (!wuResult.WUResultResponse) {
-        throw 'No Workunit Response available for ' + wuid;
+        throw 'No Workunit Response available for ' + opts.wuid;
       }
 
       let results = wuResult.WUResultResponse.Result.Row,
           schema = comms.parseXSD(wuResult.WUResultResponse.Result.XmlSchema.xml).root;
 
       if (results.length < 1) {
-        throw 'No results for Workunit ' + wuid;
+        throw 'No results for Workunit ' + opts.wuid;
       }
 
       $tableWrapper.html(
@@ -464,7 +477,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
       $loader.addClass('d-none');
       $datasetContent.removeClass('d-none');
-      if (query && query.match(scopeRegex) !== null && !hideScope) {
+      if (query && query.match(scopeRegex) !== null && !opts.hideScope) {
         $scopeDefn.text('(' + query.match(scopeRegex)[0] + ')');
         $scopeDefn.removeClass('d-none');
       }
@@ -1145,6 +1158,7 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         $fileDetails = $('.file-details'),
         $fileFeedback = $file.siblings('.invalid-feedback'),
         file = $('#dataset-file')[0].files[0],
+        dropzone = $('#dataset-dropzone').val(),
         $datasetName = $('#dataset-name').val(),
         $rowPath = $('#dataset-row-path').val(),
         data = getFormData($form),
@@ -1165,6 +1179,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
       let keys = Object.keys(record),
           name = (key) ? key.toUpperCase() + '_' : '',
           layout = name + 'LAYOUT := RECORD\n';
+
+      if (!file) {
+        return '';
+      }
 
       if (_.isEqual(['_type', '_length', '_path'], keys)) {
         layout += '\t' + record._type + (record._length > -1 ? record._length : '') + ' ' + key;
@@ -1283,13 +1301,13 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
       dataset.id = datasetJson.data.id;
 
-      let uploadResp = await sendFileToLandingZone(file)
+      let uploadResp = await sendFileToLandingZone(file, dropzone);
       let uploadJson = await uploadResp.json();
 
       // console.log(uploadJson);
       dataset.file = uploadJson.file;
 
-      let sprayResp = await sprayFile(uploadJson.file, $workspaceName, $workspaceId)
+      let sprayResp = await sprayFile(uploadJson.file, $workspaceName, $workspaceId, dropzone);
       let sprayJson = await sprayResp.json();
 
       // console.log('sprayed file', sprayJson.wuid);
@@ -1524,9 +1542,10 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
 
     $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
 
+    newFile.workunitId = dataset.wuid;
+    newFile.logicalfile = dataset.logicalfile;
     $newDatasetLi = addDataset(newFile);
     $newDataset = $newDatasetLi.find('.dataset');
-    $newDataset.data('wuid', dataset.wuid);
 
     if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
       $parentEl.append($newDatasetLi);
@@ -1837,7 +1856,11 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
     $this.addClass('active');
     $main.removeClass('show-outputs');
 
-    displayWorkunitResults($this.data('wuid'), $this.data('name'));
+    displayWorkunitResults({
+      wuid: $this.data('wuid'),
+      logicalfile: $this.data('logicalfile'),
+      name: $this.data('name')
+    });
   });
 
   /* SHOW DELETE DATASET CONFIRMATION */
@@ -3680,7 +3703,12 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         '/report/res/index.html';
       fetch(dataPatternsReportUrl).then(response => response.text()).then(body => {
         if (body.indexOf('Cannot open resource') > -1) {
-          displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.data('sequence'), true);
+          displayWorkunitResults({
+            wuid: $script.data('wuid'),
+            name: $script.find('.scriptname').text(),
+            sequence: $output.data('sequence'),
+            hideScope: true
+          });
         } else {
           $tableWrapper.html('<iframe src="' + dataPatternsReportUrl + '" />');
           $tableWrapper.css({ height: '770px' });
@@ -3799,7 +3827,12 @@ let displayWorkunitResults = (wuid, title, sequence = 0, hideScope = false) => {
         });
         $('body').css({ overflow: 'inherit' });
     } else {
-      displayWorkunitResults($script.data('wuid'), $script.find('.scriptname').text(), $output.data('sequence'), true);
+      displayWorkunitResults({
+        wuid: $script.data('wuid'),
+        name: $script.find('.scriptname').text(),
+        sequence: $output.data('sequence'),
+        hideScope: true
+      });
       $tableWrapper.css({ height: '' });
       $dashboardWrapper.addClass('d-none');
       $('body').css({ overflow: 'hidden' });

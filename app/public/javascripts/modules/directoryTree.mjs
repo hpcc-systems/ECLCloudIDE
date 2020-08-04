@@ -50,6 +50,7 @@ let addDataset = (dataset) => {
   $newDataset.data('id', dataset.id);
   $newDataset.data('name', dataset.name);
   $newDataset.data('wuid', dataset.workunitId);
+  $newDataset.data('logicalfile', dataset.logicalfile);
   $newDataset.data('rows', dataset.rowCount);
   $newDataset.data('cols', dataset.columnCount);
   $newDataset.data('query', dataset.eclQuery);
@@ -144,6 +145,7 @@ let populateDatasets = async () => {
                 _dataset = datasets[$dataset.data('id')];
             $dataset.data('query', _dataset.eclQuery);
             $dataset.data('wuid', _dataset.workunitId);
+            $dataset.data('logicalfile', _dataset.logicalfile);
             $dataset.data('rows', _dataset.rowCount);
             $dataset.data('cols', _dataset.columnCount);
           });

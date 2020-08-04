@@ -7,7 +7,7 @@ const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\
 const ipRegex = new RegExp(`(?:^${ipv4}$)`);
 
 const multer = require('multer');
-const _destPath = './landing_zone';
+const _destPath = process.env.LANDING_ZONE;
 const _storage = multer.diskStorage({
   destination: function(req, file, callback) {
     callback(null, _destPath);
@@ -28,6 +28,8 @@ let crypt = require('../../utils/crypt');
 const db = require('../../models/index');
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
+
+const filesprayCtrl = require('../../controllers/filespray');
 
 let buildClusterAddr = (req, res, next) => {
   const errors = validationResult(req);
@@ -77,111 +79,30 @@ router.post('/upload', [
   upload.single('file'),
   body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
   buildClusterAddr,
-], (req, res, next) => {
-  console.log('in /upload ', req.body, req.params, req.file);
-
-  let _filename = req.file.filename,
-      _mimetype = req.file.mimetype,
-      _fileStream = fs.createReadStream(_destPath + '/' + _filename),
-      _clusterFilename = _filename.substr(_filename.indexOf('_') + 1);
-
-  request({
-    method: 'POST',
-    uri: req.clusterAddrAndPort + '/Filespray/UploadFile.json?upload_' +
-      '&NetAddress=' + req.clusterIp + '&rawxml_=1&OS=2&' +
-      'Path=/var/lib/HPCCSystems/mydropzone/',
-    formData: {
-      'UploadedFiles[]': {
-        value: _fileStream,
-        options: {
-          filename: _clusterFilename,
-          contentType: _mimetype
-        }
-      },
-    },
-    resolveWithFullResponse: true
-  }).then((response) => {
-    console.log(response.body);
-    let json = JSON.parse(response.body);
-    _fileStream.destroy();
-    fs.unlinkSync(_destPath + '/' + _filename);
-    res.json({ file: _clusterFilename });
-  }).catch((err) => {
-    console.log(err);
-    res.json(err);
-  });
-});
+], filesprayCtrl.uploadFile);
 
 router.post('/spray', [
   upload.none(),
   body('workspaceId').isUUID(4).withMessage('Invalid workspace id'),
   buildClusterAddr,
 ], (req, res, next) => {
-  console.log('in /spray ', req.body, req.params, req.file, router.clusters);
+  console.log('in /spray ', req.body, req.params, router.clusters);
 
-  router.sprayFile(req.clusterAddrAndPort, req.body.filename, req.session.user.username, req.body.workspaceName, req.clusterIp)
-    .then((response) => {
-      console.log(response.body);
-      let json = JSON.parse(response.body);
-      res.json({ wuid: json.SprayResponse.wuid });
-    }).catch((err) => {
-      console.log(err);
-      res.json(err);
-    });
-});
-
-router.sprayFile = (clusterAddr, filename, username, workspaceName, dropzoneIp = '') => {
-  let sprayPayload = {},
-      fileExtension = filename.substr(filename.lastIndexOf('.') + 1);
-
-  if (dropzoneIp == '' && router && router.dropzoneIp) {
-    dropzoneIp = router.dropzoneIp;
-  }
-
-  sprayPayload = {
-    destGroup: (router.clusters && router.clusters.length > 0) ?
-      router.clusters[Math.floor(Math.random() * Math.floor(router.clusters.length))] :
-      'mythor',
-    DFUServerQueue: 'dfuserver_queue',
-    namePrefix: username + '::' + workspaceName,
-    targetName: filename,
-    overwrite: 'on',
-    sourceIP: dropzoneIp,
-    sourcePath: '/var/lib/HPCCSystems/mydropzone/' + filename,
-    destLogicalName: username + '::' + workspaceName + '::' + filename,
-    rawxml_: 1
-  };
-
-  switch (fileExtension) {
-    case 'json':
-      sprayPayload = { ...sprayPayload, ...{
-          sourceFormat: 2,
-          sourceMaxRecordSize: '',
-          isJSON: 1,
-          sourceRowPath: '/',
-          targetRowPath: '/'
-        }
-      };
-      break;
-    case 'csv':
-    default:
-      sprayPayload = { ...sprayPayload, ...{
-          sourceFormat: 1,
-          sourceCsvSeparate: '\,',
-          sourceCsvTerminate: '\n,\r\n',
-          sourceCsvQuote: '"'
-        }
-      };
-      break;
-  } //end switch
-
-  return request({
-    method: 'POST',
-    uri: clusterAddr + '/FileSpray/SprayVariable.json',
-    formData: sprayPayload,
-    resolveWithFullResponse: true
+  filesprayCtrl.sprayFile(
+    req.clusterAddrAndPort,
+    req.body.filename,
+    req.session.user.username,
+    req.body.workspaceName,
+    req.body.dropzone
+  ).then((response) => {
+    console.log(response.body);
+    let json = JSON.parse(response.body);
+    res.json({ wuid: json.SprayResponse.wuid });
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
   });
-};
+});
 
 router.post('/getDfuWorkunit', [
   upload.none(),
