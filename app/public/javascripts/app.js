@@ -3902,14 +3902,31 @@ let displayWorkunitResults = (opts) => {
     // console.log(instance, changeObj);
     changeRunButtonState($('.run-script'), 'ready');
   };
-  editor.on('change', _.debounce((instance, changeObj) => { editorChangeHandler(instance, changeObj) }, 500));
-  editor2.on('change', _.debounce((instance, changeObj) => { editorChangeHandler(instance, changeObj) }, 500));
 
-  editor.on('focus', (instance, evt) => {
-    if (false == $('#editor').hasClass('cmReady')) {
-      $('#editor').addClass('cmReady');
-    }
-  });
+  if (editor) {
+    editor.on('change', _.debounce((instance, changeObj) => { editorChangeHandler(instance, changeObj) }, 500));
+    editor2.on('change', _.debounce((instance, changeObj) => { editorChangeHandler(instance, changeObj) }, 500));
+
+    editor.on('focus', (instance, evt) => {
+      if (false == $('#editor').hasClass('cmReady')) {
+        $('#editor').addClass('cmReady');
+      }
+    });
+
+    editor.on('drop', (instance, evt) => {
+      // console.log(instance, evt);
+      let doc = instance.getDoc();
+      let content = '';
+
+      if ($draggedObject) {
+        if ($draggedObject.data('query')) content = $draggedObject.data('query');
+        else if ($draggedObject.data('content')) content = $draggedObject.data('content');
+        doc.replaceRange(content, doc.getCursor(), null, 'drop');
+        $draggedObject = null;
+        evt.preventDefault();
+      }
+    });
+  }
 
   $(document).on('dragstart', (evt) => {
     let $target = $(evt.target);
@@ -3917,20 +3934,6 @@ let displayWorkunitResults = (opts) => {
     if ($target.hasClass('dataset') || $target.hasClass('script')) {
       $draggedObject = $(evt.target);
       // console.log($draggedObject.data());
-    }
-  });
-
-  editor.on('drop', (instance, evt) => {
-    // console.log(instance, evt);
-    let doc = instance.getDoc();
-    let content = '';
-
-    if ($draggedObject) {
-      if ($draggedObject.data('query')) content = $draggedObject.data('query');
-      else if ($draggedObject.data('content')) content = $draggedObject.data('content');
-      doc.replaceRange(content, doc.getCursor(), null, 'drop');
-      $draggedObject = null;
-      evt.preventDefault();
     }
   });
 
