@@ -4,6 +4,8 @@ const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
 
+const fs = require('fs-extra');
+
 const crypt = require('../utils/crypt');
 
 let request = require('request-promise');
@@ -31,7 +33,28 @@ exports.getWorkspaceById = (req, res, next) => {
 };
 
 exports.createWorkspace = (req, res, next) => {
-
+  Workspace.create({
+    name: req.body.workspaceName,
+    cluster: req.body.workspaceCluster,
+    clusterUser: (req.body.clusterUsername != '') ? req.body.clusterUsername : null,
+    clusterPwd: (req.body.clusterPassword != '') ? crypt.encrypt(req.body.clusterPassword) : null
+  }).then((workspace) => {
+    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
+    if (!fs.existsSync(workspaceDirPath)) {
+      fs.mkdirpSync(workspaceDirPath + '/scripts');
+      fs.mkdirpSync(workspaceDirPath + '/datasets');
+    }
+    WorkspaceUser.create({
+      role: WorkspaceUser.roles.OWNER,
+      workspaceId: workspace.id,
+      userId: req.session.user.id
+    }).then((workspaceUser) => {
+      return res.json(workspace);
+    });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ message: 'Workspace could not be saved' });
+  });
 };
 
 exports.getDropzoneInfo = (workspaceId) => {

@@ -73,28 +73,7 @@ router.post('/', [
     return res.json({ success: false, message: 'Please select a valid cluster' });
   }
 
-  Workspace.create({
-    name: req.body.workspaceName,
-    cluster: req.body.workspaceCluster,
-    clusterUser: (req.body.clusterUsername != '') ? req.body.clusterUsername : null,
-    clusterPwd: (req.body.clusterPassword != '') ? crypt.encrypt(req.body.clusterPassword) : null
-  }).then((workspace) => {
-    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
-    if (!fs.existsSync(workspaceDirPath)) {
-      fs.mkdirpSync(workspaceDirPath + '/scripts');
-      fs.mkdirpSync(workspaceDirPath + '/datasets');
-    }
-    WorkspaceUser.create({
-      role: WorkspaceUser.roles.OWNER,
-      workspaceId: workspace.id,
-      userId: req.session.user.id
-    }).then((workspaceUser) => {
-      return res.json(workspace);
-    });
-  }).catch((err) => {
-    console.log(err);
-    return res.json({ message: 'Workspace could not be saved' });
-  });
+  return workspacesCtrl.createWorkspace(req, res, next);
 });
 
 /* Update workspace */
