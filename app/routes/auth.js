@@ -16,7 +16,7 @@ const db = require('../models/index');
 const User = db.User;
 const PasswordReset = db.PasswordReset;
 
-const workspacesRouter = require('./workspaces');
+const workspacesCtrl = require('../controllers/workspaces');
 
 async function getAwsCredentials() {
   let role = process.env.AWS_IAM_ROLE ? process.env.AWS_IAM_ROLE : '';
@@ -406,7 +406,7 @@ router.get('/email/verify/:iv/:hash', (req, res, next) => {
       req.session.user = userParams;
       req.flash('info', 'Email address verified');
 
-      await workspacesRouter.createSamplesWorkspace(user.id);
+      await workspacesCtrl.createSamplesWorkspace(user.id);
 
       return req.session.save(() => { res.redirect('/'); });
     });
