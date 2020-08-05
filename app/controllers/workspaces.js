@@ -1,5 +1,6 @@
 const db = require('../models/index');
 
+const User = db.User;
 const Workspace = db.Workspace;
 const WorkspaceUser = db.WorkspaceUser;
 
@@ -7,6 +8,31 @@ const crypt = require('../utils/crypt');
 
 let request = require('request-promise');
 let _ = require('lodash');
+
+exports.getWorkspaceById = (req, res, next) => {
+  Workspace.findOne({
+    where: { id: req.params.workspaceId },
+    attributes: [ 'id', 'name', 'cluster', 'createdAt' ],
+    include: [{
+      model: User,
+      attributes: [ 'username' ],
+      through: {
+        where: { role: WorkspaceUser.roles.OWNER },
+        attributes: []
+      }
+    }]
+  }).then((workspace) => {
+    delete workspace.dataValues.clusterPwd;
+    return res.json({ success: true, data: workspace });
+  }).catch((err) => {
+    console.log(err);
+    return res.json({ success: false, message: 'Workspace could not found' });
+  });
+};
+
+exports.createWorkspace = (req, res, next) => {
+
+};
 
 exports.getDropzoneInfo = (workspaceId) => {
   console.log('in getDropzoneInfo');

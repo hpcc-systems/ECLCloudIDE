@@ -52,24 +52,7 @@ router.get('/summary/:workspaceId', [
     return res.status(422).json({ success: false, errors: errors.array() });
   }
 
-  Workspace.findOne({
-    where: { id: req.params.workspaceId },
-    attributes: [ 'id', 'name', 'cluster', 'createdAt' ],
-    include: [{
-      model: User,
-      attributes: [ 'username' ],
-      through: {
-        where: { role: WorkspaceUser.roles.OWNER },
-        attributes: []
-      }
-    }]
-  }).then((workspace) => {
-    delete workspace.dataValues.clusterPwd;
-    return res.json({ success: true, data: workspace });
-  }).catch((err) => {
-    console.log(err);
-    return res.json({ success: false, message: 'Workspace could not found' });
-  });
+  return workspacesCtrl.getWorkspaceById(req, res, next);
 });
 
 /* Create workspace */
