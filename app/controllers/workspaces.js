@@ -127,6 +127,39 @@ exports.updateWorkspace = (req, res, next) => {
     });
   }
 };
+
+exports.deleteWorkspace = (req, res, next) => {
+  Workspace.findOne({
+    where: { id: req.body.workspaceId },
+    include: [{
+      model: User,
+      through: { userId: req.session.user.id }
+    }]
+  }).then(workspace => {
+    if (workspace.Users[0].dataValues.id !== req.session.user.id) {
+      return res.status(403).send('Forbidden');
+    }
+
+    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id;
+    if (fs.existsSync(workspaceDirPath)) {
+      fs.removeSync(workspaceDirPath);
+    }
+    Workspace.destroy({
+      where: { id: workspace.id }
+    });
+    WorkspaceUser.destroy({
+      where: { workspaceId: workspace.id }
+    });
+    Dataset.destroy({
+      where: { workspaceId: workspace.id }
+    });
+    Script.destroy({
+      where: { workspaceId: workspace.id }
+    });
+  }).then(() => {
+    res.json({ message: 'Workspace deleted' });
+  });
+};
 exports.getDropzoneInfo = (workspaceId) => {
   console.log('in getDropzoneInfo');
   return new Promise((resolve) => {
