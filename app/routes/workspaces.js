@@ -17,7 +17,6 @@ const upload = multer({ storage: _storage });
 
 const fs = require('fs-extra');
 const path = require('path');
-const archiver = require('archiver');
 
 const { param, body, validationResult } = require('express-validator/check');
 
@@ -358,60 +357,7 @@ router.get('/clusters/:id', async (req, res, next) => {
 
 
 router.get('/export/zip/:workspaceId', async (req, res, next) => {
-  console.log('generate zip');
-
-  Workspace.findOne({
-    where: { id: req.params.workspaceId },
-    through: {
-      where: { role: WorkspaceUser.roles.OWNER }
-    }
-  }).then(workspace => {
-    // console.log(workspace);
-    let scriptDirPath = process.cwd() + '/workspaces/' + workspace.id + '/scripts/',
-        zipPath = process.cwd() + '/landing_zone/' + workspace.id + '.zip',
-        zipAttachName = workspace.name + '.zip',
-        zip = fs.createWriteStream(zipPath),
-        archive = archiver('zip', { zlib: { level: 9 } });
-
-    zip.on('close', () => {
-      // console.log('file complete');
-      let secondsUntilDelete = 15;
-
-      // delete the generated archive after secondsUntilDelete
-      let delFile = setTimeout(() => {
-        fs.remove(zipPath);
-        clearTimeout(delFile);
-      }, secondsUntilDelete * 1000);
-
-      return res.download(zipPath, zipAttachName);
-    });
-
-    archive.on('warning', function(err) {
-      if (err.code === 'ENOENT') {
-        console.log(err)
-      } else {
-        throw err;
-      }
-    });
-
-    archive.on('error', function(err) {
-      console.log(err);
-      throw err;
-    });
-
-    // console.log('pipe archive to zip');
-    archive.pipe(zip);
-
-    // console.log('add ' + scriptDirPath + ' to zip');
-    archive.glob('**/*', {
-      cwd: scriptDirPath,
-      ignore: ['.eclcc', '**/eclcc.log']
-    });
-    archive.finalize();
-
-  }).catch(err => {
-    return res.json({ success: false, message: 'A workspace could not be found' })
-  });
+  return workspacesCtrl.exportWorkspaceAsZip(req, res, next);
 });
 
 router.post('/import/zip/', [ upload.single('file') ], async (req, res, next) => {
