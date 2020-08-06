@@ -343,51 +343,12 @@ router.get('/share/:id', async (req, res, next) => {
   return req.session.save(() => { res.redirect('/'); });
 });
 
-let getClusterInfo = async (workspaceId) => {
-  return new Promise((resolve, reject) => {
-    Workspace.findOne({
-      where: { id: workspaceId },
-      through: {
-        where: { role: WorkspaceUser.roles.OWNER }
-      }
-    }).then(workspace => {
-      let url = workspace.cluster;
-      if (!url) {
-        reject({ message: 'The cluster targets for scripts in this workspace could not ' +
-          'be retrieved. The url provided for this cluster may be incorrect.' });
-      }
-      if (url.indexOf('http') < 0) {
-        url = 'http://' + url
-      }
-        let _headers = {};
-        if (workspace.clusterUser && workspace.clusterPwd) {
-          let creds = workspace.clusterUser + ':' + crypt.decrypt(workspace.clusterPwd);
-          _headers.Authorization = 'Basic ' + Buffer.from(creds).toString('base64');
-        }
-        request(url + '/WsTopology/TpListTargetClusters.json', {
-          headers: _headers,
-          json: true
-        })
-        .then(json => json.TpListTargetClustersResponse.TargetClusters.TpClusterNameType)
-        .then(clusters => {
-          let _clusters = clusters
-            .map((cluster) => cluster.Name)
-            .sort();
 
-          resolve(_clusters);
-        })
-        .catch(error => {
-          reject({ message: 'The cluster targets for scripts in this workspace could not ' +
-            'be retrieved. The credentials provided for this cluster may be incorrect.' });
-        });
-    });
-  });
-};
 
 /* Fetch cluster info (name of thors, etc) */
 router.get('/clusters/:id', async (req, res, next) => {
   try {
-    let clusters = await getClusterInfo(req.params.id);
+    let clusters = await workspacesCtrl.getClusterInfo(req.params.id);
     return res.json({ success: true, clusters: clusters });
   } catch(err) {
     console.log(err);
