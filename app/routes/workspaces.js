@@ -360,48 +360,9 @@ router.get('/export/zip/:workspaceId', async (req, res, next) => {
   return workspacesCtrl.exportWorkspaceAsZip(req, res, next);
 });
 
-router.post('/import/zip/', [ upload.single('file') ], async (req, res, next) => {
+router.post('/import/zip/', [ upload.single('file') ], (req, res, next) => {
   // console.log(req.file);
-  let fileName = req.file.filename,
-      filePath = req.file.path,
-      baseName = path.basename(filePath, path.extname(filePath)),
-      srcFilePath = path.join(process.cwd(), filePath),
-      destFilePath = path.join(process.cwd(), 'landing_zone', baseName);
-
-  let json = await unzip(srcFilePath, { dir: destFilePath });
-
-  Workspace.create({
-    name: req.body.workspaceName,
-    cluster: req.body.workspaceCluster,
-    clusterUser: (req.body.clusterUsername != '') ? req.body.clusterUsername : null,
-    clusterPwd: (req.body.clusterPassword != '') ? crypt.encrypt(req.body.clusterPassword) : null,
-    directoryTree: JSON.stringify({ datasets: {}, scripts: json.tree })
-  }).then(async workspace => {
-    Object.values(json.flat).filter(f => {
-      if (f.type == 'file') return f;
-    }).forEach(async script => {
-      script.workspaceId = workspace.id;
-      script.eclFilePath = script.parentPathNames;
-      let newScript = await Script.create(script);
-      await ScriptRevision.create({
-        scriptId: newScript.id,
-        content: fs.readFileSync(destFilePath + '/' + script.fileName)
-      })
-    });
-
-    let workspaceDirPath = process.cwd() + '/workspaces/' + workspace.id + '/scripts';
-    await fs.copy(destFilePath, workspaceDirPath);
-
-    WorkspaceUser.create({
-      role: WorkspaceUser.roles.OWNER,
-      workspaceId: workspace.id,
-      userId: req.session.user.id
-    }).then((workspaceUser) => {
-      fs.remove(srcFilePath);
-      fs.remove(destFilePath);
-      return res.json(workspace);
-    });
-  });
+  return workspacesCtrl.importWorkspaceFromZip(req, res, next);
 });
 
 router.get('/dropzones/:id', async (req, res, next) => {
