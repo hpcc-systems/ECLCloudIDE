@@ -126,67 +126,7 @@ router.put('/', [
     return res.json({ success: false, message: 'Please select a valid cluster' });
   }
 
-  let workspace = {},
-      path = req.body.path || '';
-
-  if (req.body.workspaceName) workspace.name = req.body.workspaceName;
-  if (req.body.directoryTree) workspace.directoryTree = req.body.directoryTree;
-  if (req.body.workspaceCluster) workspace.cluster = req.body.workspaceCluster;
-  if (req.body.clusterUsername) {
-    workspace.clusterUser = req.body.clusterUsername;
-  } else if (req.body.clusterUsername === '') {
-    workspace.clusterUser = null;
-  }
-  if (req.body.clusterPassword) {
-    workspace.clusterPwd = crypt.encrypt(req.body.clusterPassword);
-  } else if (req.body.clusterPassword === '') {
-    workspace.clusterPwd = null;
-  }
-
-  if (req.body.prevFolderName && req.body.folderName) {
-
-    let workspaceDirPath = process.cwd() + '/workspaces/' + req.body.id +
-          '/' + req.body.folderType + '/',
-        folderDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
-        currentFolderPath = folderDirPath + req.body.prevFolderName + '/',
-        newFolderPath = folderDirPath + req.body.folderName + '/';
-
-    if (fs.existsSync(currentFolderPath)) {
-      fs.rename(currentFolderPath, newFolderPath, (err) => {
-        if (err) {
-          console.log(err);
-          return res.json({ success: false, message: 'Folder could not be saved' });
-        }
-
-        Workspace.update(workspace, {
-          where: {
-            id: req.body.id
-          }
-        }).then((result) => {
-          workspace.clusterPwd = req.body.clusterPassword;
-          return res.json({ success: true, data: workspace });
-        }).catch((err) => {
-          console.log(err);
-          return res.json({ success: false, message: 'Workspace could not be saved' });
-        });
-      });
-    } else {
-      return res.json({ success: false, message: 'Folder could not be saved' });
-    }
-
-  } else {
-    Workspace.update(workspace, {
-      where: {
-        id: req.body.id
-      }
-    }).then((result) => {
-      workspace.clusterPwd = req.body.clusterPassword;
-      return res.json({ success: true, data: workspace });
-    }).catch((err) => {
-      console.log(err);
-      return res.json({ success: false, message: 'Workspace could not be saved' });
-    });
-  }
+  return workspacesCtrl.updateWorkspace(req, res, next);
 });
 
 /* Delete workspace */
