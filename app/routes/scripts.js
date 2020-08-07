@@ -5,11 +5,16 @@ const db = require('../models/index');
 
 const cp = require('child_process');
 
+const hsqlc = require('@clemje01/hsqlc');
+
 const { EOL } = require('os');
 
 const fs = require('fs-extra');
+const path = require('path');
 
 const { body, validationResult } = require('express-validator/check');
+
+const allowedScriptExtensions = [ '.hsql', '.ecl' ];
 
 const User = db.User;
 const Workspace = db.Workspace;
@@ -90,7 +95,7 @@ router.get('/', (req, res, next) => {
 /* Create script */
 router.post('/', [
     body('scriptName')
-      .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid script name')
+      .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_\.]*$/).withMessage('Invalid script name')
       .escape(),
     body('workspaceId')
       .isUUID(4).withMessage('Invalid workspace id'),
@@ -127,6 +132,12 @@ router.post('/', [
       return res.json({ success: false, message: 'A script with this name already exists' })
     }
 
+    let extension = req.body.scriptName.substr(req.body.scriptName.lastIndexOf('.'))
+
+    if (!allowedScriptExtensions.includes(extension)) {
+      req.body.scriptName += '.ecl';
+    }
+
     Script.create({
       name: req.body.scriptName,
       workspaceId: req.body.workspaceId,
@@ -134,7 +145,7 @@ router.post('/', [
     }).then((script) => {
       let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts',
           scriptDirPath = workspaceDirPath + '/' + req.body.parentPathNames,
-          scriptFilePath = scriptDirPath + '/' + script.name + '.ecl';
+          scriptFilePath = scriptDirPath + '/' + script.name;
 
       if (!fs.existsSync(process.cwd() + '/workspaces/' + script.workspaceId)) {
         fs.mkdirpSync(process.cwd() + '/workspaces/' + script.workspaceId + '/scripts');
@@ -199,25 +210,31 @@ router.post('/revision', [
         scriptId: req.body.scriptId,
         content: req.body.content
       }).then((revision) => {
-          script.cluster = req.body.cluster;
-          script.save({ fields: ['cluster'] });
-          console.log('update contents of script file');
-          workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
-          scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
-          scriptFilePath = scriptDirPath + script.name + '.ecl';
+        let extension = script.name.substr(script.name.lastIndexOf('.'));
 
-          if (!fs.existsSync(scriptDirPath)) {
-            fs.mkdirpSync(scriptDirPath);
-          }
+        if (!allowedScriptExtensions.includes(extension)) {
+          script.name += '.ecl';
+        }
 
-          console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
-          fs.writeFileSync(scriptFilePath, revision.content);
+        script.cluster = req.body.cluster;
+        script.save({ fields: ['cluster'] });
+        console.log('update contents of script file');
+        workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
+        scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
+        scriptFilePath = scriptDirPath + script.name;
 
-          return res.json({ success: true, data: revision });
-        }).catch((err) => {
-          console.log(err);
-          return res.json({ success: false, message: 'Script Revision could not be saved' });
-        });
+        if (!fs.existsSync(scriptDirPath)) {
+          fs.mkdirpSync(scriptDirPath);
+        }
+
+        console.log('write script revision content to fs - ' + scriptFilePath, revision.content.substring(0, 100));
+        fs.writeFileSync(scriptFilePath, revision.content);
+
+        return res.json({ success: true, data: revision });
+      }).catch((err) => {
+        console.log(err);
+        return res.json({ success: false, message: 'Script Revision could not be saved' });
+      });
 
     }).catch((err) => {
       console.log(err);
@@ -239,7 +256,7 @@ router.post('/compile', [
       .optional({ checkFalsy: true})
       .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
 ], (req, res, next) => {
-  let path = req.body.path || '',
+  let filepath = req.body.path || '',
       args = [],
       workspaceDirPath = '',
       scriptDirPath = '',
@@ -250,39 +267,66 @@ router.post('/compile', [
       id: req.body.scriptId,
     }
   }).then((script) => {
+    let extension = script.name.substr(script.name.lastIndexOf('.'));
+
     script.cluster = req.body.cluster;
     script.save({ fields: ['cluster'] });
     console.log('update contents of script file');
-    workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/';
-    scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' );
-    scriptFilePath = scriptDirPath + script.name + '.ecl';
+    workspaceDirPath = path.join(process.cwd(), 'workspaces', script.workspaceId, 'scripts');
+    scriptDirPath = path.join(workspaceDirPath, filepath);
+    scriptFilePath = path.join(scriptDirPath, script.name);
 
     args.push('-I', workspaceDirPath, '-syntax', scriptFilePath);
 
-    eclccCmd(args, workspaceDirPath).then((response) => {
-      return res.json({ success: true });
-    }).catch((response) => {
-      console.log(response);
-      let errors = [], parsedErrors = [];
-      if (response.stderr !== '') {
-        errors = response.stderr.split(EOL);
-        // errors.pop();
-        errors.forEach((error) => {
-          console.log(error);
-          if (error.match(new RegExp(/.*\):\s+(error|warning)\s+[A-Z0-9]+\s*:\s+(.*)/))) {
-            parsedErrors.push({
-              'Source': 'eclcc',
-              'Severity': 'Error',
-              'FileName': error.match(new RegExp(/(.*)\(/))[1],
-              'LineNo': error.match(new RegExp(/.*\(([0-9]+)/))[1],
-              'Column': error.match(new RegExp(/.*\([0-9]+,([0-9]+)/))[1],
-              'Message': error.match(new RegExp(/.*\):\s+(error|warning)\s+[A-Z0-9]+\s*:\s+(.*)/))[2]
+    switch (extension) {
+      case '.hsql':
+        hsqlc.fileToECL(path.parse(scriptFilePath)).then(eclTranslationResult => {
+          let parsedErrors = [];
+          if (eclTranslationResult.getErrorsList().length > 0) {
+            //Has Errors
+            eclTranslationResult.getErrorsList().map(e => {
+              parsedErrors.push({
+                'Source': 'hsqlc',
+                'Severity': 'Error',
+                'FileName': script.name,
+                'LineNo': e.line,
+                'Column': e.column,
+                'Message': e.msg
+              });
+            });
+            return res.json({ success: false, errors: parsedErrors, data: {} });
+          }
+          return res.json({ success: true });
+        });
+        break;
+      case '.ecl':
+      default:
+        eclccCmd(args, workspaceDirPath).then((response) => {
+          return res.json({ success: true });
+        }).catch((response) => {
+          console.log(response);
+          let errors = [], parsedErrors = [];
+          if (response.stderr !== '') {
+            errors = response.stderr.split(EOL);
+            // errors.pop();
+            errors.forEach((error) => {
+              console.log(error);
+              if (error.match(new RegExp(/.*\):\s+(error|warning)\s+[A-Z0-9]+\s*:\s+(.*)/))) {
+                parsedErrors.push({
+                  'Source': 'eclcc',
+                  'Severity': 'Error',
+                  'FileName': error.match(new RegExp(/(.*)\(/))[1],
+                  'LineNo': error.match(new RegExp(/.*\(([0-9]+)/))[1],
+                  'Column': error.match(new RegExp(/.*\([0-9]+,([0-9]+)/))[1],
+                  'Message': error.match(new RegExp(/.*\):\s+(error|warning)\s+[A-Z0-9]+\s*:\s+(.*)/))[2]
+                });
+              }
             });
           }
+          return res.json({ success: false, errors: parsedErrors, data: {} });
         });
-      }
-      return res.json({ success: false, errors: parsedErrors, data: {} });
-    });
+        break;
+    }
   });
 });
 
@@ -291,7 +335,7 @@ router.put('/', [
     body('id')
       .isUUID(4).withMessage('Invalid script id'),
     body('name')
-      .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/).withMessage('Invalid script name')
+      .matches(/^[a-zA-Z]{1}[a-zA-Z0-9_\.]*$/).withMessage('Invalid script name')
       .escape(),
     body('path')
       .optional({ checkFalsy: true})
@@ -333,9 +377,15 @@ router.put('/', [
       }
 
       let script = {},
-          path = req.body.path || '';
+          path = req.body.path || '',
+          extension = req.body.name.substr(req.body.name.lastIndexOf('.'));
 
-      if (req.body.name) script.name = req.body.name;
+      if (req.body.name) {
+        if (!allowedScriptExtensions.includes(extension)) {
+          req.body.name += '.ecl';
+        }
+        script.name = req.body.name;
+      }
       if (req.body.filename) script.filename = req.body.filename;
       if (req.body.logicalfile) script.logicalfile = req.body.logicalfile;
       if (req.body.workspaceId) script.workspaceId = req.body.workspaceId;
@@ -345,8 +395,8 @@ router.put('/', [
       if (Object.keys(script).length > 0) {
         let workspaceDirPath = process.cwd() + '/workspaces/' + script.workspaceId + '/scripts/',
             scriptDirPath = workspaceDirPath + ( (path != '') ? path + '/' : '' ),
-            currentScriptFilePath = scriptDirPath + req.body.prevName + '.ecl',
-            newScriptFilePath = scriptDirPath + script.name + '.ecl';
+            currentScriptFilePath = scriptDirPath + req.body.prevName,
+            newScriptFilePath = scriptDirPath + script.name;
 
         if (fs.existsSync(currentScriptFilePath)) {
           fs.rename(currentScriptFilePath, newScriptFilePath, (err) => {
