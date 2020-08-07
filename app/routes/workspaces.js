@@ -20,8 +20,6 @@ const path = require('path');
 
 const { param, body, validationResult } = require('express-validator/check');
 
-const crypt = require('../utils/crypt');
-const unzip = require('../utils/unzip');
 const clusterWhitelist = require('../cluster-whitelist')[process.env.NODE_ENV];
 
 const User = db.User;
