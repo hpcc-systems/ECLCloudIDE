@@ -30,6 +30,9 @@ let addScript = (script) => {
   $newScript.removeClass('d-none cloner');
   $newScript.data('id', script.id);
   $newScript.data('name', script.name);
+  if (script.name.indexOf('.hsql') > -1) {
+    $newScript.addClass('hsql');
+  }
   $newScript.data('revisionId', script.revisionId);
   $newScript.data('content', script.content);
   $newScript.data('parentPathNames', script.parentPathNames);

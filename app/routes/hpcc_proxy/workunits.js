@@ -4,6 +4,8 @@ const router = express.Router();
 const cp = require('child_process');
 
 const fs = require('fs-extra');
+const path = require('path');
+const { EOL } = require('os');
 
 const { query, body, validationResult } = require('express-validator/check');
 
@@ -12,8 +14,10 @@ const dns = require('dns');
 const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}';
 const ipRegex = new RegExp(`(?:^${ipv4}$)`);
 
-let request = require('request-promise');
+const allowedScriptExtensions = [ '.hsql', '.ecl' ];
 
+let request = require('request-promise');
+let hsqlc = require('@clemje01/hsqlc');
 let crypt = require('../../utils/crypt');
 
 const db = require('../../models/index');
@@ -203,12 +207,12 @@ router.put('/', [
     .isUUID(4).withMessage('Invalid dataset id'),
   body('filename')
     .optional({ checkFalsy: true })
-    .matches(/^[a-zA-Z]{1}[-a-zA-Z0-9_]*\.ecl$/).withMessage('Invalid script filename'),
+    .matches(/^[a-zA-Z]{1}[-a-zA-Z0-9_]*\.(ecl|hsql)$/).withMessage('Invalid script filename'),
   body('scriptPath')
     .optional({ checkFalsy: true })
     .matches(/^[a-zA-Z0-9\/]+$/).withMessage('Invalid path for script'),
   buildClusterAddr,
-], (req, res, next) => {
+], async (req, res, next) => {
 
   let _query = req.body.query,
       _filename = req.body.filename,
@@ -216,7 +220,8 @@ router.put('/', [
       _datasetId = req.body.datasetId || null,
       _workspaceId = req.body.workspaceId,
       workspacePath = process.cwd() + '/workspaces/' + _workspaceId,
-      scriptPath = process.cwd() + '/workspaces/' + _workspaceId;
+      scriptPath = process.cwd() + '/workspaces/' + _workspaceId,
+      scriptFilePath = null;
 
   if (_datasetId) {
     scriptPath += '/datasets/' + _datasetId + '/';
@@ -226,6 +231,24 @@ router.put('/', [
 
   if (!fs.existsSync(scriptPath)) {
     fs.mkdirpSync(scriptPath);
+  }
+
+  let extension = _filename.substr(_filename.lastIndexOf('.'))
+
+  if (!allowedScriptExtensions.includes(extension)) {
+    _filename += '.ecl';
+  }
+
+  scriptFilePath = path.join(scriptPath, _filename);
+
+  if (extension == '.hsql') {
+    let eclTranslationResult = await hsqlc.fileToECL(path.parse(scriptFilePath));
+
+    _filename = _filename.substr(0, _filename.lastIndexOf('.')) + '.ecl';
+    scriptFilePath = path.join(scriptPath, _filename);
+    const program = eclTranslationResult.translated.join(`;${EOL}`);
+    console.log(`write file ${scriptFilePath}`);
+    fs.writeFileSync(scriptFilePath, program);
   }
 
   let args = ['-E', scriptPath + '/' + _filename];

@@ -197,7 +197,7 @@ require.config({
 
 require([
   'codemirror', '_/lodash.min', '@hpcc-js/comms', 'papaparse/papaparse.min',
-  'downloadjs', 'g2plot', 'codemirror/mode/ecl/ecl',
+  'downloadjs', 'g2plot', 'codemirror/mode/ecl/ecl', 'codemirror/mode/sql/sql',
   'codemirror/addon/selection/active-line',
   'codemirror/addon/scroll/simplescrollbars',
   'codemirror/addon/comment/comment',
@@ -1995,6 +1995,12 @@ let displayWorkunitResults = (opts) => {
         $clusters = $('.thors'),
         $selectedCluster = $('#selectTarget');
 
+    if ($this.data('name').indexOf('.hsql') > -1) {
+      editors[$activeEditor.index()].setOption('mode', 'sql');
+    } else {
+      editors[$activeEditor.index()].setOption('mode', 'ecl');
+    }
+
     if (!directoryTree.openTabs) {
       directoryTree.openTabs = {
         'main-script-tabs': [ $this.data('id') ],
@@ -3265,13 +3271,13 @@ let displayWorkunitResults = (opts) => {
     });
   };
 
-  $scriptControls.on('click', '.run-script', function(evt) {
+  $scriptControls.on('click', '.run-script', async function(evt) {
     let $script = $('.scripts .active'),
         editors = [ editor, editor2 ],
         activeEditor = editors[$('.editor.active').index()],
         _query = activeEditor.getValue(),
         _wuid = '',
-        _filename = $script.data('name') + '.ecl',
+        _filename = $script.data('name'),
         $activeWorkspace = $('.workspaces .active'),
         $selectCluster = $('#selectTarget'),
         $clusterPopoverTarget = $('.target-popover'),
@@ -3285,6 +3291,16 @@ let displayWorkunitResults = (opts) => {
     $(this).blur();
     evt.preventDefault();
 
+    changeRunButtonState($runButton, 'running');
+
+    let compilationResult = await compileScript($script, activeEditor);
+
+    if (compilationResult.success == false) {
+      changeRunButtonState($runButton, 'failed');
+      updateCodemirrorAnnotations(compilationResult.errors, activeEditor);
+      return false;
+    }
+
     if (!$cluster) {
       $clusterPopoverTarget.trigger('focusin');
       let _t = window.setTimeout(() => {
@@ -3293,8 +3309,6 @@ let displayWorkunitResults = (opts) => {
       }, 2000);
       return false;
     }
-
-    changeRunButtonState($runButton, 'running');
 
     fetch('/scripts/revision/', {
       method: 'POST',
@@ -3544,7 +3558,24 @@ let displayWorkunitResults = (opts) => {
     });
   });
 
-  $scriptControls.on('click', '.compile-script', function(evt) {
+  let compileScript = async ($script, editor) => {
+    let response = await fetch('/scripts/compile/', {
+      method: 'POST',
+      body: JSON.stringify({
+        scriptId: $script.data('id'),
+        path: $script.data('parentPathNames'),
+        content: editor.getValue()
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
+      }
+    })
+    let json = await response.json();
+    return json;
+  };
+
+  $scriptControls.on('click', '.compile-script', async function(evt) {
     let $script = $('.scripts .active'),
         $button = $(this),
         $icon = $button.find('.fa'),
@@ -3565,32 +3596,16 @@ let displayWorkunitResults = (opts) => {
     $button.removeClass('badge-danger badge-info').addClass('badge-secondary');
     $icon.removeClass('fa-question fa-close fa-check').addClass('fa-spin fa-spinner');
 
-    fetch('/scripts/compile/', {
-      method: 'POST',
-      body: JSON.stringify({
-        scriptId: $script.data('id'),
-        path: $script.data('parentPathNames'),
-        content: editor.getValue()
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        'CSRF-Token': csrfToken
-      }
-    })
-    .then(response => response.json())
-    .then((json) => {
-      if (json.success) {
-        $button.removeClass('badge-secondary').addClass('badge-info');
-        $icon.removeClass('fa-spin fa-spinner').addClass('fa-check');
-      } else {
-        let _annotateTimeout = window.setTimeout(function() {
-          $button.removeClass('badge-secondary').addClass('badge-danger');
-          $icon.removeClass('fa-spin fa-spinner').addClass('fa-close');
-          updateCodemirrorAnnotations(json.errors, activeEditor);
-          window.clearTimeout(_annotateTimeout);
-        }, 500);
-      }
-    });
+    let compilationResult = await compileScript($script, activeEditor);
+
+    if (compilationResult.success) {
+      $button.removeClass('badge-secondary').addClass('badge-info');
+      $icon.removeClass('fa-spin fa-spinner').addClass('fa-check');
+    } else {
+      $button.removeClass('badge-secondary').addClass('badge-danger');
+      $icon.removeClass('fa-spin fa-spinner').addClass('fa-close');
+      updateCodemirrorAnnotations(compilationResult.errors, activeEditor);
+    }
   });
 
   $scriptTabs.on('click', 'li', function(evt) {

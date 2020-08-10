@@ -388,6 +388,10 @@ a.script:hover {
   position: absolute;
 }
 
+.hsql::before {
+  content: "\f1dc";
+}
+
 .foldername, .scriptname, .datasetname {
   width: 65%;
   display: inline-block;
