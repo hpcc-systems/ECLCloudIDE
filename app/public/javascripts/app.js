@@ -3991,7 +3991,11 @@ let displayWorkunitResults = (opts) => {
         case 13: // Enter
           evt.preventDefault();
           if ($target.hasClass('form-control')) {
-            $target.parents('form').find('.btn-primary').trigger('click');
+            let $btn = $target.parents('.modal-content').find('.btn-primary');
+            if (!$btn || $btn.length < 1) {
+              $btn = $target.parents('form').find('.btn-primary');
+            }
+            $btn.trigger('click');
           }
           break;
         case 27:
