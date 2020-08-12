@@ -55,12 +55,17 @@ block content
         div.script-panel.bg-dark.d-none.flex-column
           div.script-panel-controls-wrapper
             div.script-controls-row-one.d-flex.justify-content-between
-              div#script-tabs-1.script-tabs.main-script-tabs.ml-2.pr-2.position-relative
+              div#script-tabs-1.script-tabs.main-script-tabs.ml-2.pr-2.position-relative.d-flex.align-items-center
                 ul.tab-list.list-unstyled.d-flex.m-0.flex-wrap
                   li.cloner.d-none.border-top-0.border.rounded-bottom.mr-1
                     a.p-2.align-middle.d-inline-block.text-decoration-none(href="#")
                       span Name
                       i.fa.fa-close.p-0.ml-1
+                a.btn.btn-outline-light.btn-add(
+                  href='#', title="New Script...", data-toggle="modal",
+                  data-target="#newScriptModal"
+                )
+                  i.fa.fa-plus
               div#script-tabs-2.script-tabs.secondary-script-tabs.ml-2.empty
                 ul.tab-list.list-unstyled.d-flex.m-0.flex-wrap
                   li.cloner.d-none.border-top-0.border.rounded-bottom.mr-1

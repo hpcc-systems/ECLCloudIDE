@@ -2,18 +2,19 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar(data-o
   div.sidebar-sticky
 
     div.px-3.py-3(id="datasets-wrapper")
-      h6.sidebar-heading.justify-content-between.align-items-center.mt-1.mb-1.text-light
-        a#dataset-collapser.text-light.js-collapser(
-          data-toggle="collapse", href="#datasets", role="button",
-          aria-expanded="false"
-        )
-          span Datasets
-            i.fa.fa-chevron-right.ml-1.mt-1
-        a#new-dataset.text-light.badge.badge-pill.badge-secondary.float-right(
-          href='#', title="New Dataset...", data-toggle="modal",
-          data-target="#newDatasetModal"
-        ) New
-          i.fa.fa-plus.ml-1.float-right
+      div.d-flex.align-items-center
+        h6.sidebar-heading.flex-grow-1.mt-1.mb-1.text-light
+          a#dataset-collapser.text-light.js-collapser(
+            data-toggle="collapse", href="#datasets", role="button",
+            aria-expanded="false"
+          )
+            span Datasets
+              i.fa.fa-chevron-right.ml-1.mt-1
+        a#new-dataset.btn.btn-outline-light.btn-add(
+            href='#', title="New Dataset...", data-toggle="modal",
+            data-target="#newDatasetModal"
+          )
+            i.fa.fa-plus
 
       div.flex-column.datasets.collapse.folder-root(id="datasets")
         a.text-light.dataset.cloner.d-none(href='#')
@@ -27,18 +28,19 @@ nav.col-sm-4.col-md-3.col-lg-3.col-xl-2.d-none.d-sm-block.bg-dark.sidebar(data-o
           span.cols.d-none Columns: ?
 
     div.px-3.py-3(id="scripts-wrapper")
-      h6.sidebar-heading.justify-content-between.align-items-center.mt-4.mb-1.text-light
-        a#script-collapser.text-light.js-collapser(
-          data-toggle="collapse", href="#scripts", role="button",
-          aria-expanded="false"
-        )
-          span Scripts
-            i.fa.fa-chevron-right.ml-1.mt-1
-        a#new-script.text-light.badge.badge-pill.badge-secondary.float-right(
-          href='#', title="New Script...", data-toggle="modal",
-          data-target="#newScriptModal"
-        ) New
-          i.fa.fa-plus.ml-1.float-right
+      div.d-flex.align-items-center
+        h6.sidebar-heading.flex-grow-1.mb-1.text-light
+          a#script-collapser.text-light.js-collapser(
+            data-toggle="collapse", href="#scripts", role="button",
+            aria-expanded="false"
+          )
+            span Scripts
+              i.fa.fa-chevron-right.ml-1.mt-1
+        a#new-script.btn.btn-outline-light.btn-add(
+            href='#', title="New Script...", data-toggle="modal",
+            data-target="#newScriptModal"
+          )
+            i.fa.fa-plus
 
       div.flex-column.scripts.collapse.folder-root(id="scripts")
         a.text-light.script.cloner.d-none(href='#')

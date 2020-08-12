@@ -140,8 +140,13 @@ a {
   font-weight: bold;
 }
 
+.workspace-btn-wrapper {
+  display: flex;
+  align-items: center;
+}
+
 .workspace-btn {
-  margin: 10px 0 0 10px;
+  padding: 0.5em 0.7em;
 }
 
 #workspaceSelect {
@@ -289,13 +294,28 @@ a {
   border-bottom: 1px solid #242a30;
 }
 
-.sidebar.SM #new-dataset,
-.sidebar.SM #new-script {
+.btn-add {
+  padding: 0 0.25rem;
+}
+
+.btn-add .fa {
+  font-size: 12px;
+  padding: 3px;
+}
+
+a.btn-add:hover {
+  color: #343a40 !important;
+}
+
+a.btn-add:focus {
+  box-shadow: none;
+}
+
+.sidebar.SM .btn-add {
   display: none;
 }
 
-.sidebar.MD #new-dataset,
-.sidebar.MD #new-script {
+.sidebar.MD .btn-add {
   display: initial;
 }
 
@@ -511,8 +531,12 @@ main .loader p {
   padding: 3px;
 }
 
+.script-panel-controls-wrapper .btn-add {
+  padding: 0 0.25rem;
+}
+
 .script-panel-controls i:hover,
-.script-panel i:hover {
+.script-panel i:not(.fa-plus):hover {
   color: #fffc;
   cursor: pointer;
 }

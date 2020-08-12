@@ -14,14 +14,14 @@ nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
             p.m-0.float-left No workspaces yet.#[br] Create one now.
             span.float-right
               i.mt-1.mr-2.fa.fa-2x.fa-arrow-up
-      li.nav-item
-        a.workspace-btn.new-workspace.text-light.badge.badge-pill.badge-secondary.float-left(
+      li.nav-item.workspace-btn-wrapper
+        a.workspace-btn.new-workspace.text-light.badge.badge-pill.badge-secondary.ml-2(
           href='#', title="New Workspace...", data-toggle="modal",
           data-target="#newWorkspaceModal"
         ) NEW
             i.fa.fa-plus.ml-1.float-right
-      li.nav-item.d-none
-        a.workspace-btn.delete-workspace.text-light.badge.badge-pill.badge-danger.float-left(
+      li.nav-item.d-none.align-items-center.workspace-btn-wrapper
+        a.workspace-btn.delete-workspace.text-light.badge.badge-pill.badge-danger.ml-2(
           href='#', title="Delete Workspace...", data-toggle="modal",
           data-target="#removeWorkspaceModal"
         ) DELETE
