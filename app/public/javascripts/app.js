@@ -3216,7 +3216,8 @@ let displayWorkunitResults = (opts) => {
       $scriptTabs = $('.script-tabs'),
       $scriptControls = $('.script-controls'),
       $runButton = $('.script-controls .run-script'),
-      $outputsList = $('.outputs-list');
+      $outputsList = $('.outputs-list'),
+      $wuLink = $('.wu-link a');
 
   let changeRunButtonState = ($runButton, state) => {
     switch (state) {
@@ -3365,6 +3366,7 @@ let displayWorkunitResults = (opts) => {
                   changeRunButtonState($runButton, 'ready');
                   $main.addClass('show-outputs');
                   $outputsList.html('');
+                  $wuLink.text(_wuid).attr('href', $activeWorkspace.data('cluster') + '/?Wuid=' + _wuid + '&Widget=WUDetailsWidget');
                   json.results.forEach((result, idx) => {
                     let classList = ['output', 'text-light', 'badge', 'ml-2'],
                         outputLabel = result.name;
@@ -3435,6 +3437,7 @@ let displayWorkunitResults = (opts) => {
 
   $scriptControls.on('click', '.show-results', function(evt) {
     let $this = $(this),
+        $activeWorkspace = $('.workspaces .active'),
         $script = $('.scripts .active'),
         $main = $('main'),
         _wuid = $script.data('wuid') ? $script.data('wuid') : '',
@@ -3456,6 +3459,7 @@ let displayWorkunitResults = (opts) => {
             changeRunButtonState($runButton, 'ready');
             $main.addClass('show-outputs');
             $outputsList.html('');
+            $wuLink.text(_wuid).attr('href', $activeWorkspace.data('cluster') + '/?Wuid=' + _wuid + '&Widget=WUDetailsWidget');
             json.results.forEach((result, idx) => {
               let classList = ['output', 'text-light', 'badge', 'ml-2'],
                   outputLabel = result.name;

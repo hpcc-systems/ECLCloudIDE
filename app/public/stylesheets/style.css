@@ -108,6 +108,10 @@ a {
   vertical-align: bottom;
 }
 
+.wu-link {
+  vertical-align: bottom;
+}
+
 .show-outputs .outputs-panel {
   display: flex;
 }
