@@ -10,15 +10,15 @@ block content
     div.row
       include ./includes/sidebar
 
-      main.px-4(role='main')
-        div.outputs-panel
+      main.d-flex.flex-column(role='main')
+        div.outputs-panel.align-items-center
           span.outputs-label OUTPUTS
           span.outputs-list
         div.loader.d-none
           i.fa.fa-refresh.fa-spin
           p Loading...
         div.dashboard-wrapper.d-none
-        div.dataset-content.d-none
+        div.dataset-content.px-3.d-none
           h4 Taxi Trips Raw
             span.scopename.d-none (scope)
           div.table-wrapper

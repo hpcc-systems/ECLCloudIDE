@@ -14,7 +14,7 @@ a {
 
 .login-page form {
   width: 400px;
-  margin: 0 auto;
+  margin: 220px auto 0;
 }
 
 .help-menu {
@@ -69,12 +69,9 @@ a {
 }
 
 [role="main"] {
-  padding-top: 58px;
-  width: 85%;
 }
 
 [role="main"].show-outputs {
-  padding-top: 88px;
 }
 
 [role="main"] h4 {
@@ -96,12 +93,9 @@ a {
 
 .outputs-panel {
   display: none;
-  position: absolute;
-  width: 100%;
-  top: 53px;
   background: #343a40;
-  padding: 6px 0 7px 14px;
-  left: 0;
+  padding: 0.66rem 0.75rem;
+  margin-top: 55px;
   border-bottom: 1px solid #242a30;
 }
 
@@ -110,13 +104,12 @@ a {
 }
 
 .outputs-label {
-  margin: 0 0 0 10px;
   color: #f8f9fa;
   vertical-align: bottom;
 }
 
 .show-outputs .outputs-panel {
-  display: block;
+  display: flex;
 }
 
 .dataset-content {

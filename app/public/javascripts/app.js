@@ -222,7 +222,6 @@ require([
     'width': 'calc(100% - ' + $sidebar.css('width') + ')',
   });
   $outputsPanel.css('left', $sidebar.css('width'));
-  $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
   $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
 
   $sidebar.resizable({
@@ -280,7 +279,6 @@ require([
         'margin-left': '60px'
       }).find('.outputs-panel').css({
         'left': '60px',
-        'width': 'calc(100% - 60px)'
       });
     } else {
       let lastWidth = $sidebar.data('last-width') || '225px';
@@ -291,7 +289,6 @@ require([
         'margin-left': lastWidth
       }).find('.outputs-panel').css({
         'left': lastWidth,
-        'width': 'calc(100% - ' + lastWidth + ')'
       });
     }
   });
