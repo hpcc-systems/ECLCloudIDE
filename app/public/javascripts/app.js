@@ -2261,7 +2261,7 @@ let displayWorkunitResults = (opts) => {
         parentPathNames = $saveBtn.data('parentPathNames') || [],
         directoryTree = JSON.parse($activeWorkspace.data('directoryTree')),
         $parentEl = $saveBtn.data('parentToReceiveChild') || $('.scripts').children('ul').first(),
-        $newScript = null,
+        newScriptId = null,
         $scriptName = $('#new-script-name'),
         $form = $modal.find('form'),
         data = getFormData($form);
@@ -2300,6 +2300,8 @@ let displayWorkunitResults = (opts) => {
       }
 
       // console.log(script, parentPath, directoryTree);
+
+      newScriptId = script.data.id;
 
       let rootId = null,
           nextId = null,
@@ -2352,16 +2354,7 @@ let displayWorkunitResults = (opts) => {
         newFile.parentPathNames = data.parentPathNames;
 
         $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
-        $newScript = $(addScript(newFile));
-
-        if ($parentEl[0].nodeName.toLowerCase() == 'ul') {
-          $parentEl.append($newScript);
-        } else {
-          if ($parentEl.find('ul').first().length == 0) {
-            $parentEl.append('<ul>');
-          }
-          $parentEl.find('ul').first().append($newScript);
-        }
+        populateWorkspaceDirectoryTree(directoryTree);
 
         toggleNewScriptPopover();
 
@@ -2372,7 +2365,10 @@ let displayWorkunitResults = (opts) => {
 
         showScripts();
 
-        $newScript.find('.script').trigger('click');
+        $('.scripts')
+          .find('.script')
+          .filter((idx, el) => $(el).data('id') == newScriptId)
+          .trigger('click');
       });
     });
   });
