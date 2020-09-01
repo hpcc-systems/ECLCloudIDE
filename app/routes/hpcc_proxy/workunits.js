@@ -233,27 +233,27 @@ router.put('/', [
     fs.mkdirpSync(scriptPath);
   }
 
-  let extension = _filename.substr(_filename.lastIndexOf('.'))
-
-  if (!allowedScriptExtensions.includes(extension)) {
-    _filename += '.ecl';
-  }
-
-  scriptFilePath = path.join(scriptPath, _filename);
-
-  if (extension == '.hsql') {
-    let eclTranslationResult = await hsqlc.fileToECL(path.parse(scriptFilePath));
-
-    _filename = _filename.substr(0, _filename.lastIndexOf('.')) + '.ecl';
-    scriptFilePath = path.join(scriptPath, _filename);
-    const program = eclTranslationResult.translated.join(`;${EOL}`);
-    console.log(`write file ${scriptFilePath}`);
-    fs.writeFileSync(scriptFilePath, program);
-  }
-
-  let args = ['-E', scriptPath + '/' + _filename];
-
   if (_filename) {
+    let extension = _filename.substr(_filename.lastIndexOf('.'))
+
+    if (!allowedScriptExtensions.includes(extension)) {
+      _filename += '.ecl';
+    }
+
+    scriptFilePath = path.join(scriptPath, _filename);
+
+    if (extension == '.hsql') {
+      let eclTranslationResult = await hsqlc.fileToECL(path.parse(scriptFilePath));
+
+      _filename = _filename.substr(0, _filename.lastIndexOf('.')) + '.ecl';
+      scriptFilePath = path.join(scriptPath, _filename);
+      const program = eclTranslationResult.translated.join(`;${EOL}`);
+      console.log(`write file ${scriptFilePath}`);
+      fs.writeFileSync(scriptFilePath, program);
+    }
+
+    let args = ['-E', scriptPath + '/' + _filename];
+
     try {
       let _files = fs.readdirSync(workspacePath + '/scripts/', { withFileTypes: true });
       if (_datasetId) {
