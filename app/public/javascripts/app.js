@@ -219,7 +219,6 @@ require([
   });
   $main.css({
     'margin-left': $sidebar.css('width'),
-    'width': 'calc(100% - ' + $sidebar.css('width') + ')',
   });
   $outputsPanel.css('left', $sidebar.css('width'));
   $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
@@ -232,7 +231,6 @@ require([
         'width': 'calc(100% - ' + $sidebar.css('width') + ')',
       });
       $outputsPanel.css('left', $sidebar.css('width'));
-      $outputsPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
       $scriptPanel.css('width', 'calc(100% - ' + $sidebar.css('width') + ')');
     },
     stop: function(evt, ui) {

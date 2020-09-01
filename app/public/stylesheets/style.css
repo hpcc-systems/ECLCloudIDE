@@ -69,6 +69,7 @@ a {
 }
 
 [role="main"] {
+  width: 100%;
 }
 
 [role="main"].show-outputs {
