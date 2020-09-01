@@ -295,8 +295,7 @@ require([
 
 let displayWorkunitResults = (opts) => {
   let $datasetContent = $('.dataset-content'),
-      $title = $datasetContent.find('h4'),
-      $scopeDefn = $title.find('.scopename'),
+      $scopeDefn = $outputsPanel.find('.scopename'),
       $activeWorkspace = $('.workspaces .active'),
       query = $('.datasets .active').data('query'),
       scopeRegex = /\~([-a-zA-Z0-9_]+::)+[-a-zA-Z0-9_]+\.[a-zA-Z]+_thor/,
@@ -312,9 +311,11 @@ let displayWorkunitResults = (opts) => {
 
   opts = { ...defaultOpts, ...opts };
 
-  $title.contents()[0].nodeValue = opts.title;
-
   $datasetContent.addClass('d-none');
+  if (opts.logicalfile) {
+    $outputsList.addClass('d-none');
+    $outputsPanel.find('.wu-link').addClass('d-none');
+  }
   $scopeDefn.addClass('d-none');
   $loader.removeClass('d-none');
 
@@ -3213,7 +3214,7 @@ let displayWorkunitResults = (opts) => {
       $scriptControls = $('.script-controls'),
       $runButton = $('.script-controls .run-script'),
       $outputsList = $('.outputs-list'),
-      $wuLink = $('.wu-link a');
+      $wuLink = $('.wu-link');
 
   let changeRunButtonState = ($runButton, state) => {
     switch (state) {
@@ -3362,7 +3363,13 @@ let displayWorkunitResults = (opts) => {
                   changeRunButtonState($runButton, 'ready');
                   $main.addClass('show-outputs');
                   $outputsList.html('');
-                  $wuLink.text(_wuid).attr('href', $activeWorkspace.data('cluster') + '/?Wuid=' + _wuid + '&Widget=WUDetailsWidget');
+                  $outputsPanel.find('.scopename').addClass('d-none');
+                  let $link = $wuLink.find('a')
+                  $link.text(_wuid).attr({
+                    href: $activeWorkspace.data('cluster') + '/?Wuid=' + _wuid + '&Widget=WUDetailsWidget',
+                    target: '_blank'
+                  }).addClass('text-light');
+                  $wuLink.removeClass('d-none').append($link);
                   json.results.forEach((result, idx) => {
                     let classList = ['output', 'text-light', 'badge', 'ml-2'],
                         outputLabel = result.name;
@@ -3389,6 +3396,7 @@ let displayWorkunitResults = (opts) => {
                     $output.data('resultname', result.name);
                     $outputsList.append($output);
                   });
+                  $outputsList.removeClass('d-none');
                   $outputsList.children().eq(0).trigger('click');
 
                   let _annotateTimeout = window.setTimeout(function() {
@@ -3441,6 +3449,7 @@ let displayWorkunitResults = (opts) => {
         activeEditor = editors[$('.editor.active').index()];
 
     $main.removeClass('show-outputs');
+    $outputsPanel.find('.scopename').addClass('d-none');
     $outputsList.html('');
 
     if (_wuid !== '') {
@@ -3455,7 +3464,12 @@ let displayWorkunitResults = (opts) => {
             changeRunButtonState($runButton, 'ready');
             $main.addClass('show-outputs');
             $outputsList.html('');
-            $wuLink.text(_wuid).attr('href', $activeWorkspace.data('cluster') + '/?Wuid=' + _wuid + '&Widget=WUDetailsWidget');
+            let $link = $wuLink.find('a');
+            $link.text(_wuid).attr({
+              href: $activeWorkspace.data('cluster') + '/?Wuid=' + _wuid + '&Widget=WUDetailsWidget',
+              target: '_blank',
+            }).addClass('text-light');
+            $wuLink.removeClass('d-none').append($link);
             json.results.forEach((result, idx) => {
               let classList = ['output', 'text-light', 'badge', 'ml-2'],
                   outputLabel = result.name;
@@ -3480,6 +3494,7 @@ let displayWorkunitResults = (opts) => {
               let $output = $('<a href="#" class="' + classList.join(' ') + '">' + outputLabel + '</a>');
               $output.data('sequence', idx);
               $output.data('resultname', result.name);
+              $outputsList.removeClass('d-none');
               $outputsList.append($output);
             });
             $outputsList.children().eq(0).trigger('click');

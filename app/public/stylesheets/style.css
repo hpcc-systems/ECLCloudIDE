@@ -92,9 +92,8 @@ a {
 }
 
 .outputs-panel {
-  display: none;
+  display: flex;
   background: #343a40;
-  padding: 0.66rem 0.75rem;
   margin-top: 55px;
   border-bottom: 1px solid #242a30;
 }
@@ -110,10 +109,11 @@ a {
 
 .wu-link {
   vertical-align: bottom;
+  margin: 0.66rem 0 0.66rem 0.75rem;
 }
 
-.show-outputs .outputs-panel {
-  display: flex;
+.scopename {
+  margin: 0.66rem 0.75rem;
 }
 
 .dataset-content {

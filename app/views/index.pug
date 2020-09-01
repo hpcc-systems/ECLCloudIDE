@@ -12,16 +12,15 @@ block content
 
       main.d-flex.flex-column(role='main')
         div.outputs-panel.align-items-center
-          span.wu-link
+          span.wu-link.d-none
             a.text-light(href="#", target="_blank")
-          span.outputs-list
+          span.scopename.text-light.d-none (scope)
+          span.outputs-list.d-none
         div.loader.d-none
           i.fa.fa-refresh.fa-spin
           p Loading...
         div.dashboard-wrapper.d-none
         div.dataset-content.px-3.d-none
-          h4 Taxi Trips Raw
-            span.scopename.d-none (scope)
           div.table-wrapper
             table.table
               thead
