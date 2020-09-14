@@ -355,10 +355,6 @@ let displayWorkunitResults = (opts) => {
       let results = wuResult.WUResultResponse.Result.Row,
           schema = comms.parseXSD(wuResult.WUResultResponse.Result.XmlSchema.xml).root;
 
-      if (results.length < 1) {
-        throw 'No results for Workunit ' + opts.wuid;
-      }
-
       $tableWrapper.html(
         '<table class="table data-table" style="width: 100%;">' +
         '<thead><tr></tr></thead><tbody></tbody>' +
@@ -458,8 +454,11 @@ let displayWorkunitResults = (opts) => {
         order: [],
         pageLength: 25,
         scrollX: true,
-        scrollY: parseInt(window.innerHeight - 405, 10)
-      });
+        scrollY: parseInt(window.innerHeight - 405, 10),
+        language: {
+          emptyTable: 'No Results'
+        }
+      })
 
       let _t = window.setTimeout(function() {
         dataTable.columns.adjust().draw();
@@ -476,12 +475,7 @@ let displayWorkunitResults = (opts) => {
         $scopeDefn.text('(' + query.match(scopeRegex)[0] + ')');
         $scopeDefn.removeClass('d-none');
       }
-    })
-    .catch((err) => {
-      $loader.addClass('d-none');
-      alert(err);
     });
-
   });
 };
 
