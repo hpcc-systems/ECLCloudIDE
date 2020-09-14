@@ -35,6 +35,7 @@ const hpccFilesprayRouter = require('./hpcc_proxy/filespray');
 const hpccWorkunitsRouter = require('./hpcc_proxy/workunits');
 
 const workspacesCtrl = require('../controllers/workspaces');
+const filesprayCtrl = require('../controllers/filespray');
 
 let request = require('request-promise');
 let _ = require('lodash');
@@ -210,7 +211,7 @@ let shareWorkspace = async (workspaceId, user) => {
                 console.log(_regex.toString(), newScript.id, _directoryTree);
                 let _scriptDirPath = process.cwd() + '/workspaces/' + newScript.workspaceId +
                       '/scripts/' + newScript.eclFilePath,
-                    _scriptFilePath = _scriptDirPath + '/' + newScript.name + '.ecl';
+                    _scriptFilePath = _scriptDirPath + '/' + newScript.name;
 
                 console.log('creating directory: ' + _scriptDirPath);
                 if (!fs.existsSync(_scriptDirPath)) { fs.mkdirpSync(_scriptDirPath); }
@@ -247,7 +248,7 @@ let shareWorkspace = async (workspaceId, user) => {
               return dropzone.TpMachines.TpMachine[0].Netaddress;
             }).then((dropzoneIp) => {
               console.log(dropzoneIp);
-              hpccFilesprayRouter.sprayFile(clusterAddr, filename, user.name, newWorkspace.name, dropzoneIp)
+              filesprayCtrl.sprayFile(clusterAddr, filename, user.name, newWorkspace.name, dropzoneIp)
                 .then((response) => {
                   console.log(response.body);
                   let json = JSON.parse(response.body);
