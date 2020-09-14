@@ -462,8 +462,7 @@ let displayWorkunitResults = (opts) => {
       });
 
       let _t = window.setTimeout(function() {
-        $('.dataTables_scrollHead .data-table, .dataTables_scrollFoot .data-table')
-          .css('width', $('.dataTables_scrollBody .data-table').css('width'));
+        dataTable.columns.adjust().draw();
         $('.dataTables_scrollBody').css({
           'max-height': $('.dataTables_scrollBody').css('height'),
           'height': ''

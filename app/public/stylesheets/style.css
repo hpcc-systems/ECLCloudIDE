@@ -469,6 +469,7 @@ main .loader p {
 }
 
 .table-wrapper {
+  width: 99%;
   margin: 10px 0;
 }
 
