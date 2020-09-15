@@ -471,6 +471,7 @@ main .loader p {
 .table-wrapper {
   width: 99%;
   margin: 10px 0;
+  max-width: 99.5%;
 }
 
 .table-wrapper iframe {
@@ -485,13 +486,21 @@ main .loader p {
   scrollbar-color: rgba(128, 128, 128, 0.66) rgba(0, 0, 0, 0);
 }
 
+.sidebar.MD .sidebar-sticky::-webkit-scrollbar,
 .table-wrapper .dataTables_scrollBody::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
+.sidebar.MD .sidebar-sticky::-webkit-scrollbar-track-piece:start {
+  margin-top: 5px;
+}
+.sidebar.MD .sidebar-sticky::-webkit-scrollbar-track-piece:end {
+  margin-bottom: 7px;
+}
+.sidebar.MD .sidebar-sticky::-webkit-scrollbar,
 .table-wrapper .dataTables_scrollBody::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0);
 }
+.sidebar.MD .sidebar-sticky::-webkit-scrollbar-thumb,
 .table-wrapper .dataTables_scrollBody::-webkit-scrollbar-thumb {
   background-color: rgba(128, 128, 128, 0.66);
   border-radius: 6px;
