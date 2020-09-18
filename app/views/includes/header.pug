@@ -1,5 +1,7 @@
 nav.navbar.navbar-dark.bg-dark.navbar-expand-sm.fixed-top.flex-md-nowrap
-  a.home-logo.navbar-brand(href='/') ECL IDE
+  a.home-logo.navbar-brand(href='/')
+    i.fa.fa-home.fa-lg.mr-1.align-baseline
+    span HOME
   button.navbar-toggler(type='button', data-toggle='collapse', data-target='#main-nav'): span.navbar-toggler-icon
   div#main-nav.collapse.navbar-collapse
     ul.navbar-nav.mr-auto.app-controls
@@ -121,7 +123,7 @@ div.modal.fade(id="newWorkspaceModal", role="dialog")
           div.tab-pane.fade(id="import-workspace-url", role="tabpanel", aria-labelledby="nav-import-workspace-url-tab")
             form(data-type="import-url")
               div.form-group
-                label.col-form-label(for="workspace-url") Import a workspace url shared by another ECL IDE user
+                label.col-form-label(for="workspace-url") Import a workspace url shared by another ECL Cloud IDE user
                 input.form-control(
                   id="workspace-url", name="workspaceName", type="text",
                   required="required", placeholder="Paste share workspace url..."

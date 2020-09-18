@@ -79,19 +79,6 @@ a {
   margin: 0;
 }
 
-.account-page [role="main"] {
-  margin-left: 0 !important;
-  width: auto;
-}
-
-.account-page .app-controls {
-  display: none;
-}
-
-.account-page .sidebar {
-  display: none !important;
-}
-
 .outputs-panel {
   display: flex;
   background: #343a40;
@@ -133,10 +120,29 @@ a {
   border-bottom: 1px solid #242a30;
 }
 
-.navbar .home-logo {
-  color: #ff5722;
-  font-weight: bold;
+.home-logo {
+  color: #9a9da0 !important;
+  display: none;
+  font-size: 1rem;
 }
+
+.account-page [role="main"] {
+  margin: 63px 0 0 0 !important;
+  width: auto;
+}
+
+.account-page .home-logo {
+  display: block;
+}
+
+.account-page .app-controls {
+  display: none;
+}
+
+.account-page .sidebar {
+  display: none !important;
+}
+
 
 .workspace-btn-wrapper {
   display: flex;
