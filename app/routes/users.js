@@ -19,7 +19,7 @@ router.get('/account', (req, res, next) => {
     username: req.session.user.username,
     emailVerified: req.session.user.emailVerified
   };
-  res.render('users/account', { title: 'ECL IDE', user: user });
+  res.render('users/account', { title: 'ECL Cloud IDE', user: user });
 });
 
 /* GET user workspaces */
@@ -55,7 +55,7 @@ router.get('/password/change', (req, res, next) => {
   res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
   console.log('locals', res.locals);
-  res.render('users/change_password', { title: 'ECL IDE', user: user, csrfToken: req.csrfToken() });
+  res.render('users/change_password', { title: 'ECL Cloud IDE', user: user, csrfToken: req.csrfToken() });
 });
 
 /* POST password change */

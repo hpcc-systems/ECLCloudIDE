@@ -21,7 +21,7 @@ router.get('/', (req, res, next) => {
   if (process.env.DATASETS_FLAT == 1) { datasetFormats.push('.txt'); }
 
   res.render('index', {
-    title: 'ECL IDE',
+    title: 'ECL Cloud IDE',
     user: user,
     allowedDatasetFormats: datasetFormats.join(', '),
     csrfToken: req.csrfToken(),

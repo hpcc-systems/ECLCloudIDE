@@ -37,7 +37,7 @@ router.get('/register', (req, res, next) => {
   }
 
   res.locals.errors = req.flash();
-  res.render('auth/register', { title: 'ECL IDE', csrfToken: req.csrfToken() });
+  res.render('auth/register', { title: 'ECL Cloud IDE', csrfToken: req.csrfToken() });
 });
 
 router.post('/register', (req, res, next) => {
@@ -105,7 +105,7 @@ router.get('/login', (req, res, next) => {
   res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
   console.log('locals', res.locals);
-  res.render('auth/login', { title: 'ECL IDE', csrfToken: req.csrfToken() });
+  res.render('auth/login', { title: 'ECL Cloud IDE', csrfToken: req.csrfToken() });
 });
 
 router.post('/login', (req, res, next) => {
@@ -148,7 +148,7 @@ router.get('/forgot', (req, res, next) => {
     res.redirect('/');
   }
 
-  res.render('auth/forgot', { title: 'ECL IDE', csrfToken: req.csrfToken() });
+  res.render('auth/forgot', { title: 'ECL Cloud IDE', csrfToken: req.csrfToken() });
 });
 
 router.post('/forgot', (req, res, next) => {
@@ -170,7 +170,7 @@ router.post('/forgot', (req, res, next) => {
           })
         });
         info = transporter.sendMail({
-          from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+          from: '"ECL Cloud IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
           to: recipients.join(','), // list of receivers
           subject: (subject != '') ? subject : 'Subject', // Subject line
           html: (message != '') ? message : 'Message' // html body
@@ -190,7 +190,7 @@ router.post('/forgot', (req, res, next) => {
         }
       });
       info = await transporter.sendMail({
-        from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+        from: '"ECL Cloud IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
         to: recipients.join(','), // list of receivers
         subject: (subject != '') ? subject : 'Subject', // Subject line
         html: (message != '') ? message : 'Message' // html body
@@ -246,7 +246,7 @@ router.get('/reset/:id', (req, res, next) => {
       req.flash('error', msg);
       res.redirect('/auth/login');
     } else {
-      res.render('auth/reset', { title: 'ECL IDE', id: req.params.id, csrfToken: req.csrfToken() });
+      res.render('auth/reset', { title: 'ECL Cloud IDE', id: req.params.id, csrfToken: req.csrfToken() });
     }
   });
 });
@@ -340,7 +340,7 @@ router.sendVerifyEmail = (req, emailAddress) => {
           })
         });
         info = transporter.sendMail({
-          from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+          from: '"ECL Cloud IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
           to: recipients.join(','), // list of receivers
           subject: (subject != '') ? subject : 'Subject', // Subject line
           html: (message != '') ? message : 'Message' // html body
@@ -360,7 +360,7 @@ router.sendVerifyEmail = (req, emailAddress) => {
         }
       });
       info = await transporter.sendMail({
-        from: '"ECL IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
+        from: '"ECL Cloud IDE ' + Buffer.from('F09FA496', 'hex').toString('utf8') + '" <ecl-ide@hpccsystems.com>', // sender address
         to: recipients.join(','), // list of receivers
         subject: (subject != '') ? subject : 'Subject', // Subject line
         html: (message != '') ? message : 'Message' // html body
@@ -374,7 +374,7 @@ router.sendVerifyEmail = (req, emailAddress) => {
   hash = cipher.update(emailAddress, 'binary', 'hex') + cipher.final('hex');
   url = req.protocol + '://' + req.get('host') + '/auth/email/verify/' + iv.toString('hex') + '/' + hash;
 
-  emailMsg = `This email address has been used to create an account with the ECL IDE
+  emailMsg = `This email address has been used to create an account with the ECL Cloud IDE
   (<a href="${req.protocol + '://' + req.get('host')}">${req.protocol + '://' + req.get('host')}</a>).<br /><br />Click the link below
   (or copy and paste into your web browser) to verify your email address:<br /><br />
   <a href="${url}">${url}</a><br /><br />
