@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     filename: DataTypes.STRING,
     logicalfile: DataTypes.STRING,
+    imported: DataTypes.BOOLEAN,
     rowCount: DataTypes.INTEGER,
     columnCount: DataTypes.INTEGER,
     eclSchema: DataTypes.JSON,

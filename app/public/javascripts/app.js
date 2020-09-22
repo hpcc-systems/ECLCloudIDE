@@ -1436,6 +1436,7 @@ let displayWorkunitResults = (opts) => {
       dataset.wuid = $datasetSearch.data('wuid');
       dataset.rowCount = $datasetSearch.data('rows');
       dataset.columnCount = $datasetSearch.data('query').split('\n').length - 3;
+      dataset.imported = 1;
       dataset.eclQuery = $datasetSearch.data('query');
       dataset.name = $datasetSearch.data('name');
       dataset.filename = $datasetSearch.data('filename');
