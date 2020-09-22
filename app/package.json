@@ -5,16 +5,16 @@
   "scripts": {
     "start": "nodemon ./bin/www --ignore ./landing_zone/ --ignore ./workspaces/",
     "codemirror:clean": "rm -rf ./public/javascripts/codemirror/",
-    "codemirror:copy": "npx cpy **/* ../../public/javascripts/codemirror/ --cwd=node_modules/codemirror --parents",
+    "codemirror:copy": "npx cpy '**/*' '../../public/javascripts/codemirror/' --cwd=node_modules/codemirror --parents",
     "codemirror": "npm run codemirror:clean && npm run codemirror:copy",
     "papaparse:clean": "rm -rf ./public/javascripts/papaparse/",
     "papaparse:copy": "npx cpy node_modules/papaparse/papaparse.min.js public/javascripts/papaparse/",
     "papaparse": "npm run papaparse:clean && npm run papaparse:copy",
     "lodash:clean": "rm -rf ./public/javascripts/lodash/",
-    "lodash:copy": "npx cpy **/* ../../public/javascripts/lodash/ --cwd=node_modules/lodash --parents",
+    "lodash:copy": "npx cpy '**/*' '../../public/javascripts/lodash/' --cwd=node_modules/lodash --parents",
     "lodash": "npm run lodash:clean && npm run lodash:copy",
     "hpccjs:clean": "rm -rf ./public/javascripts/hpcc-js/",
-    "hpccjs:copy": "npx cpy **/* ../../public/javascripts/hpcc-js/ --cwd=node_modules/@hpcc-js --parents",
+    "hpccjs:copy": "npx cpy '**/*' '../../public/javascripts/hpcc-js/' --cwd=node_modules/@hpcc-js --parents",
     "hpccjs": "npm run hpccjs:clean && npm run hpccjs:copy",
     "sortablejs:clean": "rm -rf ./public/javascripts/sortablejs/",
     "sortablejs:copy": "npx cpy node_modules/sortablejs/modular/sortable.esm.js public/javascripts/sortablejs/",
@@ -32,6 +32,7 @@
     "connect-flash": "^0.1.1",
     "connect-session-sequelize": "^6.0.0",
     "cookie-parser": "~1.4.3",
+    "cpy-cli": "^3.1.1",
     "csurf": "^1.10.0",
     "debug": "~4.1.1",
     "dotenv": "^6.2.0",
@@ -56,8 +57,5 @@
     "sequelize": "^5.21.1",
     "sortablejs": "^1.10.2",
     "yauzl": "^2.10.0"
-  },
-  "devDependencies": {
-    "cpy-cli": "^3.1.1"
   }
 }
