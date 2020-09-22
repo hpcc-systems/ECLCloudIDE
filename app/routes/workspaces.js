@@ -225,9 +225,47 @@ let shareWorkspace = async (workspaceId, user) => {
         _promises = _promises.concat(workspaceToClone.Scripts.map(_createScripts));
         // console.log(_promises.length + ' PROMISES!!!!!!!!!!!!!!!! ---- Scripts');
 
-
         let _createDatasets = (datasetToClone) => {
-          return new Promise((resolve) => {
+          return new Promise(async (resolve) => {
+
+            if (datasetToClone.imported) {
+              // console.log('DATASET WAS IMPORTED!!!!!!!!!!!!');
+              let workunit = await Workunit.findOne({
+                attributes: [ 'workunitId', 'objectId', 'createdAt', 'updatedAt' ],
+                where: {
+                  [db.Sequelize.Op.and]: {
+                    objectId: datasetToClone.id,
+                    workunitId: {
+                      [db.Sequelize.Op.like]: 'W%'
+                    }
+                  }
+                }
+              });
+
+              // console.log('workunit for imported dataset', workunit.workunitId);
+              let dataset = await Dataset.create({
+                name: datasetToClone.name,
+                filename: datasetToClone.filename,
+                logicalfile: datasetToClone.logicalfile,
+                imported: datasetToClone.imported,
+                rowCount: datasetToClone.rowCount,
+                columnCount: datasetToClone.columnCount,
+                eclSchema: datasetToClone.eclSchema,
+                eclQuery: datasetToClone.eclQuery,
+                workspaceId: newWorkspace.id
+              });
+
+              let _regex = new RegExp(datasetToClone.id, 'g');
+              _directoryTree = _directoryTree.replace(_regex, dataset.id);
+              // console.log(_regex.toString(), dataset.id, _directoryTree);
+
+              let newWorkunit = await Workunit.create({
+                workunitId: workunit.workunitId,
+                objectId: dataset.id
+              })
+              return resolve();
+            }
+
             console.log('cloning ' + datasetToClone.filename);
             let filename = datasetToClone.filename,
                 clusterAddr = newWorkspace.cluster,

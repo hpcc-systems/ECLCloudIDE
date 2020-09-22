@@ -66,6 +66,8 @@ router.post('/', [
     return res.json({ success: false, message: 'Dataset could not be saved' });
   });
 
+  let imported = req.body.imported || 0;
+
   if (_workspace.Users[0].dataValues.id !== req.session.user.id) {
     return res.status(403).send('Forbidden');
   }
@@ -86,8 +88,13 @@ router.post('/', [
       Dataset.create({
         name: req.body.name,
         filename: req.body.filename,
-        workspaceId: req.body.workspaceId
+        workspaceId: req.body.workspaceId,
+        imported: imported
       }).then((dataset) => {
+        if (imported == 1) {
+          return res.json({ success: true, data: dataset });
+        }
+
         let profileFilePath = process.cwd() + '/workspaces/' + dataset.workspaceId + '/datasets/' +
               dataset.id + '/',
             fileExtension = req.body.filename.substr(req.body.filename.lastIndexOf('.') + 1).toLowerCase(),
