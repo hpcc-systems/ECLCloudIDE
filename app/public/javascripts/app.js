@@ -3877,28 +3877,44 @@ let displayWorkunitResults = (opts) => {
   });
 
   $scriptPanelControls.on('click', '.js-minimize', function() {
-    if ($('.script-panel').hasClass('minimized') || $('.script-panel').hasClass('maximized')) return;
+    let $scriptPanel = $('.script-panel');
+    if ($scriptPanel.hasClass('minimized')) return;
 
-    $('.script-panel').addClass('minimized');
+    $scriptPanel.addClass('minimized');
     $('.script-panel-placeholder').addClass('minimized');
     if ($('.js-restore').hasClass('fa-window-maximize')) {
-      $('.script-panel-controls .js-restore').removeClass('fa-window-maximize').addClass('fa-window-restore');
+      $('.script-panel-controls .js-restore')
+        .removeClass('fa-window-maximize')
+        .addClass('fa-window-restore');
     } else {
-      $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
+      if (!$scriptPanel.hasClass('maximized')) {
+        $('.script-panel-controls .js-restore')
+          .removeClass('fa-window-restore')
+          .addClass('fa-window-maximize');
+      }
     }
   });
 
   $scriptPanelControls.on('click', '.js-restore', function() {
-    if ($('.script-panel').hasClass('minimized')) {
-      $('.script-panel').removeClass('minimized');
+    let $scriptPanel = $('.script-panel');
+    if ($scriptPanel.hasClass('minimized')) {
+      $scriptPanel.removeClass('minimized');
       $('.script-panel-placeholder').removeClass('minimized');
-      $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
-    } else if ($('.script-panel').hasClass('maximized')) {
-      $('.script-panel').removeClass('maximized');
-      $('.script-panel-controls .js-restore').removeClass('fa-window-restore').addClass('fa-window-maximize');
+      if (!$scriptPanel.hasClass('maximized')) {
+        $('.script-panel-controls .js-restore')
+          .removeClass('fa-window-restore')
+          .addClass('fa-window-maximize');
+      }
+    } else if ($scriptPanel.hasClass('maximized')) {
+      $scriptPanel.removeClass('maximized');
+      $('.script-panel-controls .js-restore')
+        .removeClass('fa-window-restore')
+        .addClass('fa-window-maximize');
     } else {
-      $('.script-panel').addClass('maximized');
-      $('.script-panel-controls .js-restore').removeClass('fa-window-maximize').addClass('fa-window-restore');
+      $scriptPanel.addClass('maximized');
+      $('.script-panel-controls .js-restore')
+        .removeClass('fa-window-maximize')
+        .addClass('fa-window-restore');
     }
     resizeEditor();
   });

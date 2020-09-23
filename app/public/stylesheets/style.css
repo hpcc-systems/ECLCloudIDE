@@ -674,14 +674,15 @@ main .loader p {
   overflow-y: scroll;
 }
 
-.script-panel.minimized {
-  height: 38px !important;
-  transition: height 0.33s;
-}
-
 .script-panel.maximized {
   height: 100% !important;
   top: 55px !important;
+}
+
+.script-panel.minimized {
+  height: 38px !important;
+  top: initial !important;
+  transition: height 0.33s;
 }
 
 .file-details .form-group {
