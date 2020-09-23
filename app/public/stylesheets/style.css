@@ -591,11 +591,9 @@ main .loader p {
 }
 
 .editors {
-  height: calc(100% - 82px);
 }
 
 .maximized .editors {
-  height: calc(100% - 136px);
 }
 
 .editor {
