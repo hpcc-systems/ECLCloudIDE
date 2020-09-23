@@ -562,9 +562,6 @@ main .loader p {
 
 .main-script-tabs.border-right {
   border-right-style: dashed !important;
-}
-
-.main-script-tabs {
   width: calc(50% + 100px) !important;
 }
 

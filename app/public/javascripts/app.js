@@ -795,14 +795,14 @@ let displayWorkunitResults = (opts) => {
           }
         });
         $editor.addClass('w-50').css('width', '');
-        $mainScriptTabs.addClass('w-50 border-right');
+        $mainScriptTabs.addClass('border-right');
         $secondScriptTabs.addClass('w-50').removeClass('empty');
         $editor2.removeClass('d-none');
       } else {
         $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
         editors[1].getDoc().setValue('');
         $editor2.addClass('d-none');
-        $mainScriptTabs.removeClass('w-50').removeClass('border-right');
+        $mainScriptTabs.removeClass('border-right');
         $secondScriptTabs.removeClass('w-50').addClass('empty');
       }
 
@@ -819,7 +819,7 @@ let displayWorkunitResults = (opts) => {
       $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
       editors[1].getDoc().setValue('');
       $editor2.addClass('d-none');
-      $mainScriptTabs.removeClass('w-50').removeClass('border-right');
+      $mainScriptTabs.removeClass('border-right');
       $secondScriptTabs.removeClass('w-50').addClass('empty');
     }
 
@@ -2099,7 +2099,6 @@ let displayWorkunitResults = (opts) => {
       ghostClass: 'ghost',
       onStart: function(evt) {
         if ($secondTabList.parent().hasClass('empty')) {
-          $mainScriptTabs.addClass('w-50');
           $mainScriptTabs.addClass('border-right');
           $secondScriptTabs.addClass('w-50').removeClass('empty');
         }
@@ -2114,7 +2113,6 @@ let displayWorkunitResults = (opts) => {
         let $tab = $(evt.item);
         $tab.parents('.script-controls-row-one').find('li').removeClass('active');
         if ($secondTabList.find('li:not(.cloner)').length == 0) {
-          $mainScriptTabs.removeClass('w-50');
           $mainScriptTabs.removeClass('border-right');
           $secondScriptTabs.removeClass('w-50').addClass('empty');
           $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
@@ -2164,7 +2162,6 @@ let displayWorkunitResults = (opts) => {
       ghostClass: 'ghost',
       onStart: function(evt) {
         if ($secondTabList.parent().hasClass('empty')) {
-          $mainScriptTabs.addClass('w-50');
           $mainScriptTabs.addClass('border-right');
           $secondScriptTabs.addClass('w-50').removeClass('empty');
         }
@@ -3669,7 +3666,6 @@ let displayWorkunitResults = (opts) => {
       if ($activeTabs.index() == 1) {
         $editor2.addClass('d-none');
         $editor.removeClass('w-50').css('width', 'calc(100% - 20px)');
-        $mainScriptTabs.removeClass('w-50');
         $mainScriptTabs.removeClass('border-right');
         $secondScriptTabs.removeClass('w-50').addClass('empty');
       }
@@ -3678,7 +3674,6 @@ let displayWorkunitResults = (opts) => {
     if ($openTabs.length === 0) {
       $scriptPanelClose.trigger('click');
       $editor2.addClass('d-none');
-      $mainScriptTabs.removeClass('w-50');
       $mainScriptTabs.removeClass('border-right');
       $secondScriptTabs.removeClass('w-50').addClass('empty');
     } else {
