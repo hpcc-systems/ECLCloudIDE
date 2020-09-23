@@ -118,12 +118,13 @@ a {
 
 .navbar {
   border-bottom: 1px solid #242a30;
+  padding-left: 0.75rem;
 }
 
 .home-logo {
   color: #9a9da0 !important;
-  display: none;
   font-size: 1rem;
+  margin-right: 0.75rem;
 }
 
 .account-page [role="main"] {
