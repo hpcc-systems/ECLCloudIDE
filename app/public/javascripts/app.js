@@ -2221,7 +2221,20 @@ let displayWorkunitResults = (opts) => {
         }
       }
     });
+
+    resizeEditor();
   });
+
+  let resizeEditor = () => {
+    let scriptPanelControlsHeight = parseInt($('.script-panel-controls-wrapper').css('height'), 10),
+        editorHeightOffset = 17;
+    if ($scriptPanel.hasClass('maximized')) {
+      editorHeightOffset = 70;
+    }
+    $('.editors').css({
+      height: 'calc(100% - ' + (scriptPanelControlsHeight + editorHeightOffset + 'px') + ')'
+    });
+  };
 
   $('.editor').on('click', function(evt) {
     let $this = $(this);
@@ -3891,9 +3904,8 @@ let displayWorkunitResults = (opts) => {
     } else {
       $('.script-panel').addClass('maximized');
       $('.script-panel-controls .js-restore').removeClass('fa-window-maximize').addClass('fa-window-restore');
-      editor.layout();
-      editor2.layout();
     }
+    resizeEditor();
   });
 
   /*==========================================================================*
