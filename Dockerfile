@@ -8,7 +8,7 @@ WORKDIR $appDir/
 
 RUN apt-get update -y && apt-get install -y build-essential curl
 
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 
 RUN apt-get install -y nodejs
 
@@ -24,8 +24,8 @@ RUN apt-get install -y openssh-client openssh-server \
     libboost-regex1.65.1 libmemcached11 libmemcachedutil2 libnuma1 \
     libpython2.7 libpython3.6 libxslt1.1 netcat git
 
-ARG cdnUrl=https://d2wulyp08c6njk.cloudfront.net
-ARG hpccVersion=7.6.22
+ARG cdnUrl=https://cdn.hpccsystems.com
+ARG hpccVersion=7.10.26
 
 ARG clientToolsUrl=$cdnUrl/releases/CE-Candidate-$hpccVersion/bin/clienttools/hpccsystems-clienttools-community_$hpccVersion-1bionic_amd64.deb
 
@@ -39,6 +39,7 @@ RUN ecl bundle install https://github.com/hpcc-systems/ML_Core.git \
     && ecl bundle install https://github.com/hpcc-systems/LearningTrees.git \
     && ecl bundle install https://github.com/hpcc-systems/LinearRegression.git \
     && ecl bundle install https://github.com/hpcc-systems/LogisticRegression.git \
+    && ecl bundle install https://github.com/hpcc-systems/dbscan.git \
     && ecl bundle install https://github.com/hpcc-systems/SupportVectorMachines.git \
     && ecl bundle install https://github.com/hpcc-systems/DataPatterns.git \
     && ecl bundle install https://github.com/hpcc-systems/PerformanceTesting.git \
@@ -54,6 +55,9 @@ RUN npm install sequelize-cli pm2 -g
 COPY ./app $appDir
 
 RUN npm run clientdeps
+
+# temporary solution to issue with hpcc-js & CSP restriction of unsafe-eval
+RUN sed -i 's/new Function("return this;")()/function(){return this;}/g' public/javascripts/hpcc-js/util/dist/index.min.js
 
 RUN chown -R $user:$user /home/$user/
 RUN mkdir -p /tmp/pm2/logs && chown -R eclide:eclide /tmp/pm2/
