@@ -40,3 +40,6 @@ mysql-data/
 
 #datasets uploaded to cluster
 landing_zone/
+
+#any nginx tls files
+nginx/tls/
