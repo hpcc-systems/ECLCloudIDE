@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "######## Run nginx"
 hostname="$1"
