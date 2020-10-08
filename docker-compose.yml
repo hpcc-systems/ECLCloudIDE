@@ -1,6 +1,7 @@
 version: "3"
 services:
   nginx:
+    container_name: ide_nginx
     image: nginx
     volumes:
       - ./nginx/conf.d/eclide.conf.template:/etc/nginx/conf.d/eclide.conf.template
@@ -19,8 +20,9 @@ services:
       - ecl-ide-network
     entrypoint: [/etc/nginx/run_nginx.sh, "${HOST_NAME}"]
   node_web:
+    container_name: ide_web
     #restart: always
-    entrypoint: [/home/eclide/app/docker-entry.sh, "mysql_db", "${DB_PORT}"]
+    entrypoint: [/home/eclide/app/docker-entry.sh, "mysql_db", "3306"]
     build:
       context: .
       dockerfile: Dockerfile
@@ -32,12 +34,13 @@ services:
       - mysql_db
   mysql_db:
     image: mysql:5.7
+    container_name: ide_db
     restart: always
     command: --innodb_use_native_aio=0
     volumes:
       - ./mysql-data:/var/lib/mysql
     ports:
-      - ${DB_PORT}:${DB_PORT}
+      - ${DB_PORT}:3306
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
