@@ -11,13 +11,13 @@ services:
     environment:
       - NGINX_HTTP_PORT=${NGINX_HTTP_PORT}
       - NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT}
-      - HOSTNAME=${HOSTNAME}
+      - HOSTNAME=${HOST_NAME}
       - NODE_PORT=${NODE_PORT}
     depends_on:
       - node_web
     networks:
       - ecl-ide-network
-    entrypoint: [/etc/nginx/run_nginx.sh, "${HOSTNAME}"]
+    entrypoint: [/etc/nginx/run_nginx.sh, "${HOST_NAME}"]
   node_web:
     #restart: always
     entrypoint: [/home/eclide/app/docker-entry.sh, "mysql_db", "${DB_PORT}"]
