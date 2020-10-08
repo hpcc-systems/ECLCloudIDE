@@ -51,7 +51,8 @@ app.use(session({
   resave: false,
   name: 'sessionId',
   store: new SequelizeStore({
-    db: db.sequelize
+    db: db.sequelize,
+    tableName: 'Sessions'
   }),
   //store: new session.MemoryStore,
   saveUninitialized: true,
