@@ -1225,17 +1225,6 @@ let displayWorkunitResults = (opts) => {
       dataset.layout += generateRecord(schema, null, childRecs);
     };
 
-    values.forEach((val) => {
-      if (!val._type) subRecords = true;
-      return;
-    })
-
-    if (subRecords) {
-      parseRecords(currentDatasetFile, keys);
-    } else {
-      dataset.layout = generateRecord(currentDatasetFile);
-    }
-
     // console.log(currentDatasetFile, dataset.layout);
     // return false;
 
@@ -1264,6 +1253,31 @@ let displayWorkunitResults = (opts) => {
         $saveBtn.removeAttr('disabled').removeClass('disabled');
 
         return false;
+      }
+
+      let columns = $form
+        .serializeArray()
+        .filter(obj => obj.name.indexOf('column') == 0)
+        .map(obj => obj.value);
+
+      let temp = {};
+      for (var i = 0; i < columns.length; i++) {
+        temp[columns[i]] = Object.values(currentDatasetFile)[i];
+      }
+      setCurrentDatasetFile(temp);
+
+      keys = Object.keys(currentDatasetFile);
+      values = Object.values(currentDatasetFile);
+
+      values.forEach((val) => {
+        if (!val._type) subRecords = true;
+        return;
+      })
+
+      if (subRecords) {
+        parseRecords(currentDatasetFile, keys);
+      } else {
+        dataset.layout = generateRecord(currentDatasetFile);
       }
 
       dataset.filename = file.name;
@@ -1665,7 +1679,7 @@ let displayWorkunitResults = (opts) => {
           $fileDetails.append('<hr />');
         }
 
-        $newFormRow.append('<input type="text" class="form-control" value="' + label.replace(/ /g, '') + '" />');
+        $newFormRow.append('<input type="text" class="form-control" required="required" name="column' + idx + '" value="' + label.replace(/ /g, '') + '" />');
         $newFormRow.append('<input type="text" class="form-control" value="' + values[idx] + '" disabled="disabled" />');
 
         $fileDetails.append($newFormRow);

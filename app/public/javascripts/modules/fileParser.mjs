@@ -238,7 +238,7 @@ let parseCsv = async (file, Papa) => {
 
         // console.log(results);
 
-        if (labels.length != values.length) {
+        if (results.errors.length > 0 || labels.length != values.length) {
           return reject({
             success: false,
             errorMsg: 'CSV could not be parsed. The number of column headings was different than ' +
