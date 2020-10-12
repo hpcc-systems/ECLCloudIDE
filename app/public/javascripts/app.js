@@ -3302,6 +3302,15 @@ let displayWorkunitResults = (opts) => {
     $(this).blur();
     evt.preventDefault();
 
+    if (!$cluster) {
+      $clusterPopoverTarget.trigger('focusin');
+      let _t = window.setTimeout(() => {
+        $clusterPopoverTarget.trigger('focusout');
+        window.clearTimeout(_t);
+      }, 3000);
+      return false;
+    }
+
     changeRunButtonState($runButton, 'running');
 
     let compilationResult = await compileScript($script, activeEditor);
@@ -3309,15 +3318,6 @@ let displayWorkunitResults = (opts) => {
     if (compilationResult.success == false) {
       changeRunButtonState($runButton, 'failed');
       updateCodemirrorAnnotations(compilationResult.errors, activeEditor);
-      return false;
-    }
-
-    if (!$cluster) {
-      $clusterPopoverTarget.trigger('focusin');
-      let _t = window.setTimeout(() => {
-        $clusterPopoverTarget.trigger('focusout');
-        window.clearTimeout(_t);
-      }, 2000);
       return false;
     }
 
