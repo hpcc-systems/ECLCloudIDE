@@ -69,7 +69,7 @@ a {
 }
 
 [role="main"] {
-  width: 100%;
+  width: calc(100% - 275px);
 }
 
 [role="main"].show-outputs {
