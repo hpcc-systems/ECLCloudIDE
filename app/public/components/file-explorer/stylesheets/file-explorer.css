@@ -1,0 +1,116 @@
+* {
+  box-sizing: border-box;
+}
+
+.file-explorer {
+  display: grid;
+  border: 1px solid #999;
+  width: 350px;
+  padding: 0.66em;
+  margin: 0 0 1em 0;
+  background-color: #f8f9fa;
+}
+
+.file-list {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+.filter-wrapper {
+  position: relative;
+  color: #999;
+}
+
+.filter {
+  color: #333;
+  font-size: 1em;
+  width: 100%;
+  padding: 0.33em;
+  margin: 0 0 0.75em 0;
+}
+
+.clear-filter {
+  position: absolute;
+  top: 0.52em;
+  right: 0.5em;
+  width: 1em;
+  height: 1em;
+  cursor: pointer;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  cursor: pointer;
+  list-style-type: none;
+  padding: 0.25em 0;
+}
+
+li.expanded {
+  padding-bottom: 0;
+}
+
+li.expanded ul {
+  background-color: #f8f9fa;
+  margin: 0.33em 0 0 0;
+}
+
+li::before {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  content: "";
+  background-repeat: no-repeat;
+  background-size: 1em 1em;
+}
+
+li.directory::before {
+  background-image: url("../images/bootstrap-icons/chevron-right.svg");
+}
+
+li.directory.expanded::before {
+  background-image: url("../images/bootstrap-icons/chevron-down.svg");
+}
+
+li.file::before {
+  background-image: url("../images/bootstrap-icons/file-earmark.svg");
+}
+
+li i {
+  margin-right: 0.2em;
+}
+
+li ul li {
+  padding: 0.33em 0 0.33em 0;
+  margin-left: 1em;
+}
+
+.d-none {
+  display: none !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track-piece:start {
+  margin-top: 5px;
+}
+
+::-webkit-scrollbar-track-piece:end {
+  margin-bottom: 7px;
+}
+
+::-webkit-scrollbar,
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.66);
+  border-radius: 6px;
+}
