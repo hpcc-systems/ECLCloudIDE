@@ -214,7 +214,7 @@ router.post('/forgot', (req, res, next) => {
       PasswordReset.create({
         userId: user.id
       }).then((reset) => {
-        let url = req.protocol + '://' + req.get('host') + '/auth/reset/' + reset.id;
+        let url = req.protocol + '://' + process.env.HOST_NAME + '/auth/reset/' + reset.id;
         message += '<p>A password reset url has been requested for the ECL Cloud IDE account ' +
           'associated with the email address "' + user.emailAddress + '" Click the link below ' +
           'to complete this reset:</p><p><a href="' + url + '">' + url + '</a>';
@@ -372,10 +372,10 @@ router.sendVerifyEmail = (req, emailAddress) => {
   };
 
   hash = cipher.update(emailAddress, 'binary', 'hex') + cipher.final('hex');
-  url = req.protocol + '://' + req.get('host') + '/auth/email/verify/' + iv.toString('hex') + '/' + hash;
+  url = req.protocol + '://' + process.env.HOST_NAME + '/auth/email/verify/' + iv.toString('hex') + '/' + hash;
 
   emailMsg = `This email address has been used to create an account with the ECL Cloud IDE
-  (<a href="${req.protocol + '://' + req.get('host')}">${req.protocol + '://' + req.get('host')}</a>).<br /><br />Click the link below
+  (<a href="${req.protocol + '://' + process.env.HOST_NAME}">${req.protocol + '://' + process.env.HOST_NAME}</a>).<br /><br />Click the link below
   (or copy and paste into your web browser) to verify your email address:<br /><br />
   <a href="${url}">${url}</a><br /><br />
   Or, if you haven't created this account, please ignore this email.`;
