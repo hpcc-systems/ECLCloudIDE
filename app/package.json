@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@hpcc-js/comms": "^2.29.0",
+    "@hpcc-systems/hsqlc": "file:hsqlc-1.0.0.tgz",
     "archiver": "^4.0.1",
     "aws-sdk": "^2.504.0",
     "bcrypt": "^5.0.0",

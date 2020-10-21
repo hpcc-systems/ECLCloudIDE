@@ -50,7 +50,6 @@ COPY ./app/package.json $appDir/
 COPY ./app/hsqlc-1.0.0.tgz $appDir/
 
 RUN npm install -g node-gyp && npm install
-RUN npm install ./hsqlc-1.0.0.tgz
 
 RUN npm install sequelize-cli pm2 -g
 

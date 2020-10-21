@@ -17,7 +17,7 @@ const ipRegex = new RegExp(`(?:^${ipv4}$)`);
 const allowedScriptExtensions = [ '.hsql', '.ecl' ];
 
 let request = require('request-promise');
-let hsqlc = require('@clemje01/hsqlc');
+let hsqlc = require('@hpcc-systems/hsqlc');
 let crypt = require('../../utils/crypt');
 
 const db = require('../../models/index');

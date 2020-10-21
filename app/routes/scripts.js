@@ -5,7 +5,7 @@ const db = require('../models/index');
 
 const cp = require('child_process');
 
-const hsqlc = require('@clemje01/hsqlc');
+const hsqlc = require('@hpcc-systems/hsqlc');
 
 const { EOL } = require('os');
 
