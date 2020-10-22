@@ -216,6 +216,11 @@ class FileExplorer extends HTMLElement {
       return;
     }
 
+    let height = this.getAttribute('height')
+    if (height) {
+      this.shadowRoot.host.style.setProperty('--height', height);
+    }
+
     let scopes = await this.fetchScope('');
     this.renderScopes(scopes, this.scopeRoot);
 
@@ -246,7 +251,6 @@ class FileExplorer extends HTMLElement {
       }
       evt.dataTransfer.setData('text/plain', JSON.stringify(_attributes));
     });
-
   } //end function connectedCallback
 
 }
