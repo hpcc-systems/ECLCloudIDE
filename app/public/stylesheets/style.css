@@ -496,6 +496,7 @@ main .loader p {
 .sidebar.MD .sidebar-sticky::-webkit-scrollbar,
 .table-wrapper .dataTables_scrollBody::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 .sidebar.MD .sidebar-sticky::-webkit-scrollbar-track-piece:start {
   margin-top: 5px;
