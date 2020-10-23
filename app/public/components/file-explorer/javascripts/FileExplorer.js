@@ -270,6 +270,18 @@ class FileExplorer extends HTMLElement {
     }
   }
 
+  reset() {
+    this.shadowRoot.querySelectorAll('.directory').forEach(li => {
+      li.classList.remove('expanded', 'd-none');
+      li.querySelectorAll('ul').forEach(ul => ul.classList.add('d-none'));
+      li.setAttribute('expanded', '');
+    });
+    this.shadowRoot.querySelectorAll('.active').forEach(li => {
+      li.classList.remove('active');
+    });
+    this.shadowRoot.querySelector('.filter').value = '';
+  }
+
 }
 
 customElements.define('file-explorer', FileExplorer);

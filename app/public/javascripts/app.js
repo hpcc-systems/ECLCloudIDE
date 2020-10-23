@@ -1755,7 +1755,7 @@ let displayWorkunitResults = (opts) => {
     $('#newDatasetModal .btn-primary').removeAttr('disabled').removeClass('disabled');
     $('#nav-upload-tab').addClass('active show').siblings().removeClass('active show');
     $('#nav-upload').addClass('active show').siblings().removeClass('active show');
-    $('#dataset-search').val('').removeClass('is-invalid');
+    document.querySelector('#dataset-import-explorer').reset();
     $('#dataset-row-path + .invalid-feedback').text(DEFAULT_FILE_ROW_PATH_FEEDBACK);
     $('#dataset-row-path').removeClass('is-invalid');
     $('#dataset-row-path').parents('.form-group').addClass('d-none');
