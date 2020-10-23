@@ -846,6 +846,8 @@ let displayWorkunitResults = (opts) => {
 
     toggleNewScriptPopover();
     populateScriptTargets();
+
+    $('#dataset-import-explorer').attr('cluster', $this.data('cluster'));
   };
 
   $('.workspaces').on('click', '.dropdown-item', function(evt) {
@@ -1143,7 +1145,7 @@ let displayWorkunitResults = (opts) => {
         $datasetStatus = null,
         $form = $modal.find('.tab-pane.active').find('form'),
         $file = $('#dataset-file'),
-        $datasetSearch = $('#dataset-search'),
+        $datasetImportExplorer = $('#dataset-import-explorer'),
         $fileDetails = $('.file-details'),
         $fileFeedback = $file.siblings('.invalid-feedback'),
         file = $('#dataset-file')[0].files[0],
@@ -1447,14 +1449,14 @@ let displayWorkunitResults = (opts) => {
         dataset.eclSchema = JSON.stringify(workunitStatusJson.results[0].schema);
       }
     } else if ($form.data('type') == 'import') {
-      dataset.wuid = $datasetSearch.data('wuid');
-      dataset.rowCount = $datasetSearch.data('rows');
-      dataset.columnCount = $datasetSearch.data('query').split('\n').length - 3;
+      dataset.wuid = $datasetImportExplorer.data('wuid');
+      dataset.rowCount = $datasetImportExplorer.data('rows');
+      dataset.columnCount = $datasetImportExplorer.data('query').split('\n').length - 3;
       dataset.imported = 1;
-      dataset.eclQuery = $datasetSearch.data('query');
-      dataset.name = $datasetSearch.data('name');
-      dataset.filename = $datasetSearch.data('filename');
-      dataset.logicalfile = $datasetSearch.data('filename');
+      dataset.eclQuery = $datasetImportExplorer.data('query');
+      dataset.name = $datasetImportExplorer.data('name');
+      dataset.filename = $datasetImportExplorer.data('filename');
+      dataset.logicalfile = $datasetImportExplorer.data('filename');
 
       let datasetResp = await fetch('/datasets/', {
         method: 'POST',
@@ -1467,8 +1469,8 @@ let displayWorkunitResults = (opts) => {
       let datasetJson = await datasetResp.json();
 
       if (datasetJson.success === false) {
-        $datasetSearch.siblings('.invalid-feedback').text(datasetJson.message);
-        $datasetSearch.addClass('is-invalid');
+        $datasetImportExplorer.siblings('.invalid-feedback').text(datasetJson.message);
+        $datasetImportExplorer.addClass('is-invalid');
 
         $saveBtnStatus.addClass('d-none');
         $saveBtn.removeAttr('disabled').removeClass('disabled');
@@ -1577,70 +1579,60 @@ let displayWorkunitResults = (opts) => {
 
   }); //end #newDatasetModal.btn-primary click listener
 
-  if ($('#dataset-search').length > 0) {
-    let datasetSearchAuto = new autoComplete({
-      selector: '#dataset-search',
-      delay: 400,
-      source: function(term, callback) {
-        dfuQuery(term)
-          .then(response => response.json())
-          .then((data) => {
-            callback(data);
-          })
-      },
-      onSelect: function(evt, term, item) {
-        getWorkunitResults({ wuid: '', count: 5, sequence: 0, logicalfile: term })
-          .then(response => response.json())
-          .then((wuResult) => {
-            let results = wuResult.WUResultResponse.Result.Row,
-                $tableWrapper = $('.file-preview'),
-                $noDataMsg = $tableWrapper.find('p'),
-                $table = $tableWrapper.find('.table');
+  if ($('#dataset-import-explorer').length > 0) {
+    $('file-explorer').on('file-selected', (evt) => {
+      let term = evt.detail.name;
+      getWorkunitResults({ wuid: '', count: 5, sequence: 0, logicalfile: term })
+        .then(response => response.json())
+        .then((wuResult) => {
+          let results = wuResult.WUResultResponse.Result.Row,
+              $tableWrapper = $('.file-preview'),
+              $noDataMsg = $tableWrapper.find('p'),
+              $table = $tableWrapper.find('.table');
 
-            if (results.length > 0) {
-              $tableWrapper.siblings('form-group').addClass('mb-0');
-              $tableWrapper.addClass('d-none');
-              $table.removeClass('d-none');
-              $noDataMsg.addClass('d-none');
-              $table.find('thead tr').html('');
-              $table.find('tbody').html('');
+          if (results.length > 0) {
+            $tableWrapper.siblings('form-group').addClass('mb-0');
+            $tableWrapper.addClass('d-none');
+            $table.removeClass('d-none');
+            $noDataMsg.addClass('d-none');
+            $table.find('thead tr').html('');
+            $table.find('tbody').html('');
 
-              Object.keys(results[0]).forEach((key) => {
-                $table.find('thead tr').append('<th scope="col">' + key + '</th>');
-              });
-              let docFrag = document.createDocumentFragment();
-              results.forEach((row) => {
-                let _tr = document.createElement('tr');
-                for (var x in row) {
-                  let _td = document.createElement('td');
-                  _td.setAttribute('scope', 'row');
-                  _td.textContent = row[x];
-                  _tr.appendChild(_td);
-                }
-                docFrag.appendChild(_tr);
-              });
-              $table.find('tbody')[0].appendChild(docFrag);
+            Object.keys(results[0]).forEach((key) => {
+              $table.find('thead tr').append('<th scope="col">' + key + '</th>');
+            });
+            let docFrag = document.createDocumentFragment();
+            results.forEach((row) => {
+              let _tr = document.createElement('tr');
+              for (var x in row) {
+                let _td = document.createElement('td');
+                _td.setAttribute('scope', 'row');
+                _td.textContent = row[x];
+                _tr.appendChild(_td);
+              }
+              docFrag.appendChild(_tr);
+            });
+            $table.find('tbody')[0].appendChild(docFrag);
 
-              $tableWrapper.removeClass('d-none');
-            } else {
-              $tableWrapper.removeClass('d-none');
-              $noDataMsg.removeClass('d-none');
-              $table.addClass('d-none');
-            }
+            $tableWrapper.removeClass('d-none');
+          } else {
+            $tableWrapper.removeClass('d-none');
+            $noDataMsg.removeClass('d-none');
+            $table.addClass('d-none');
+          }
 
-            dfuInfo(term)
-              .then(response => response.json())
-              .then((json) => {
-                $('#dataset-search').data({
-                  filename: term,
-                  wuid: json.wuid,
-                  query: json.query,
-                  name: json.name,
-                  rows: json.rows
-                })
-              });
-          });
-      }
+          dfuInfo(term)
+            .then(response => response.json())
+            .then((json) => {
+              $('#dataset-import-explorer').data({
+                filename: term,
+                wuid: json.wuid,
+                query: json.query,
+                name: json.name,
+                rows: json.rows
+              })
+            });
+        });
     });
   }
 

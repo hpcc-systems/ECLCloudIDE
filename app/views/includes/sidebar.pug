@@ -226,12 +226,7 @@ div.modal.fade(id="newDatasetModal", role="dialog")
           div.tab-pane.fade(id="nav-import", role="tabpanel", aria-labelledby="nav-import-tab")
             form(data-type="import")
               div.form-group
-                label.col-form-label(for="dataset-search") Search:
-                input.form-control(
-                  id="dataset-search", name="datasetSearch", type="text",
-                  placeholder="*some_file*",
-                )
-                .invalid-feedback Please provide a valid name for the dataset.
+                file-explorer(id="dataset-import-explorer", cluster="http://10.173.147.1:8010", height="240px")
               div.file-preview.d-none
                 label.col-form-label Preview:
                 p This logical file contains no data.
