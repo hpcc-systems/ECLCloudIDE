@@ -51,6 +51,8 @@ class FileExplorer extends HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true));
   }
 
+  static get observedAttributes() { return ['cluster']; }
+
   async fetchScope(scope) {
     return new Promise((resolve, reject) => {
       fetch(this.cluster + '/WsDfu/DFUFileView.json', {
@@ -258,6 +260,15 @@ class FileExplorer extends HTMLElement {
       evt.dataTransfer.setData('text/plain', JSON.stringify(_attributes));
     });
   } //end function connectedCallback
+
+  async attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'cluster') {
+      this.cluster = newValue;
+      let scopes = await this.fetchScope('');
+      this.scopeRoot.innerHTML = '';
+      this.renderScopes(scopes, this.scopeRoot);
+    }
+  }
 
 }
 
