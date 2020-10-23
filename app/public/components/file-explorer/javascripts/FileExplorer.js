@@ -16,8 +16,6 @@ template.innerHTML = `
   </div>
 `;
 
-const hoverColor = '#ddeeff';
-
 const debounce = (func, wait, immediate) => {
   let timeout = null;
   return function() {
@@ -112,6 +110,14 @@ class FileExplorer extends HTMLElement {
           _attributes[key.replace('hpcc__', '')] = evt.target.getAttribute(key);
         }
       }
+
+      this.shadowRoot.querySelectorAll('li').forEach(el => {
+        el.classList.remove('active');
+      });
+      if (evt.target.classList.contains('file')) {
+        evt.target.classList.add('active');
+      }
+
       const _evt = new CustomEvent('file-selected', {
         detail: _attributes,
         bubbles: true
@@ -232,7 +238,7 @@ class FileExplorer extends HTMLElement {
 
     this.shadowRoot.addEventListener('mouseover', (evt) => {
       if (evt.target.nodeName == 'LI') {
-        evt.target.style['background-color'] = hoverColor;
+        evt.target.style['background-color'] = 'var(--hoverColor)';
       }
     });
 

@@ -1,5 +1,7 @@
 :host {
   --height: 300px;
+  --hoverColor: #ddeeff;
+  --activeColor: #ddeeff;
 }
 
 * {
@@ -18,6 +20,10 @@
 .file-list {
   max-height: 300px;
   overflow-y: scroll;
+}
+
+.active {
+  background-color: var(--activeColor);
 }
 
 .filter-wrapper {
