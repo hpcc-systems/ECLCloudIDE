@@ -229,14 +229,15 @@ div.modal.fade(id="newDatasetModal", role="dialog")
                 file-explorer(id="dataset-import-explorer", cluster="http://10.173.147.1:8010", height="240px")
               div.file-preview.d-none
                 label.col-form-label Preview:
-                p This logical file contains no data.
+                  i.fa.fa-spin.fa-spinner.ml-1.d-none
+                p.d-none This logical file contains no data.
                 table.table.table-sm.table-responsive
                   thead
                     tr
                   tbody
       div.modal-footer
         button.btn.btn-secondary(data-dismiss="modal") Cancel
-        button.btn.btn-primary(type="submit") Save
+        button.btn.btn-primary.disabled(type="submit", disabled="disabled") Save
           i.fa.fa-spinner.fa-pulse.ml-1.d-none
 
 +modal('editDatasetModal', 'Edit Dataset', {

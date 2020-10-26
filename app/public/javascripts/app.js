@@ -1581,20 +1581,25 @@ let displayWorkunitResults = (opts) => {
 
   if ($('#dataset-import-explorer').length > 0) {
     $('file-explorer').on('file-selected', (evt) => {
-      let term = evt.detail.name;
+      let term = evt.detail.name,
+          $tableWrapper = $('.file-preview'),
+          $previewSpinner = $tableWrapper.find('.fa-spinner'),
+          $noDataMsg = $tableWrapper.find('p'),
+          $table = $tableWrapper.find('.table'),
+          $saveBtn = $('#newDatasetModal .btn-primary');
+
+      $tableWrapper.removeClass('d-none');
+      $previewSpinner.removeClass('d-none');
+      $table.addClass('d-none');
+
       getWorkunitResults({ wuid: '', count: 5, sequence: 0, logicalfile: term })
         .then(response => response.json())
         .then((wuResult) => {
-          let results = wuResult.WUResultResponse.Result.Row,
-              $tableWrapper = $('.file-preview'),
-              $noDataMsg = $tableWrapper.find('p'),
-              $table = $tableWrapper.find('.table');
+          let results = wuResult.WUResultResponse.Result.Row;
 
           if (results.length > 0) {
             $tableWrapper.siblings('form-group').addClass('mb-0');
-            $tableWrapper.addClass('d-none');
             $table.removeClass('d-none');
-            $noDataMsg.addClass('d-none');
             $table.find('thead tr').html('');
             $table.find('tbody').html('');
 
@@ -1613,13 +1618,14 @@ let displayWorkunitResults = (opts) => {
               docFrag.appendChild(_tr);
             });
             $table.find('tbody')[0].appendChild(docFrag);
-
-            $tableWrapper.removeClass('d-none');
+            $table.removeClass('d-none');
           } else {
             $tableWrapper.removeClass('d-none');
             $noDataMsg.removeClass('d-none');
             $table.addClass('d-none');
           }
+
+          $previewSpinner.addClass('d-none');
 
           dfuInfo(term)
             .then(response => response.json())
@@ -1630,7 +1636,8 @@ let displayWorkunitResults = (opts) => {
                 query: json.query,
                 name: json.name,
                 rows: json.rows
-              })
+              });
+              $saveBtn.removeAttr('disabled').removeClass('disabled');
             });
         });
     });
@@ -1744,24 +1751,43 @@ let displayWorkunitResults = (opts) => {
     parseDataset();
   }, 500));
 
+  $('#newDatasetModal .nav-tabs').on('click', '.nav-item', function(evt) {
+    let $newDatasetModal = $('#newDatasetModal'),
+        $form = $newDatasetModal.find('form'),
+        $saveBtn = $newDatasetModal.find('.btn-primary');
+
+    $form[0].reset();
+    $('.file-details').html('');
+    document.querySelector('#dataset-import-explorer').reset();
+    document.querySelector('.file-preview .table thead').innerHTML = '';
+    document.querySelector('.file-preview .table tbody').innerHTML = '';
+    $saveBtn.attr('disabled', 'disabled').addClass('disabled');
+  });
+
   /* RESET NEW DATASET FORM ON MODAL HIDE */
   $('#newDatasetModal').on('hide.bs.modal', function(evt) {
-    $('#newDatasetModal form').removeClass('was-validated');
-    $('#newDatasetModal form')[0].reset();
+    let $newDatasetModal = $('#newDatasetModal'),
+        $form = $newDatasetModal.find('form'),
+        $saveBtn = $newDatasetModal.find('.btn-primary'),
+        $navImport = $('#nav-import'),
+        $datasetRowPath = $('#dataset-row-path');
+
+    $form.removeClass('was-validated');
+    $form[0].reset();
     $('.file-details').html('');
     $('#dataset-file + .invalid-feedback').text(DEFAULT_FILE_FEEDBACK);
     $('#dataset-file').removeClass('is-invalid');
-    $('#newDatasetModal .btn-primary .fa-pulse').addClass('d-none');
-    $('#newDatasetModal .btn-primary').removeAttr('disabled').removeClass('disabled');
+    $saveBtn.find('.fa-pulse').addClass('d-none');
+    $saveBtn.attr('disabled', 'disabled').addClass('disabled');
     $('#nav-upload-tab').addClass('active show').siblings().removeClass('active show');
     $('#nav-upload').addClass('active show').siblings().removeClass('active show');
     document.querySelector('#dataset-import-explorer').reset();
     $('#dataset-row-path + .invalid-feedback').text(DEFAULT_FILE_ROW_PATH_FEEDBACK);
-    $('#dataset-row-path').removeClass('is-invalid');
-    $('#dataset-row-path').parents('.form-group').addClass('d-none');
-    $('#nav-import').find('.file-preview .table thead tr').html('')
+    $datasetRowPath.removeClass('is-invalid');
+    $datasetRowPath.parents('.form-group').addClass('d-none');
+    $navImport.find('.file-preview .table thead tr').html('')
       .end().find('.file-preview').addClass('d-none');
-    $('#nav-import').find('.file-preview .table tbody').html('');
+    $navImport.find('.file-preview .table tbody').html('');
   });
 
   /* SHOW EDIT DATASET MODAL */
