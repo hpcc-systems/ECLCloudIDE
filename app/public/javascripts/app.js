@@ -1759,7 +1759,7 @@ let displayWorkunitResults = (opts) => {
     $form[0].reset();
     $('.file-details').html('');
     document.querySelector('#dataset-import-explorer').reset();
-    document.querySelector('.file-preview .table thead').innerHTML = '';
+    document.querySelector('.file-preview .table thead').innerHTML = '<tr>';
     document.querySelector('.file-preview .table tbody').innerHTML = '';
     $saveBtn.attr('disabled', 'disabled').addClass('disabled');
   });
