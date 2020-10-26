@@ -1957,6 +1957,7 @@ let displayWorkunitResults = (opts) => {
         }
 
         $('.dataset-content').addClass('d-none');
+        $outputsPanel.find('.scopename').addClass('d-none');
       });
     });
   });
