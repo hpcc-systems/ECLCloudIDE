@@ -69,7 +69,7 @@ a {
 }
 
 [role="main"] {
-  width: calc(100% - 275px);
+  width: calc(100% - 256px);
 }
 
 [role="main"].show-outputs {
@@ -82,7 +82,7 @@ a {
 .outputs-panel {
   display: flex;
   background: #343a40;
-  margin-top: 55px;
+  margin-top: 54px;
   border-bottom: 1px solid #242a30;
 }
 
@@ -202,16 +202,16 @@ a {
   left: 0;
   z-index: 100; /* Behind the navbar */
   padding: 52px 0 0; /* Height of navbar */
-  width: 275px;
+  width: 256px;
   max-width: 450px !important;
   min-width: 60px !important;
   border-right: 1px solid #242a30;
 }
 
 .sidebar-collapser {
-  position: absolute;
+  position: sticky;
   right: 5px;
-  bottom: 10px;
+  bottom: 16px;
   height: 48px;
   width: 48px;
   cursor: pointer;
@@ -297,6 +297,7 @@ a {
 
 #datasets-wrapper {
   border-bottom: 1px solid #242a30;
+  min-height: 46%;
 }
 
 .btn-add {
@@ -324,7 +325,9 @@ a.btn-add:focus {
   display: initial;
 }
 
-#scripts-wrapper { }
+#scripts-wrapper {
+  min-height: 47%;
+}
 
 #scripts-wrapper .sidebar-heading {
   margin-top: 0 !important;
