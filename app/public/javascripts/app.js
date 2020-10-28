@@ -2386,11 +2386,12 @@ let displayWorkunitResults = (opts) => {
         }
       })
       .then(response => response.json())
-      .then((workspace) => {
+      .then(async (workspace) => {
         newFile.parentPathNames = data.parentPathNames;
 
         $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
         populateWorkspaceDirectoryTree(directoryTree);
+        await populateScripts();
 
         toggleNewScriptPopover();
 
