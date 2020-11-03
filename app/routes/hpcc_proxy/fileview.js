@@ -62,7 +62,6 @@ let buildClusterAddr = (req, res, next) => {
 router.post('/explore', [
   buildClusterAddr,
 ], (req, res, next) => {
-  console.log('in fileview explore!!!!!!!!!!!!!!!!!!!!');
   request({
     method: 'POST',
     uri: req.clusterAddrAndPort + '/WsDfu/DFUFileView.json',
