@@ -51,32 +51,6 @@ class FileExplorer extends HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true));
   }
 
-  static get observedAttributes() { return ['cluster']; }
-
-  async fetchScope(scope) {
-    return new Promise((resolve, reject) => {
-      fetch(this.cluster + '/WsDfu/DFUFileView.json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-         "DFUFileViewRequest": {
-           "Scope": scope,
-           "IncludeSuperOwner": false
-         }
-        })
-      }).then(async response => {
-        let json = await response.json();
-        resolve(json.DFUFileViewResponse);
-      }).catch(err => {
-        this.displayErrorMsg(`Could not communicate with cluster ${this.cluster}`);
-        console.error(err);
-        reject({});
-      })
-    });
-  }
-
   renderScopes(scopes, target) {
     scopes.DFULogicalFiles.DFULogicalFile.forEach(scope => {
       let li = document.createElement('li');
@@ -95,12 +69,6 @@ class FileExplorer extends HTMLElement {
         setAttributes(li, scope);
       }
     });
-  }
-
-  displayErrorMsg (msg = 'Cluster attribute must be defined') {
-    let msgEl = document.createElement('p');
-    msgEl.innerText = msg;
-    this.shadowRoot.querySelector('.file-explorer').appendChild(msgEl);
   }
 
   async scopeClick(evt) {
@@ -136,8 +104,11 @@ class FileExplorer extends HTMLElement {
       if (!ul) {
         ul = document.createElement('ul');
         evt.target.appendChild(ul);
-        let _scopes = await this.fetchScope(scope);
-        this.renderScopes(_scopes, ul);
+        const _evt = new CustomEvent('scope-expanded', {
+          detail: { 'scope': scope, 'target': ul },
+          bubbles: true
+        });
+        this.dispatchEvent(_evt);
       } else {
         ul.classList.remove('d-none');
       }
@@ -212,6 +183,14 @@ class FileExplorer extends HTMLElement {
     }
   }
 
+  dataUpdate(evt) {
+    let scopes = evt.detail.scope,
+        target = (evt.detail.target) ? evt.detail.target : this.scopeRoot;
+    this.shadowRoot.querySelector('.loading').classList.add('d-none');
+    this.shadowRoot.querySelector('.file-list').classList.remove('d-none');
+    this.renderScopes(scopes, target);
+  }
+
   async connectedCallback() {
     this.cluster = this.getAttribute('cluster');
     this.scopeRoot = this.shadowRoot.querySelector('.file-explorer ul');
@@ -219,20 +198,14 @@ class FileExplorer extends HTMLElement {
     this.filter = this.shadowRoot.querySelector('.filter');
     this.clear = this.shadowRoot.querySelector('.clear-filter');
 
-    if (!this.cluster) {
-      this.displayErrorMsg();
-      return;
-    }
-
     let height = this.getAttribute('height')
     if (height) {
       this.shadowRoot.host.style.setProperty('--height', height);
     }
 
-    let scopes = await this.fetchScope('');
-    this.renderScopes(scopes, this.scopeRoot);
-
     this.scopeRoot.addEventListener('click', this.scopeClick.bind(this));
+
+    this.addEventListener('file-explorer-data-update', this.dataUpdate.bind(this));
 
     this.filter.addEventListener('keyup', debounce(this.filterKeyup.bind(this), 400));
 
@@ -261,25 +234,10 @@ class FileExplorer extends HTMLElement {
     });
   } //end function connectedCallback
 
-  async attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'cluster') {
-      this.cluster = newValue;
-      let scopes = await this.fetchScope('');
-      this.scopeRoot.innerHTML = '';
-      this.renderScopes(scopes, this.scopeRoot);
-    }
-  }
-
   reset() {
-    this.shadowRoot.querySelectorAll('.directory').forEach(li => {
-      li.classList.remove('expanded', 'd-none');
-      li.querySelectorAll('ul').forEach(ul => ul.classList.add('d-none'));
-      li.setAttribute('expanded', '');
-    });
-    this.shadowRoot.querySelectorAll('.active').forEach(li => {
-      li.classList.remove('active');
-    });
-    this.shadowRoot.querySelector('.filter').value = '';
+    this.clearClick();
+    this.shadowRoot.querySelector('ul').innerHTML = '';
+    this.shadowRoot.querySelector('.loading').classList.remove('d-none');
   }
 
 }

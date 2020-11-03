@@ -846,8 +846,6 @@ let displayWorkunitResults = (opts) => {
 
     toggleNewScriptPopover();
     populateScriptTargets();
-
-    $('#dataset-import-explorer').attr('cluster', $this.data('cluster'));
   };
 
   $('.workspaces').on('click', '.dropdown-item', function(evt) {
@@ -1109,6 +1107,12 @@ let displayWorkunitResults = (opts) => {
 
   $('#newDatasetModal label[for="dataset-file"]').text('File (limit ' + (FILE_LIMIT / (1024 * 1024)) + 'MB):');
 
+  let datasetImportExplorerClick = (evt) => {
+    let scope = evt.detail.scope,
+        target = evt.detail.target;
+    fileExplorerFetch(scope, target);
+  };
+
   /* ON NEW DATASET MODAL SHOWN */
   $('#newDatasetModal').on('shown.bs.modal', async function(evt) {
     let $modal = $('#newDatasetModal'),
@@ -1125,7 +1129,45 @@ let displayWorkunitResults = (opts) => {
       });
       $dropzones.append(optgroup);
     }
+
+    document.querySelector('#dataset-import-explorer').addEventListener('scope-expanded', datasetImportExplorerClick);
+
+    let scope = document.querySelector('#dataset-import-explorer').shadowRoot.querySelector('.filter').value;
+    fileExplorerFetch(scope);
   });
+
+  let fileExplorerFetch = (_scope, target = null) => {
+    let workspaceId = $('.workspaces .active').data('id');
+    let t = window.setTimeout(() => {
+      document.querySelector('#dataset-import-explorer')
+        .shadowRoot.querySelector('.loading').classList.remove('d-none');
+      window.clearTimeout(t);
+    }, 500);
+    fetch('/hpcc/fileview/explore', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'CSRF-Token': csrfToken
+      },
+      body: JSON.stringify({
+        "workspaceId": workspaceId,
+        "DFUFileViewRequest": {
+          "Scope": _scope,
+          "IncludeSuperOwner": false
+        }
+      })
+    }).then(async response => {
+      window.clearTimeout(t);
+      let json = await response.json();
+      const _evt = new CustomEvent('file-explorer-data-update', {
+        detail: { 'scope': json.DFUFileViewResponse, 'target': target },
+        bubbles: true
+      });
+      document.querySelector('#dataset-import-explorer').dispatchEvent(_evt);
+    }).catch(err => {
+      console.log(err);
+    })
+  }
 
   /* CREATE NEW DATASET */
   $('#newDatasetModal').on('click', '.btn-primary', async function(evt) {
@@ -1758,7 +1800,6 @@ let displayWorkunitResults = (opts) => {
 
     $form[0].reset();
     $('.file-details').html('');
-    document.querySelector('#dataset-import-explorer').reset();
     document.querySelector('.file-preview .table thead').innerHTML = '<tr>';
     document.querySelector('.file-preview .table tbody').innerHTML = '';
     $saveBtn.attr('disabled', 'disabled').addClass('disabled');
