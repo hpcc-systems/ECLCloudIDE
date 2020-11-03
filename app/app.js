@@ -27,6 +27,7 @@ const workunitsRouter = require('./routes/workunits');
 
 const hpccWorkunitsRouter = require('./routes/hpcc_proxy/workunits');
 const hpccFilesprayRouter = require('./routes/hpcc_proxy/filespray');
+const hpccFileviewRouter = require('./routes/hpcc_proxy/fileview');
 
 const app = express();
 const db = require('./models/index.js');
@@ -103,6 +104,7 @@ app.use('/workunits', workunitsRouter);
 
 app.use('/hpcc/workunits', hpccWorkunitsRouter);
 app.use('/hpcc/filespray', hpccFilesprayRouter);
+app.use('/hpcc/fileview', hpccFileviewRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
