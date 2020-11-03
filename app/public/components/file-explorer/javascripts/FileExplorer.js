@@ -20,7 +20,7 @@ const debounce = (func, wait, immediate) => {
   let timeout = null;
   return function() {
     let context = this,
-        args = arguments;
+        args = arguments,
         later = () => {
           if (!immediate) func.apply(context, args);
         },
