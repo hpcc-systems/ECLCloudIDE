@@ -1,0 +1,79 @@
+.animated-hourglass {
+  margin-top: 0.15em;
+  margin-left: 0.25em;
+  display: inline-block;
+  position: relative;
+  width: 1em;
+  height: 1em;
+}
+
+.hourglass-top {
+  position: absolute;
+  animation-name: hourglassTop;
+  animation-duration: 1.8s;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps(1, end);
+}
+.hourglass-split {
+  position: absolute;
+  animation-name: hourglassSplit;
+  animation-duration: 1.8s;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps(1, end);
+}
+.hourglass-bottom {
+  position: absolute;
+  animation-name: hourglassBottom, hourglassRotate;
+  animation-duration: 1.8s, 0.6s;
+  animation-delay: 0s, 1.2s;
+  animation-iteration-count: infinite, infinite;
+  animation-timing-function: steps(1, end), ease-in-out;
+}
+
+
+@keyframes hourglassTop {
+  0%, 100% {
+    visibility: visible;
+  }
+  33% {
+    visibility: hidden;
+  }
+  66% {
+    visibility: hidden;
+  }
+}
+
+@keyframes hourglassSplit {
+  0%, 100% {
+    visibility: hidden;
+  }
+  33% {
+    visibility: visible;
+  }
+  66% {
+    visibility: hidden;
+  }
+}
+
+@keyframes hourglassBottom {
+  0%, 100% {
+    visibility: hidden;
+  }
+  33% {
+    visibility: hidden;
+  }
+  66% {
+    visibility: visible;
+  }
+}
+
+@keyframes hourglassRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  33%, 100% {
+    transform: rotate(180deg);
+  }
+}
