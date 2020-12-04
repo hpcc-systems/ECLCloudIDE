@@ -20,7 +20,7 @@ const upload = multer({ storage: _storage });
 
 const fs = require('fs');
 
-const { query, body, validationResult } = require('express-validator/check');
+const { query, body, validationResult } = require('express-validator');
 
 let request = require('request-promise');
 let crypt = require('../../utils/crypt');

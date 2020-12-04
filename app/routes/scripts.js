@@ -12,7 +12,7 @@ const { EOL } = require('os');
 const fs = require('fs-extra');
 const path = require('path');
 
-const { body, validationResult } = require('express-validator/check');
+const { body, validationResult } = require('express-validator');
 
 const allowedScriptExtensions = [ '.hsql', '.ecl' ];
 

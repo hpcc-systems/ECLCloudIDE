@@ -6,7 +6,7 @@ const dns = require('dns');
 const ipv4 = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}';
 const ipRegex = new RegExp(`(?:^${ipv4}$)`);
 
-const { query, body, validationResult } = require('express-validator/check');
+const { query, body, validationResult } = require('express-validator');
 
 let request = require('request-promise');
 let crypt = require('../../utils/crypt');

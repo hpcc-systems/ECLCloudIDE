@@ -7,7 +7,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { EOL } = require('os');
 
-const { query, body, validationResult } = require('express-validator/check');
+const { query, body, validationResult } = require('express-validator');
 
 const dns = require('dns');
 

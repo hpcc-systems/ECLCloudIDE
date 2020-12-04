@@ -5,7 +5,7 @@ const db = require('../models/index');
 
 const fs = require('fs-extra');
 
-const { body, validationResult } = require('express-validator/check');
+const { body, validationResult } = require('express-validator');
 
 const User = db.User;
 const Workspace = db.Workspace;

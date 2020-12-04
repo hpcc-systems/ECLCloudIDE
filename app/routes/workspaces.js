@@ -18,7 +18,7 @@ const upload = multer({ storage: _storage });
 const fs = require('fs-extra');
 const path = require('path');
 
-const { param, body, validationResult } = require('express-validator/check');
+const { param, body, validationResult } = require('express-validator');
 
 const clusterWhitelist = require('../cluster-whitelist')[process.env.NODE_ENV];
 
