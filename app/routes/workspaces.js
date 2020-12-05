@@ -259,10 +259,12 @@ let shareWorkspace = async (workspaceId, user) => {
               _directoryTree = _directoryTree.replace(_regex, dataset.id);
               // console.log(_regex.toString(), dataset.id, _directoryTree);
 
-              let newWorkunit = await Workunit.create({
-                workunitId: workunit.workunitId,
-                objectId: dataset.id
-              })
+              if (workunit && workunit.workunitId) {
+                let newWorkunit = await Workunit.create({
+                  workunitId: workunit.workunitId,
+                  objectId: dataset.id
+                });
+              }
               return resolve();
             }
 
