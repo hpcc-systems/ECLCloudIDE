@@ -156,8 +156,9 @@ router.get('/', [
         };
         wuInfo.results.push(_result);
       });
-
-      wuInfo.query = json.WUInfoResponse.Workunit.Query.Text;
+      if (json.WUInfoResponse.Workunit.Query && json.WUInfoResponse.Workunit.Query.Text) {
+        wuInfo.query = json.WUInfoResponse.Workunit.Query.Text;
+      }
     }
 
     if (json.WUInfoResponse.Workunit.Exceptions) {
