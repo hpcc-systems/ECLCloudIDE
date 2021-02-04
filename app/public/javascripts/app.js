@@ -3492,7 +3492,9 @@ let displayWorkunitResults = (opts) => {
                 } else {
                   let _status = json.state;
                   _status = (_status == 'unknown') ? 'running' : _status;
-                  changeRunButtonState($runButton, _status);
+                  if (_status) {
+                    changeRunButtonState($runButton, _status);
+                  }
                   t = window.setTimeout(function() {
                     awaitWorkunitStatusComplete();
                   }, 1500);
