@@ -718,7 +718,8 @@ let displayWorkunitResults = (opts) => {
         $editor = $('#editor'),
         $editor2 = $('#editor2'),
         editors = [ editor, editor2 ],
-        $tableWrapper = $datasetContent.find('.table-wrapper');
+        $tableWrapper = $datasetContent.find('.table-wrapper'),
+        qs = queryString.parse(window.location.search);
 
     if ($previousWorkspace.length > 0) {
       fetch('/workspaces/', {
@@ -805,13 +806,20 @@ let displayWorkunitResults = (opts) => {
         $mainScriptTabs.removeClass('border-right');
         $secondScriptTabs.removeClass('w-50').addClass('empty');
       }
-
       $scriptPanel.removeClass('d-none');
       let _t = window.setTimeout(function() {
         if (!$editor2.hasClass('d-none')) {
           $secondScriptTabs.find('li:not(.cloner)').first().trigger('click');
         }
-        $mainScriptTabs.find('li:not(.cloner)').first().trigger('click');
+        //select the script if there is one passed via query string
+        let $scriptToSelect = $scripts.filter((idx, el) => {
+          return $(el).data('id') == qs.s;
+        });
+        if($scriptToSelect && $scriptToSelect.length > 0) {
+          $scriptToSelect.trigger('click');
+        } else {
+          $mainScriptTabs.find('li:not(.cloner)').first().trigger('click');
+        }
         window.clearTimeout(_t);
       }, 200);
     } else {
@@ -821,6 +829,16 @@ let displayWorkunitResults = (opts) => {
       $editor2.addClass('d-none');
       $mainScriptTabs.removeClass('border-right');
       $secondScriptTabs.removeClass('w-50').addClass('empty');
+      let _t = window.setTimeout(function() {
+        //select the script if there is one passed via query string
+        let $scriptToSelect = $scripts.filter((idx, el) => {
+          return $(el).data('id') == qs.s;
+        });
+        if ($scriptToSelect && $scriptToSelect.length > 0) {
+          $scriptToSelect.trigger('click');
+        }
+        window.clearTimeout(_t);
+      }, 200);
     }
 
     if ($this.data('cluster')) {
@@ -2058,6 +2076,8 @@ let displayWorkunitResults = (opts) => {
         $activeTabsList = $activeTabs.find('ul'),
         $clusters = $('.thors'),
         $selectedCluster = $('#selectTarget');
+
+    history.pushState(null, null, '?w=' + $($workspace).data('id') + '&s='+$($this).data('id'));
 
     if ($this.data('name').indexOf('.hsql') > -1) {
       editors[$activeEditor.index()].setOption('mode', 'sql');
