@@ -586,7 +586,8 @@ let displayWorkunitResults = (opts) => {
         headers: {
           'Content-Type': 'application/json',
           'CSRF-Token': csrfToken
-        }
+        },
+        redirect: 'error'
       })
       .then(response => response.json())
       .then((workspace) => {
@@ -611,7 +612,8 @@ let displayWorkunitResults = (opts) => {
         }).trigger('click');
 
         toggleNewScriptPopover();
-      });
+      })
+      .catch(err => { window.location = '/' });
     } else if ($form.data('type') == 'import-url') {
       window.location = '/workspaces/share/' + $workspaceUrl.data('id');
     } else if ($form.data('type') == 'import-zip') {
@@ -633,7 +635,8 @@ let displayWorkunitResults = (opts) => {
         body: formData,
         headers: {
           'CSRF-Token': csrfToken
-        }
+        },
+        redirect: 'error'
       })
       .then(response => response.json())
       .then((workspace) => {
@@ -658,7 +661,8 @@ let displayWorkunitResults = (opts) => {
         }).trigger('click');
 
         toggleNewScriptPopover();
-      });
+      })
+      .catch(err => { window.location = '/' });
     }
   });
 
@@ -731,8 +735,9 @@ let displayWorkunitResults = (opts) => {
         headers: {
           'Content-Type': 'application/json',
           'CSRF-Token': csrfToken
-        }
-      });
+        },
+        redirect: 'error'
+      }).catch(err => { window.location = '/' });
     }
 
     $datasetContent.addClass('d-none');
@@ -974,7 +979,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then(async (json) => {
@@ -1004,7 +1010,8 @@ let displayWorkunitResults = (opts) => {
           $password.addClass('is-invalid');
         }
       }
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /* RESET EDIT WORKSPACE FORM ON MODAL HIDE */
@@ -1093,7 +1100,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((json) => {
@@ -1116,7 +1124,8 @@ let displayWorkunitResults = (opts) => {
       $datasetContent.addClass('d-none');
 
       localStorage.removeItem('_lastUsedWorkspace');
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /*==========================================================================*
@@ -1524,8 +1533,9 @@ let displayWorkunitResults = (opts) => {
         headers: {
           'Content-Type': 'application/json',
           'CSRF-Token': csrfToken
-        }
-      });
+        },
+        redirect: 'error'
+      }).catch(err => { window.location = '/' });
       let datasetJson = await datasetResp.json();
 
       if (datasetJson.success === false) {
@@ -1549,8 +1559,9 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
-    });
+      },
+      redirect: 'error'
+    }).catch(err => { window.location = '/' });
 
     // console.log(dataset, parentPath, directoryTree);
 
@@ -1602,8 +1613,9 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
-    });
+      },
+      redirect: 'error'
+    }).catch(err => { window.location = '/' });
     let workspaceJson = await workspaceResp.json();
 
     $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
@@ -1895,7 +1907,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((dataset) => {
@@ -1919,7 +1932,8 @@ let displayWorkunitResults = (opts) => {
         }
       })
       .then(response => response.json())
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /* RESET EDIT DATASET FORM ON MODAL HIDE */
@@ -1996,7 +2010,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((json) => {
@@ -2044,7 +2059,8 @@ let displayWorkunitResults = (opts) => {
         $('.dataset-content').addClass('d-none');
         $outputsPanel.find('.scopename').addClass('d-none');
       });
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /*==========================================================================*
@@ -2108,8 +2124,9 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
-    });
+      },
+      redirect: 'error'
+    }).catch(err => { window.location = '/' });
 
     // console.log(directoryTree);
 
@@ -2382,7 +2399,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((script) => {
@@ -2468,7 +2486,8 @@ let displayWorkunitResults = (opts) => {
           .filter((idx, el) => $(el).data('id') == newScriptId)
           .trigger('click');
       });
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /* RESET NEW SCRIPT FORM ON MODAL HIDE */
@@ -2562,7 +2581,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((script) => {
@@ -2629,7 +2649,8 @@ let displayWorkunitResults = (opts) => {
         $modal.find('#edit-script-name').val('');
         $form.removeClass('was-validated');
       });
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /* RESET EDIT SCRIPT FORM ON MODAL HIDE */
@@ -2700,7 +2721,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((json) => {
@@ -2761,7 +2783,8 @@ let displayWorkunitResults = (opts) => {
 
         $modal.modal('hide');
       });
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   if ($('.data-table').length > 0) {
@@ -3033,7 +3056,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((workspace) => {
@@ -3058,7 +3082,8 @@ let displayWorkunitResults = (opts) => {
       $form.removeClass('was-validated');
 
       toggleNewScriptPopover();
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   $('.datasets, .scripts').on('click', '.folder .edit', function(evt) {
@@ -3150,14 +3175,16 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((workspace) => {
       $modal.modal('hide');
       $activeWorkspace.data('directoryTree', JSON.stringify(directoryTree));
       $targetFolder.find('.foldername').text($folderName.val());
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   /* RESET NEW WORKSPACE FORM ON MODAL HIDE */
@@ -3267,7 +3294,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((json) => {
@@ -3295,7 +3323,8 @@ let displayWorkunitResults = (opts) => {
           $modal.modal('hide');
         });
       }
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   if ($('.data-table').length > 0) {
@@ -3414,7 +3443,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((json) => {
@@ -3525,7 +3555,7 @@ let displayWorkunitResults = (opts) => {
           });
         });
       });
-    });
+    }).catch(err => { window.location = '/' });
   });
 
   $('.thors').on('click', '.dropdown-item', function(evt) {
@@ -3650,7 +3680,8 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
+      },
+      redirect: 'error'
     })
     .then(response => response.json())
     .then((json) => {
@@ -3666,22 +3697,29 @@ let displayWorkunitResults = (opts) => {
           window.clearTimeout(_annotateTimeout);
         }, 500);
       }
-    });
+    })
+    .catch(err => { window.location = '/' });
   });
 
   let compileScript = async ($script, editor) => {
-    let response = await fetch('/scripts/compile/', {
-      method: 'POST',
-      body: JSON.stringify({
-        scriptId: $script.data('id'),
-        path: $script.data('parentPathNames'),
-        content: editor.getValue()
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        'CSRF-Token': csrfToken
-      }
-    })
+    let response;
+    try {
+      response = await fetch('/scripts/compile/', {
+        method: 'POST',
+        body: JSON.stringify({
+          scriptId: $script.data('id'),
+          path: $script.data('parentPathNames'),
+          content: editor.getValue()
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        },
+        redirect: 'error'
+      });
+    } catch(err) {
+      window.location = '/';
+    }
     let json = await response.json();
     return json;
   };
@@ -3807,8 +3845,9 @@ let displayWorkunitResults = (opts) => {
       headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': csrfToken
-      }
-    })
+      },
+      redirect: 'error'
+    }).catch(err => { window.location = '/' });
   });
 
   $outputsList.on('click', '.output', function(evt) {
