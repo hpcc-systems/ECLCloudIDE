@@ -253,28 +253,8 @@ router.put('/', [
       fs.writeFileSync(scriptFilePath, program);
     }
 
-    let args = ['-E', scriptPath + '/' + _filename];
+    let args = ['-E', scriptPath + '/' + _filename, '-I', workspacePath + '/scripts/'];
 
-    try {
-      let _files = fs.readdirSync(workspacePath + '/scripts/', { withFileTypes: true });
-      if (_datasetId) {
-        _files = fs.readdirSync(workspacePath + '/datasets/', { withFileTypes: true });
-      }
-      _files.forEach((file) => {
-        console.log(file);
-        if (file.isDirectory() && file.name.indexOf('.') == -1) {
-          args.push('-I');
-          if (_datasetId) {
-            args.push(workspacePath + '/datasets/' + file.name + '/');
-          } else {
-            args.push(workspacePath + '/scripts/' + file.name + '/');
-          }
-        }
-      });
-    } catch (err) {
-      console.log(err);
-      return;
-    }
 
     createEclArchive(args, scriptPath).then((response) => {
       _query = response.stdout;
