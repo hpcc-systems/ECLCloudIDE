@@ -2639,6 +2639,7 @@ let displayWorkunitResults = (opts) => {
       .then(response => response.json())
       .then((json) => {
         $modal.modal('hide');
+        $activeWorkspace.data('directoryTree', json.data.directoryTree);
         $script.data('name', script.data.name);
         $script.find('.scriptname').text(script.data.name);
         $scriptTabs.filter((idx, el) => {
