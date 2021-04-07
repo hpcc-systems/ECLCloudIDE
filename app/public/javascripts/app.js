@@ -179,7 +179,7 @@ require.config({
   },
   packages: [{
     name: 'codemirror',
-    location: '/javascripts/codemirror/',
+    location: '/javascripts/codemirror',
     main: 'lib/codemirror'
   }],
   onNodeCreated: function(node, config, module, path) {
@@ -4071,6 +4071,10 @@ let displayWorkunitResults = (opts) => {
       if (['+input', '+delete', 'cut', 'paste', 'drop', 'undo'].indexOf(changeObj.origin) > -1) {
         // console.log('autosave script...');
         $saveButton.trigger('click');
+      } else if (changeObj.origin === undefined && (
+        (changeObj.text.length > 0 && changeObj.text[0].trim() == '//') ||
+        (changeObj.removed.length > 0 && changeObj.removed[0].trim() == '//'))) {
+          $saveButton.trigger('click');
       }
     }
 
