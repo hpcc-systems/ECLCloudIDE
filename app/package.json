@@ -22,7 +22,7 @@
     "clientdeps": "npm run codemirror && npm run papaparse && npm run lodash && npm run hpccjs && npm run sortablejs"
   },
   "dependencies": {
-    "@hpcc-js/comms": "^2.40.0",
+    "@hpcc-js/comms": "^2.80.0",
     "@hpcc-systems/hsqlc": "file:hsqlc-1.0.0.tgz",
     "archiver": "^4.0.2",
     "aws-sdk": "^2.814.0",
